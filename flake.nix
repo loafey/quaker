@@ -28,7 +28,7 @@
           pkg-config
           openssl
           gcc
-          udev
+          libudev-zero
           alsa-lib
           xorg.libX11
           xorg.libXi

@@ -9,4 +9,5 @@ edition = "2021"
 [features]
 
 [dependencies]        
+bevy = { version = "0.12.1", features = ["dynamic_linking"] }
 map_parser = { path = "crates/map_parser" }
