@@ -1,31 +1,44 @@
 #[derive(Clone)]
-pub enum Token {
+pub enum Symbol {
+    /// (
     LParan,
+    /// )
     RParan,
+    /// {
     LBrack,
+    /// }
     RBrack,
+    /// [
     LSquare,
+    /// ]
     RSquare,
+    /// Negative or positive number
     Number(String),
+    /// Just a string
     String(String),
+    /// A texture
     Texture(String),
 }
-impl std::fmt::Debug for Token {
+
+impl std::fmt::Debug for Symbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Token::Texture(arg0) => write!(f, "{arg0}"),
-            Token::LParan => write!(f, "("),
-            Token::RParan => write!(f, ")"),
-            Token::LBrack => write!(f, "{{"),
-            Token::RBrack => write!(f, "}}"),
-            Token::LSquare => write!(f, "]"),
-            Token::RSquare => write!(f, "["),
-            Token::Number(str) => write!(f, "{str}"),
-            Token::String(str) => write!(f, "{str}"),
+            Symbol::Texture(arg0) => write!(f, "{arg0}"),
+            Symbol::LParan => write!(f, "("),
+            Symbol::RParan => write!(f, ")"),
+            Symbol::LBrack => write!(f, "{{"),
+            Symbol::RBrack => write!(f, "}}"),
+            Symbol::LSquare => write!(f, "]"),
+            Symbol::RSquare => write!(f, "["),
+            Symbol::Number(str) => write!(f, "{str}"),
+            Symbol::String(str) => write!(f, "{str}"),
         }
     }
 }
-impl From<String> for Token {
+
+#[derive(Debug)]
+pub struct Token(pub Symbol, pub usize, pub usize);
+impl From<String> for Symbol {
     fn from(value: String) -> Self {
         match &value[..] {
             "(" => Self::LParan,
@@ -35,8 +48,9 @@ impl From<String> for Token {
             "]" => Self::RSquare,
             "[" => Self::LSquare,
             x if x.starts_with('"') && x.ends_with('"') => Self::String(value),
-            x if x.chars().all(|c| c.is_ascii_digit())
-                || (x.starts_with('-') && x[1..].chars().all(|c| c.is_ascii_digit())) =>
+            x if x.chars().all(|c| c.is_ascii_digit() || c == '.')
+                || (x.starts_with('-')
+                    && x[1..].chars().all(|c| c.is_ascii_digit() || c == '.')) =>
             {
                 Self::Number(value)
             }
@@ -59,15 +73,22 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
     let mut state = LexState::Normal;
     let mut curr = String::new();
 
+    let mut col = 0;
+    let mut row = 1;
+
     for c in str.chars() {
         match c {
             // Comments
-            '\n' if matches!(state, InComment) => state = Normal,
+            '\n' if matches!(state, InComment) => {
+                state = Normal;
+                col = 0;
+                row += 1;
+            }
             _ if matches!(state, InComment) => {}
             '/' if !matches!(state, InComment | AlmostInComment) => {
                 state = AlmostInComment;
                 if !curr.is_empty() {
-                    toks.push(curr);
+                    toks.push((col - curr.len(), row, curr));
                 }
                 curr = '/'.to_string();
             }
@@ -79,12 +100,19 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             // Spaces
             ' ' | '\t' if !matches!(state, InString) => {
                 if !curr.is_empty() {
-                    toks.push(curr);
+                    toks.push((col - curr.len(), row, curr));
                 }
                 curr = String::new();
             }
-            '\n' if matches!(state, InString) => curr.push(c),
-            '\n' => {}
+            '\n' if matches!(state, InString) => {
+                curr.push(c);
+                col = 0;
+                row += 1;
+            }
+            '\n' => {
+                col = 0;
+                row += 1;
+            }
 
             // Strings
             '"' if matches!(state, Normal) => {
@@ -94,7 +122,7 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             '"' if matches!(state, InString) => {
                 state = Normal;
                 curr.push(c);
-                toks.push(curr);
+                toks.push((col - curr.len(), row, curr));
                 curr = String::new();
             }
 
@@ -102,19 +130,24 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             '{' | '}' | '(' | ')' if matches!(state, Normal | AlmostInComment) => {
                 state = Normal;
                 if !curr.is_empty() {
-                    toks.push(curr);
+                    toks.push((col - curr.len(), row, curr));
                 }
-                toks.push(c.to_string());
+                toks.push((col, row, c.to_string()));
                 curr = String::new();
             }
 
             // Rest
-            c => curr.push(c),
+            c => {
+                curr.push(c);
+            }
         }
+        col += 1;
     }
     if !curr.is_empty() {
-        toks.push(curr);
+        toks.push((col - curr.len(), row, curr));
     }
 
-    toks.into_iter().map(|s| s.into()).collect()
+    toks.into_iter()
+        .map(|(col, row, s)| Token(s.into(), col, row))
+        .collect()
 }
