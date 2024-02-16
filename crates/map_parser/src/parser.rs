@@ -187,7 +187,10 @@ fn plane(toks: TokenItr<'_>) -> Result<Option<Plane>> {
 
 fn entity_attribute(toks: TokenItr<'_>, lhs: String) -> Result<Attribute> {
     match toks.next().ok_or(error_eof())? {
-        Token(Symbol::String(rhs), ..) => Ok(Attribute(lhs, rhs)),
+        Token(Symbol::String(rhs), ..) => Ok(Attribute(
+            lhs[1..lhs.len() - 1].to_string(),
+            rhs[1..rhs.len() - 1].to_string(),
+        )),
         token => error_token("entity attribute", token),
     }
 }
