@@ -218,8 +218,8 @@ fn error_token<T>(parsing_type: &str, token: Token) -> Result<T> {
     Err(io::Error::new(
         io::ErrorKind::InvalidData,
         format!(
-            "unexpected token: {:?} at {}:{} when parsing \"{parsing_type}\"",
-            token.0, token.2, token.1
+            "unexpected token at {}:{} when parsing \"{parsing_type}\": \"{:?}\" ",
+            token.2, token.1, token.0
         ),
     ))
 }
