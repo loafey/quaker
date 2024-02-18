@@ -27,23 +27,23 @@ pub enum Either<L, R> {
 
 pub type Brush = Vec<Plane>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Plane {
-    pub x: Vector,
-    pub y: Vector,
-    pub z: Vector,
+    pub p1: Vector,
+    pub p2: Vector,
+    pub p3: Vector,
     pub texture: String,
     pub x_offset: TextureOffset,
     pub y_offset: TextureOffset,
-    pub rotation: f64,
-    pub x_scale: f64,
-    pub y_scale: f64,
+    pub rotation: f32,
+    pub x_scale: f32,
+    pub y_scale: f32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum TextureOffset {
-    Simple(f64),
-    V220(f64, f64, f64, f64),
+    Simple(f32),
+    V220(f32, f32, f32, f32),
 }
 impl std::fmt::Debug for TextureOffset {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -54,8 +54,8 @@ impl std::fmt::Debug for TextureOffset {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct Vector(f64, f64, f64);
+#[derive(Clone, Copy, PartialEq)]
+pub struct Vector(pub f32, pub f32, pub f32);
 impl std::fmt::Debug for Vector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Vec[{}, {}, {}]", self.0, self.1, self.2)
@@ -67,8 +67,8 @@ pub struct Attribute(String, String);
 
 #[derive(Debug, Default)]
 pub struct Entity {
-    attributes: HashMap<String, String>,
-    brushes: Vec<Brush>,
+    pub attributes: HashMap<String, String>,
+    pub brushes: Vec<Brush>,
 }
 
 type TokenItr<'a> = &'a mut Peekable<IntoIter<Token>>;
@@ -108,16 +108,16 @@ fn brush(toks: TokenItr<'_>) -> Result<Brush> {
 fn vector(toks: TokenItr<'_>) -> Result<Vector> {
     get_token!("vector start", toks, Token(Symbol::LParan, ..));
 
-    let x = float64(toks)?;
-    let y = float64(toks)?;
-    let z = float64(toks)?;
+    let x = float32(toks)?;
+    let y = float32(toks)?;
+    let z = float32(toks)?;
 
     get_token!("vector end", toks, Token(Symbol::RParan, ..));
 
     Ok(Vector(x, y, z))
 }
 
-fn float64(toks: TokenItr<'_>) -> Result<f64> {
+fn float32(toks: TokenItr<'_>) -> Result<f32> {
     let Token(Symbol::Number(y), col, row) =
         get_token!("float", toks, Token(Symbol::Number(..), ..))
     else {
@@ -129,10 +129,10 @@ fn float64(toks: TokenItr<'_>) -> Result<f64> {
 fn texture_offset(toks: TokenItr<'_>) -> Result<TextureOffset> {
     match toks.next() {
         Some(Token(Symbol::LSquare, ..)) => {
-            let x = float64(toks)?;
-            let y = float64(toks)?;
-            let z = float64(toks)?;
-            let w = float64(toks)?;
+            let x = float32(toks)?;
+            let y = float32(toks)?;
+            let z = float32(toks)?;
+            let w = float32(toks)?;
 
             get_token!("texture offset", toks, Token(Symbol::RSquare, ..));
 
@@ -166,14 +166,14 @@ fn plane(toks: TokenItr<'_>) -> Result<Option<Plane>> {
     let x_offset = texture_offset(toks)?;
     let y_offset = texture_offset(toks)?;
 
-    let rotation = float64(toks)?;
-    let x_scale = float64(toks)?;
-    let y_scale = float64(toks)?;
+    let rotation = float32(toks)?;
+    let x_scale = float32(toks)?;
+    let y_scale = float32(toks)?;
 
     let plane = Plane {
-        x,
-        y,
-        z,
+        p1: x,
+        p2: y,
+        p3: z,
         texture,
         x_offset,
         y_offset,

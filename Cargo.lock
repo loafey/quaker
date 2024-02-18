@@ -2302,6 +2302,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "macros"
+version = "0.1.0"
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2848,6 +2852,7 @@ name = "quaker"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "macros",
  "map_parser",
 ]
 
