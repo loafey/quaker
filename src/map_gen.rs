@@ -5,7 +5,7 @@ use bevy::{
 };
 use macros::error_return;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct Plane {
     n: Vec3,
     n_prime: Vec3,
@@ -47,6 +47,7 @@ pub fn test_map(
 
     for entity in map {
         for brush in entity.brushes {
+            let brush = brush.iter().map(Plane::from_data).collect::<Vec<_>>();
             let mut vertices = Vec::new();
             for fi in &brush {
                 for fj in &brush {
@@ -58,16 +59,24 @@ pub fn test_map(
                             continue;
                         }
 
-                        if let Some(val) = get_intersection(
-                            Plane::from_data(fi),
-                            Plane::from_data(fj),
-                            Plane::from_data(fk),
-                        ) {
-                            vertices.push(val);
+                        if let Some(val) = get_intersection(*fi, *fj, *fk) {
+                            let mut legal = true;
+                            for f in &brush {
+                                if f.n.dot(val) + f.d.distance(Vec3::ZERO) > 0.0 {
+                                    legal = false;
+                                    break;
+                                }
+                            }
+
+                            if legal {
+                                vertices.push(val);
+                            }
                         }
                     }
                 }
             }
+
+            println!("{vertices:?}");
 
             let mut center = Vec3::default();
             for vec in &vertices {
