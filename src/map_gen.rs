@@ -62,7 +62,7 @@ pub fn test_map(
                         if let Some(val) = get_intersection(*fi, *fj, *fk) {
                             let mut legal = true;
                             for f in &brush {
-                                if f.n.dot(val) + f.d.distance(Vec3::ZERO) > 0.0 {
+                                if f.n.dot(val) > f.d.distance(Vec3::ZERO) {
                                     legal = false;
                                     break;
                                 }
@@ -84,6 +84,10 @@ pub fn test_map(
             }
             let len = vertices.len() as f32;
             center /= Vec3::new(len, len, len);
+
+            for n in 0..vertices.len() - 3 {
+                let a = (vertices[n] - center).normalize();
+            }
 
             let mut verts = Vec::new();
             for vertex in vertices {

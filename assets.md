@@ -1,1 +1,0 @@
-[MAP paper](https://web.archive.org/web/20190819183728/http://mattn.ufoai.org/files/MAPFiles.pdf)
