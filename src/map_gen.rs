@@ -87,6 +87,7 @@ pub fn test_map(
 
             for n in 0..vertices.len() - 3 {
                 let a = (vertices[n] - center).normalize();
+                // Sort the vector here
             }
 
             let mut verts = Vec::new();
@@ -104,11 +105,12 @@ pub fn test_map(
                 }
                 verts.push(vertex);
             }
-            let new_mesh = Mesh::new(
+            let mut new_mesh = Mesh::new(
                 PrimitiveTopology::TriangleList,
                 RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
             )
             .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, verts);
+            new_mesh.compute_flat_normals();
 
             commands.spawn(PbrBundle {
                 mesh: meshes.add(new_mesh),
