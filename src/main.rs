@@ -10,13 +10,29 @@ fn test_map() {
 }
 
 #[derive(Component, Debug)]
-struct Player;
+struct Player {
+    rot: f32,
+}
 impl Player {
     fn spawn(mut commands: Commands) {
-        commands.spawn(Player).with_children(|c| {
-            c.spawn(GlobalTransform::default());
-            c.spawn(Camera3dBundle::default());
-        });
+        commands
+            .spawn(Player { rot: 0.0 })
+            .add(|mut c: EntityWorldMut| {
+                c.insert(GlobalTransform::default());
+                let mut trans = Transform::default();
+                trans.rotate_x(std::f32::consts::PI / -8.0);
+                c.insert(trans);
+            })
+            .with_children(|c| {
+                c.spawn(Camera3dBundle::default());
+            });
+    }
+    fn update(time: Res<Time>, mut query: Query<(&mut Player, &mut Transform)>) {
+        for (mut player, mut gt) in &mut query {
+            player.rot += time.delta_seconds();
+            gt.translation = Vec3::new(player.rot.sin() * 4.0, 2.5, player.rot.cos() * 4.0);
+            gt.rotate_y(time.delta_seconds());
+        }
     }
 }
 
@@ -55,5 +71,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, spawn_3d_stuff)
         .add_systems(Startup, Player::spawn)
+        .add_systems(Update, Player::update)
         .run();
 }
