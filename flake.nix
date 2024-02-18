@@ -38,6 +38,9 @@
           vulkan-headers
           vulkan-loader
           vulkan-validation-layers
+
+          libxkbcommon
+          wayland
         ];
       in
       {
@@ -62,6 +65,7 @@
                 pkgs.udev
                 pkgs.alsaLib
                 pkgs.vulkan-loader
+                pkgs.libxkbcommon
               ]
             }"'';
         };
