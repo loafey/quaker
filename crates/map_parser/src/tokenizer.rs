@@ -73,7 +73,7 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
     let mut state = LexState::Normal;
     let mut curr = String::new();
 
-    let mut col = 0;
+    let mut col = 1;
     let mut row = 1;
 
     for c in str.chars() {
@@ -81,7 +81,7 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             // Comments
             '\n' if matches!(state, InComment) => {
                 state = Normal;
-                col = 0;
+                col = 1;
                 row += 1;
             }
             _ if matches!(state, InComment) => {}
@@ -106,11 +106,11 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             }
             '\n' if matches!(state, InString) => {
                 curr.push(c);
-                col = 0;
+                col = 1;
                 row += 1;
             }
             '\n' => {
-                col = 0;
+                col = 1;
                 row += 1;
             }
 
