@@ -1,4 +1,5 @@
 use bevy::{
+    math::vec2,
     prelude::*,
     render::{render_asset::RenderAssetUsages, render_resource::PrimitiveTopology},
     utils::petgraph::matrix_graph::Zero,
@@ -12,7 +13,7 @@ struct Plane {
     d: Vec3,
 }
 impl Plane {
-    pub fn from_data(plane: &map_parser::parser::Plane) -> Self {
+    pub fn from_data(plane: map_parser::parser::Plane) -> Self {
         let p1 = Vec3::new(plane.p1.0, plane.p1.1, plane.p1.2);
         let p2 = Vec3::new(plane.p2.0, plane.p2.1, plane.p2.2);
         let p3 = Vec3::new(plane.p3.0, plane.p3.1, plane.p3.2);
@@ -37,8 +38,8 @@ fn get_intersection(i: Plane, j: Plane, k: Plane) -> Option<Vec3> {
     Some(p)
 }
 
-fn vec2vec(vec: map_parser::parser::Vector) -> nalgebra::geometry::Point3<f32> {
-    nalgebra::geometry::Point3::new(vec.0, vec.1, vec.2)
+fn vec2vec(vec: Vec3) -> nalgebra::Vector3<f32> {
+    nalgebra::Vector3::new(vec.x, vec.y, vec.z)
 }
 
 pub fn test_map(
@@ -55,11 +56,22 @@ pub fn test_map(
         for brush in entity.brushes {
             let planes = brush
                 .into_iter()
+                .map(|d| {
+                    bevy::math::prelude::Plane3d::from_points(
+                        Vec3::new(d.p1.0, d.p1.1, d.p1.2),
+                        Vec3::new(d.p2.0, d.p2.1, d.p2.2),
+                        Vec3::new(d.p3.0, d.p3.1, d.p3.2),
+                    )
+                })
                 .map(|p| {
-                    implicit3d::NormalPlane::from_3_points(
-                        &vec2vec(p.p1 / 10.0),
-                        &vec2vec(p.p2 / 10.0),
-                        &vec2vec(p.p3 / 10.0),
+                    println!("{p:?}");
+                    p
+                })
+                .map(|(p, vec)| {
+                    println!("{p:?}");
+                    implicit3d::NormalPlane::from_normal_and_p(
+                        vec2vec(p.normal.into()),
+                        vec.distance(Vec3::ZERO),
                     )
                 })
                 .map(|p| {
@@ -67,8 +79,8 @@ pub fn test_map(
                     b
                 })
                 .collect::<Vec<_>>();
-            let mesh = implicit3d::Intersection::from_vec(planes, 0.0);
-            println!("{mesh:?}")
+            let mesh = implicit3d::Intersection::from_vec(planes, 0.0).unwrap();
+            println!("{mesh:?}");
 
             // let mut new_mesh = Mesh::new(
             //     PrimitiveTopology::TriangleList,
