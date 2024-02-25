@@ -17,6 +17,11 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
+
+        trenchbroom-working = pkgs.runCommand "trenchbroom"
+          { buildInputs = [ pkgs.makeWrapper pkgs.tree pkgs.gnused ]; } ''
+          makeWrapper ${pkgs.trenchbroom}/bin/trenchbroom $out/bin/trenchbroom --set QT_QPA_PLATFORM xcb
+        '';
         toolchain = with fenix.packages.${system};  combine [
           minimal.cargo
           minimal.rustc
@@ -39,6 +44,7 @@
           vulkan-loader
           vulkan-validation-layers
 
+          trenchbroom-working
           libxkbcommon
           wayland
         ];

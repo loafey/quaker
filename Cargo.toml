@@ -12,3 +12,5 @@ edition = "2021"
 bevy = { version = "0.13.*", features = ["dynamic_linking"] }
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
+implicit3d = "0.14.2"
+nalgebra = "0.22.1"

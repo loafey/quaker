@@ -3,6 +3,7 @@ use std::{
     collections::HashMap,
     io::{self, Result},
     iter::Peekable,
+    ops::Div,
     vec::IntoIter,
 };
 
@@ -56,6 +57,13 @@ impl std::fmt::Debug for TextureOffset {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Vector(pub f32, pub f32, pub f32);
+impl Div<f32> for Vector {
+    type Output = Vector;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Self(self.0 / rhs, self.1 / rhs, self.2 / rhs)
+    }
+}
 impl std::fmt::Debug for Vector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Vec[{}, {}, {}]", self.0, self.1, self.2)
