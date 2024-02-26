@@ -9,6 +9,11 @@ struct Plane {
     n: Vec3,
     d: f32,
 }
+pub enum InPlane {
+    Front,
+    Back,
+    InPlane,
+}
 impl Plane {
     pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3) -> Self {
         // calculate the normal vector
@@ -28,6 +33,17 @@ impl Plane {
         let p2 = Vec3::new(plane.p2.0, plane.p2.1, plane.p2.2);
         let p3 = Vec3::new(plane.p3.0, plane.p3.1, plane.p3.2);
         Self::from_points(p1, p2, p3)
+    }
+
+    pub fn classify_point(&self, point: Vec3) -> InPlane {
+        let v = self.n.dot(point) + self.d;
+        if v < -std::f32::EPSILON {
+            InPlane::Back
+        } else if v > std::f32::EPSILON {
+            InPlane::Front
+        } else {
+            InPlane::InPlane
+        }
     }
 }
 
@@ -94,15 +110,31 @@ pub fn test_map(
             center /= vertices.len() as f32;
             println!("{center}");
 
-            for n in 0..vertices.len() - 3 {
-                let a = (vertices[n] - center).normalize();
-                let p = Plane::from_points(vertices[n], center, center + normal);
+            for i in 0..vertices.len() - 3 {
+                let a = (vertices[i] - center).normalize();
+                let p = Plane::from_points(vertices[i], center, center + normal);
 
                 let mut smallest_angle = -1.0;
                 let mut smallest = usize::MAX;
-                for m in n + 1..vertices.len() - 1 {
-                    if p.
+                for j in i + 1..vertices.len() - 1 {
+                    if !matches!(p.classify_point(vertices[j]), InPlane::Back) {
+                        let mut b = (vertices[j] - center).normalize();
+                        let mut angle = a.dot(b);
+                        if angle > smallest_angle {
+                            smallest_angle = angle;
+                            smallest = j;
+                        }
+                    }
                 }
+
+                if smallest == usize::MAX {
+                    error!("degenerate polygon");
+                    return;
+                }
+
+                let t = vertices[smallest];
+                vertices[smallest] = vertices[i + 1];
+                vertices[smallest] = t;
             }
 
             let mut verts = Vec::new();
