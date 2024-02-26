@@ -9,17 +9,18 @@ struct Plane {
     n: Vec3,
     d: f32,
 }
+#[derive(Debug, Clone, Copy)]
 pub enum InPlane {
     Front,
     Back,
-    InPlane,
+    In,
 }
 impl Plane {
-    pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3) -> Self {
+    pub fn from_points(a: Vec3, b: Vec3, c: Vec3) -> Self {
         // calculate the normal vector
-        let n = (p1 - p2).cross(p1 - p3).normalize();
+        let n = (c - b).cross(a - b).normalize();
         // calculate the parameter
-        let d = p2.dot(n);
+        let d = -n.dot(a);
 
         // // calculate the normal vector
         // let n = -(p2 - p1).cross(p3 - p1).normalize();
@@ -42,7 +43,7 @@ impl Plane {
         } else if v > std::f32::EPSILON {
             InPlane::Front
         } else {
-            InPlane::InPlane
+            InPlane::In
         }
     }
 }
@@ -55,6 +56,75 @@ fn get_intersection(p1: Plane, p2: Plane, p3: Plane) -> Option<Vec3> {
     let p =
         -p1.d * (p2.n.cross(p3.n)) - p2.d * (p3.n.cross(p1.n)) - p3.d * (p1.n.cross(p2.n)) / denom;
     Some(p)
+}
+
+fn get_vertices(brush: &[Plane]) -> Vec<Vec3> {
+    let mut vertices = Vec::new();
+    for fi in brush {
+        for fj in brush {
+            if fi == fj {
+                continue;
+            }
+            for fk in brush {
+                if fk == fi || fk == fj {
+                    continue;
+                }
+
+                if let Some(val) = get_intersection(*fi, *fj, *fk) {
+                    let mut legal = true;
+                    for f in brush {
+                        if f.n.dot(val) + f.d > 0.0 {
+                            legal = false;
+                            break;
+                        }
+                    }
+
+                    if legal {
+                        vertices.push(val);
+                    }
+                }
+            }
+        }
+    }
+    vertices
+}
+
+fn sort_verticies_cw(vertices: &mut [Vec3], normal: Vec3) {
+    let mut center = Vec3::default();
+    for vec in vertices.iter() {
+        center += *vec;
+    }
+    center /= vertices.len() as f32;
+
+    for i in 0..vertices.len() - 2 {
+        let a = (vertices[i] - center).normalize();
+        let p = Plane::from_points(vertices[i], center, center + normal);
+
+        let mut smallest_angle = -1.0;
+        // assuming a mesh does not consist of 18446744073709551615
+        // or 4294967295 (for the 32bit scrubs) planes
+        let mut smallest = usize::MAX;
+        #[allow(clippy::needless_range_loop)]
+        for j in i + 1..vertices.len() - 1 {
+            if !matches!(p.classify_point(vertices[j]), InPlane::Back) {
+                let b = (vertices[j] - center).normalize();
+
+                let angle = a.dot(b);
+
+                if angle > smallest_angle {
+                    smallest_angle = angle;
+                    smallest = j;
+                }
+            }
+        }
+
+        if smallest == usize::MAX {
+            error!("degenerate polygon");
+            continue;
+        }
+
+        vertices.swap(smallest, i + 1);
+    }
 }
 
 pub fn test_map(
@@ -70,71 +140,16 @@ pub fn test_map(
             // Calculate the verticies for the mesh
             let brush = brush.into_iter().map(Plane::from_data).collect::<Vec<_>>();
             // wha??
-            let normal = brush[0].n;
-            let mut vertices = Vec::new();
-            for fi in &brush {
-                for fj in &brush {
-                    if fi == fj {
-                        continue;
-                    }
-                    for fk in &brush {
-                        if fk == fi || fk == fj {
-                            continue;
-                        }
-
-                        if let Some(val) = get_intersection(*fi, *fj, *fk) {
-                            let mut legal = true;
-                            for f in &brush {
-                                if f.n.dot(val) + f.d > 0.0 {
-                                    legal = false;
-                                    break;
-                                }
-                            }
-
-                            if legal {
-                                vertices.push(val);
-                            }
-                        }
-                    }
-                }
-            }
-
+            let mut vertices = get_vertices(&brush);
             // Calculate texture coordinates
             warn!("Texture coordinates not implemented yet...");
 
+            println!("{vertices:?}");
+
             // Sort the vectors
-            let mut center = Vec3::default();
-            for vec in &vertices {
-                center += *vec;
-            }
-            center /= vertices.len() as f32;
-            println!("{center}");
-
-            for i in 0..vertices.len() - 3 {
-                let a = (vertices[i] - center).normalize();
-                let p = Plane::from_points(vertices[i], center, center + normal);
-
-                let mut smallest_angle = -1.0;
-                let mut smallest = usize::MAX;
-                for j in i + 1..vertices.len() - 1 {
-                    if !matches!(p.classify_point(vertices[j]), InPlane::Back) {
-                        let mut b = (vertices[j] - center).normalize();
-                        let mut angle = a.dot(b);
-                        if angle > smallest_angle {
-                            smallest_angle = angle;
-                            smallest = j;
-                        }
-                    }
-                }
-
-                if smallest == usize::MAX {
-                    error!("degenerate polygon");
-                    return;
-                }
-
-                let t = vertices[smallest];
-                vertices[smallest] = vertices[i + 1];
-                vertices[smallest] = t;
+            for brush in &brush {
+                let normal = brush.n;
+                //sort_verticies_cw(&mut vertices, normal);
             }
 
             let mut verts = Vec::new();
@@ -152,6 +167,7 @@ pub fn test_map(
                 }
                 verts.push(vertex);
             }
+
             let mut new_mesh = Mesh::new(
                 PrimitiveTopology::TriangleList,
                 RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
