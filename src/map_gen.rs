@@ -3,7 +3,7 @@ use std::ops::Div;
 use bevy::{
     prelude::*,
     render::{
-        mesh::shape::Cube,
+        mesh::{shape::Cube, Indices},
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
@@ -94,7 +94,9 @@ pub fn test_map(
                 .zip(faces)
                 .map(|(mut p, f)| {
                     p.plane = f;
-                    //p.verts.append(&mut p.verts.clone());other
+                    // let mut c = p.verts.clone();
+                    // c.reverse();
+                    // p.verts.append(&mut c);
                     p
                 })
                 .collect::<Vec<_>>();
@@ -112,6 +114,7 @@ pub fn test_map(
                     });
                 }
 
+                let indices = poly.calculate_indices();
                 let mut new_mesh = Mesh::new(
                     PrimitiveTopology::TriangleList,
                     RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
@@ -119,12 +122,23 @@ pub fn test_map(
                 .with_inserted_attribute(
                     Mesh::ATTRIBUTE_POSITION,
                     poly.verts.into_iter().map(|p| p.p).collect::<Vec<_>>(),
-                );
-                //new_mesh.compute_flat_normals();
+                )
+                .with_inserted_indices(Indices::U32(indices));
+                new_mesh.duplicate_vertices();
+                new_mesh.compute_flat_normals();
+
+                // temp, used as it vizualises Z fighting
+                let n = poly.plane.n * 100.0;
+                let mut mat = StandardMaterial::from(Color::rgb_u8(
+                    127 + n.x as u8,
+                    127 + n.y as u8,
+                    127 + n.z as u8,
+                ));
+                //mat.cull_mode = None;
 
                 commands.spawn(PbrBundle {
                     mesh: meshes.add(new_mesh),
-                    material: materials.add(Color::rgb_u8(255, 0, 0)),
+                    material: materials.add(mat),
                     transform: Transform::default(),
                     ..default()
                 });
@@ -151,30 +165,29 @@ pub fn test_map(
 fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
     polys
         .into_iter()
-        .map(|poly| {
+        .map(|Poly { mut verts, plane }| {
             let mut center = Vec3::ZERO;
-            for vert in &poly.verts {
+            for vert in &verts {
                 center += vert.p;
             }
-            center /= poly.verts.length() as f32;
+            center /= verts.length() as f32;
 
-            let mut verts = poly.verts;
-            for i in 0..verts.length() - 2 {
+            for i in 0..verts.length() - 1 {
                 let a = (verts[i].p - center).normalize();
-                let p = Plane::from_points(verts[i].p, center, center + poly.plane.n);
+                let p = Plane::from_points(verts[i].p, center, center + plane.n);
                 let mut smallest_angle = -1.0;
                 let mut smallest = usize::MAX;
 
                 #[allow(clippy::needless_range_loop)]
                 for j in i + 1..verts.length() {
-                    if !matches!(p.classify_point(verts[j].p), InPlane::Back) {
-                        let b = (verts[j].p - center).normalize();
-                        let angle = a.dot(b);
-                        if angle > smallest_angle {
-                            smallest_angle = angle;
-                            smallest = j;
-                        }
+                    //if !matches!(p.classify_point(verts[j].p), InPlane::Back) {
+                    let b = (verts[j].p - center).normalize();
+                    let angle = a.dot(b);
+                    if angle >= smallest_angle {
+                        smallest_angle = angle;
+                        smallest = j;
                     }
+                    //}
                 }
                 if smallest == usize::MAX {
                     error!("degenerate polygon")
@@ -183,10 +196,16 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
                 }
             }
 
-            Poly {
-                verts,
-                plane: poly.plane,
-            }
+            println!(
+                "{}",
+                verts
+                    .iter()
+                    .map(|v| format!("({}, {}, {})", v.p.x, v.p.y, v.p.z))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
+
+            Poly { verts, plane }
         })
         .collect()
 }
@@ -223,6 +242,31 @@ fn get_polys(faces: &[Plane]) -> Vec<Poly> {
 struct Poly {
     verts: Vec<Vertex>,
     plane: Plane,
+}
+impl Poly {
+    pub fn calculate_indices(&self) -> Vec<u32> {
+        let mut indices = Vec::new();
+
+        let mut verts = (0..self.verts.len() as u32).collect::<Vec<_>>();
+        while verts.len() > 2 {
+            let xvert = verts[0];
+            let yvert = verts[1];
+            let zvert = verts[2];
+            let n = self.plane.n;
+            if n.x < 0.0 || n.y < 0.0 || n.z < 0.0 {
+                indices.push(xvert);
+                indices.push(yvert);
+                indices.push(zvert);
+            } else {
+                indices.push(zvert);
+                indices.push(yvert);
+                indices.push(xvert);
+            }
+            verts.remove(1);
+        }
+
+        indices
+    }
 }
 impl Div<f32> for Poly {
     type Output = Poly;
