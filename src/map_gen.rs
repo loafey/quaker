@@ -253,6 +253,7 @@ impl Poly {
             let yvert = verts[1];
             let zvert = verts[2];
             let n = self.plane.n;
+            // This only works for the paper cube, not ones made in a map editor
             if n.x < 0.0 || n.y < 0.0 || n.z < 0.0 {
                 indices.push(xvert);
                 indices.push(yvert);
