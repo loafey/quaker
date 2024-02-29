@@ -7,6 +7,7 @@ use bevy::{
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
+    utils::warn,
 };
 use macros::error_return;
 
@@ -118,10 +119,11 @@ pub fn test_map(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let map = error_return!(std::fs::read_to_string(
-        "crates/map_parser/tests/rotated.map"
-    ));
+    let map = error_return!(std::fs::read_to_string("assets/maps/M1.map"));
     let map = error_return!(map_parser::parse(&map));
+
+    let t = std::time::Instant::now();
+    warn!("Loading map...");
 
     for entity in map {
         for brush in entity.brushes {
@@ -159,12 +161,12 @@ pub fn test_map(
                 let mut plane_center = Vec3::ZERO;
                 for vert in &poly.verts {
                     plane_center += vert.p;
-                    commands.spawn(PbrBundle {
-                        mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                        material: materials.add(Color::rgba_u8(0, 255, 0, 20)),
-                        transform: Transform::from_translation(vert.p),
-                        ..default()
-                    });
+                    // commands.spawn(PbrBundle {
+                    //     mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
+                    //     material: materials.add(Color::rgba_u8(0, 255, 0, 20)),
+                    //     transform: Transform::from_translation(vert.p),
+                    //     ..default()
+                    // });
                 }
                 plane_center /= poly.verts.len() as f32;
 
@@ -214,6 +216,8 @@ pub fn test_map(
             // });
         }
     }
+
+    warn!("Done loading map, took {}s", t.elapsed().as_secs_f32())
 }
 
 fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
@@ -228,6 +232,7 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
     poly_center /= total as f32;
     polys
         .into_iter()
+        .filter(|p| p.verts.len() >= 3)
         .map(
             |Poly {
                  mut verts,

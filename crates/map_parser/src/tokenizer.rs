@@ -59,10 +59,10 @@ impl From<String> for Symbol {
     }
 }
 
+#[derive(Clone, Copy)]
 enum LexState {
     Normal,
     InString,
-    AlmostInComment,
     InComment,
 }
 
@@ -76,7 +76,9 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
     let mut col = 1;
     let mut row = 1;
 
-    for c in str.chars() {
+    let mut chars = str.chars().peekable();
+
+    while let Some(c) = chars.next() {
         match c {
             // Comments
             '\n' if matches!(state, InComment) => {
@@ -85,15 +87,11 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
                 row += 1;
             }
             _ if matches!(state, InComment) => {}
-            '/' if !matches!(state, InComment | AlmostInComment) => {
-                state = AlmostInComment;
+            '/' if !matches!(state, InComment | InString) && matches!(chars.peek(), Some('/')) => {
+                state = InComment;
                 if !curr.is_empty() {
                     toks.push((col - curr.len(), row, curr));
                 }
-                curr = '/'.to_string();
-            }
-            '/' if matches!(state, AlmostInComment) => {
-                state = InComment;
                 curr = String::new();
             }
 
@@ -110,6 +108,10 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
                 row += 1;
             }
             '\n' => {
+                if !curr.is_empty() {
+                    toks.push((col - curr.len(), row, curr));
+                    curr = String::new();
+                }
                 col = 1;
                 row += 1;
             }
@@ -127,7 +129,7 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             }
 
             // Blocks
-            '{' | '}' | '(' | ')' if matches!(state, Normal | AlmostInComment) => {
+            '{' | '}' | '(' | ')' if matches!(state, Normal) => {
                 state = Normal;
                 if !curr.is_empty() {
                     toks.push(((col.max(curr.len())) - curr.len(), row, curr));
