@@ -77,7 +77,9 @@ pub fn test_map(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let map = error_return!(std::fs::read_to_string("crates/map_parser/tests/paper.map"));
+    let map = error_return!(std::fs::read_to_string(
+        "crates/map_parser/tests/simple.map"
+    ));
     let map = error_return!(map_parser::parse(&map));
 
     for entity in map {
@@ -247,22 +249,46 @@ impl Poly {
     pub fn calculate_indices(&self) -> Vec<u32> {
         let mut indices = Vec::new();
 
+        let xvert;
+        let yvert;
+        let zvert;
+        let n = self.plane.n;
+        // This only works for the paper cube, not ones made in a map editor
+        if n.x < n.y && n.x < n.z {
+            xvert = 0;
+            yvert = 2;
+            zvert = 1;
+        } else if n.y < n.x && n.y < n.z {
+            xvert = 0;
+            yvert = 1;
+            zvert = 2;
+        } else if n.z < n.x && n.z < n.y {
+            xvert = 1;
+            yvert = 0;
+            zvert = 2;
+        } else if n.x > n.y && n.x > n.z {
+            xvert = 0;
+            yvert = 1;
+            zvert = 2;
+        } else if n.y > n.x && n.y > n.z {
+            xvert = 2;
+            yvert = 1;
+            zvert = 0;
+        } else if n.z > n.x && n.z > n.y {
+            xvert = 2;
+            yvert = 0;
+            zvert = 1;
+        } else {
+            xvert = 0;
+            yvert = 0;
+            zvert = 0;
+        }
+
         let mut verts = (0..self.verts.len() as u32).collect::<Vec<_>>();
         while verts.len() > 2 {
-            let xvert = verts[0];
-            let yvert = verts[1];
-            let zvert = verts[2];
-            let n = self.plane.n;
-            // This only works for the paper cube, not ones made in a map editor
-            if n.x < 0.0 || n.y < 0.0 || n.z < 0.0 {
-                indices.push(xvert);
-                indices.push(yvert);
-                indices.push(zvert);
-            } else {
-                indices.push(zvert);
-                indices.push(yvert);
-                indices.push(xvert);
-            }
+            indices.push(verts[xvert]);
+            indices.push(verts[yvert]);
+            indices.push(verts[zvert]);
             verts.remove(1);
         }
 
