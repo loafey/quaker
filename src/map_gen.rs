@@ -3,13 +3,12 @@ use std::ops::Div;
 use bevy::{
     prelude::*,
     render::{
-        mesh::{shape::Cube, Indices},
+        mesh::Indices,
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
-    utils::petgraph::matrix_graph::Zero,
 };
-use macros::{error_return, npdbg};
+use macros::error_return;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 struct Plane {
@@ -70,6 +69,47 @@ impl Plane {
                     / denom,
             ),
         }
+    }
+
+    pub fn calculate_plane(self, verts: &[Vertex]) -> Option<Self> {
+        let mut plane = self;
+        let mut center_of_mass = Vec3::ZERO;
+        if verts.len() < 3 {
+            return None;
+        }
+
+        plane.n = Vec3::ZERO;
+
+        for i in 0..verts.len() {
+            let j = if (i + 1) >= verts.len() { 0 } else { i + 1 };
+            plane.n.x += (verts[i].p.y - verts[j].p.y) * (verts[i].p.z + verts[j].p.z);
+            plane.n.y += (verts[i].p.z - verts[j].p.z) * (verts[i].p.x + verts[j].p.x);
+            plane.n.z += (verts[i].p.x - verts[j].p.x) * (verts[i].p.y + verts[j].p.y);
+
+            center_of_mass += verts[i].p;
+        }
+
+        if (plane.n.x.abs() < f32::EPSILON)
+            && (plane.n.y.abs() < f32::EPSILON)
+            && (plane.n.z.abs() < f32::EPSILON)
+        {
+            return None;
+        }
+
+        let magnitude =
+            (plane.n.x * plane.n.x + plane.n.y * plane.n.y + plane.n.z * plane.n.z).sqrt();
+
+        if magnitude < f32::EPSILON {
+            return None;
+        }
+
+        plane.n /= magnitude;
+
+        center_of_mass /= verts.len() as f32;
+
+        plane.d = center_of_mass.dot(plane.n);
+
+        Some(plane)
     }
 }
 
@@ -143,21 +183,12 @@ pub fn test_map(
 
                 // temp, used as it vizualises Z fighting
                 let n = poly.plane.n * 100.0;
-                let mut mat = StandardMaterial::from(Color::rgb_u8(
+                let mat = StandardMaterial::from(Color::rgb_u8(
                     127 + n.x as u8,
                     127 + n.y as u8,
                     127 + n.z as u8,
                 ));
                 //mat.cull_mode = None;
-                // let mut transform =
-                //     Transform::from_translation(plane_center + (poly.plane.n.normalize() * 0.1));
-                // transform.look_to(plane_center + poly.plane.n * 100.0, Vec3::Y);
-                // transform.rotate_z(std::f32::consts::PI);
-                // commands.spawn(PbrBundle {
-                //     mesh: meshes.add(Cylinder::new(0.01, 0.2)),
-                //     transform,
-                //     ..default()
-                // });
 
                 commands.spawn(PbrBundle {
                     mesh: meshes.add(new_mesh),
@@ -195,54 +226,50 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
         }
     }
     poly_center /= total as f32;
-    npdbg!(poly_center);
     polys
         .into_iter()
-        .map(|Poly { mut verts, plane }| {
-            let mut center = Vec3::ZERO;
-            for vert in &verts {
-                center += vert.p;
-            }
-            center /= verts.length() as f32;
+        .map(
+            |Poly {
+                 mut verts,
+                 mut plane,
+             }| {
+                let mut center = Vec3::ZERO;
+                for vert in &verts {
+                    center += vert.p;
+                }
+                center /= verts.length() as f32;
 
-            for i in 0..verts.length() - 1 {
-                let a = (verts[i].p - center).normalize();
-                let mut smallest_angle = -1.0;
-                let mut smallest = usize::MAX;
+                for i in 0..verts.length() - 1 {
+                    let a = (verts[i].p - center).normalize();
+                    let mut smallest_angle = -1.0;
+                    let mut smallest = usize::MAX;
 
-                #[allow(clippy::needless_range_loop)]
-                for j in i + 1..verts.length() {
-                    let b = (verts[j].p - center).normalize();
-                    let angle = a.dot(b);
-                    if angle >= smallest_angle {
-                        smallest_angle = angle;
-                        smallest = j;
+                    #[allow(clippy::needless_range_loop)]
+                    for j in i + 1..verts.length() {
+                        let b = (verts[j].p - center).normalize();
+                        let angle = a.dot(b);
+                        if angle >= smallest_angle {
+                            smallest_angle = angle;
+                            smallest = j;
+                        }
+                    }
+                    if smallest != usize::MAX {
+                        verts.swap(smallest, i + 1);
                     }
                 }
-                if smallest == usize::MAX {
-                    error!("degenerate polygon")
-                } else {
-                    verts.swap(smallest, i + 1);
+
+                let old_plane = plane;
+                if let Some(p) = plane.calculate_plane(&verts) {
+                    plane = p;
                 }
-            }
 
-            // println!(
-            //     "{}",
-            //     verts
-            //         .iter()
-            //         .map(|v| format!("({}, {}, {})", v.p.x, v.p.y, v.p.z))
-            //         .collect::<Vec<_>>()
-            //         .join(", ")
-            // );
+                if plane.n.dot(old_plane.n) < 0.0 {
+                    verts.reverse();
+                }
 
-            // let value = (poly_center - plane.n).dot(poly_center);
-            // npdbg!(value);
-            // if value.abs() < f32::EPSILON {
-            //     plane.n = -plane.n;
-            // }
-
-            Poly { verts, plane }
-        })
+                Poly { verts, plane }
+            },
+        )
         .collect()
 }
 
@@ -257,9 +284,8 @@ fn get_polys(faces: &[Plane]) -> Vec<Poly> {
         for j in (i + 1)..faces.len() - 1 {
             'k: for k in (j + 1)..faces.len() {
                 if let Some(p) = faces[i].get_intersection(&faces[j], &faces[k]) {
-                    for (i, f) in faces.iter().enumerate() {
+                    for f in faces.iter() {
                         if matches!(f.classify_point(p), InPlane::Front) {
-                            warn!("point outside mesh: {i} {f:?} {p}");
                             continue 'k;
                         }
                     }
@@ -274,62 +300,6 @@ fn get_polys(faces: &[Plane]) -> Vec<Poly> {
     polys
 }
 
-fn is_pos(f32: f32) -> bool {
-    f32 > f32::EPSILON
-}
-fn is_neg(f32: f32) -> bool {
-    f32 < f32::EPSILON
-}
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Magn {
-    X,
-    Y,
-    Z,
-    NA,
-}
-trait CheckVec {
-    fn check(self, xf: fn(f32) -> bool, yf: fn(f32) -> bool, zf: fn(f32) -> bool) -> bool;
-    fn magn_max(self) -> Magn;
-    fn magn_min(self) -> Magn;
-    fn magn_abs(self) -> Magn;
-}
-impl CheckVec for Vec3 {
-    fn check(self, xf: fn(f32) -> bool, yf: fn(f32) -> bool, zf: fn(f32) -> bool) -> bool {
-        xf(self.x) && yf(self.y) && zf(self.z)
-    }
-
-    fn magn_max(self) -> Magn {
-        use Magn::*;
-        let Vec3 { x, y, z } = self;
-        if x > y && x > z {
-            X
-        } else if y > x && y > z {
-            Y
-        } else if z > x && z > y {
-            Z
-        } else {
-            NA
-        }
-    }
-
-    fn magn_min(self) -> Magn {
-        use Magn::*;
-        let Vec3 { x, y, z } = self;
-        if x < y && x < z {
-            X
-        } else if y < x && y < z {
-            Y
-        } else if z < x && z < y {
-            Z
-        } else {
-            NA
-        }
-    }
-    fn magn_abs(self) -> Magn {
-        self.abs().magn_max()
-    }
-}
-
 #[derive(Debug, Default)]
 struct Poly {
     verts: Vec<Vertex>,
@@ -337,37 +307,13 @@ struct Poly {
 }
 impl Poly {
     pub fn calculate_indices(&self) -> Vec<u32> {
-        use Magn::*;
         let mut indices = Vec::new();
-
-        let xvert;
-        let yvert;
-        let zvert;
-        let dir = (self.verts[0].p - self.verts[1].p).normalize();
-        let min = dir.magn_min();
-        let max = dir.magn_max();
-        let abs = dir.magn_abs();
-        let magn_min = self.plane.n.magn_min();
-        if min == Y && abs == Y && magn_min == Y {
-            xvert = 0;
-            yvert = 1;
-            zvert = 2;
-        } else if min == X && abs == X && magn_min == X {
-            xvert = 1;
-            yvert = 0;
-            zvert = 2;
-        } else {
-            xvert = 0;
-            yvert = 0;
-            zvert = 0;
-        }
-        println!("min: {min:?}, max: {max:?}, abs: {abs:?}");
 
         let mut verts = (0..self.verts.len() as u32).collect::<Vec<_>>();
         while verts.len() > 2 {
-            indices.push(verts[xvert]);
-            indices.push(verts[yvert]);
-            indices.push(verts[zvert]);
+            indices.push(verts[0]);
+            indices.push(verts[1]);
+            indices.push(verts[2]);
             verts.remove(1);
         }
 
