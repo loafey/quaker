@@ -7,6 +7,7 @@ use bevy::{
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
+    utils::petgraph::matrix_graph::Zero,
 };
 use macros::{error_return, npdbg};
 
@@ -49,7 +50,7 @@ impl Plane {
     pub fn classify_point(&self, point: Vec3) -> InPlane {
         use std::f32::EPSILON as E;
         let distance = self.distance_to_plane(point);
-        if distance > E {
+        if distance > E * 100.0 {
             InPlane::Front
         } else if distance < -E {
             InPlane::Back
@@ -78,14 +79,22 @@ pub fn test_map(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let map = error_return!(std::fs::read_to_string(
-        "crates/map_parser/tests/simple.map"
+        "crates/map_parser/tests/rotated.map"
     ));
     let map = error_return!(map_parser::parse(&map));
 
     for entity in map {
         for brush in entity.brushes {
             // Calculate the verticies for the mesh
-            let faces = brush.into_iter().map(Plane::from_data).collect::<Vec<_>>();
+            let faces = brush
+                .into_iter()
+                .map(Plane::from_data)
+                .map(|mut p| {
+                    std::mem::swap(&mut p.n.y, &mut p.n.z);
+                    p.n.y *= -1.0;
+                    p
+                })
+                .collect::<Vec<_>>();
             let polys = get_polys(&faces)
                 .into_iter()
                 .map(|p| p / 64.0)
@@ -106,8 +115,10 @@ pub fn test_map(
             let polys = sort_verticies_cw(polys);
 
             for poly in polys {
-                println!("Poly verts amount: {:?}", poly.verts.length());
+                // println!("Poly verts amount: {:?}", poly.verts.length());
+                let mut plane_center = Vec3::ZERO;
                 for vert in &poly.verts {
+                    plane_center += vert.p;
                     commands.spawn(PbrBundle {
                         mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
                         material: materials.add(Color::rgba_u8(0, 255, 0, 20)),
@@ -115,6 +126,7 @@ pub fn test_map(
                         ..default()
                     });
                 }
+                plane_center /= poly.verts.len() as f32;
 
                 let indices = poly.calculate_indices();
                 let mut new_mesh = Mesh::new(
@@ -137,6 +149,15 @@ pub fn test_map(
                     127 + n.z as u8,
                 ));
                 //mat.cull_mode = None;
+                // let mut transform =
+                //     Transform::from_translation(plane_center + (poly.plane.n.normalize() * 0.1));
+                // transform.look_to(plane_center + poly.plane.n * 100.0, Vec3::Y);
+                // transform.rotate_z(std::f32::consts::PI);
+                // commands.spawn(PbrBundle {
+                //     mesh: meshes.add(Cylinder::new(0.01, 0.2)),
+                //     transform,
+                //     ..default()
+                // });
 
                 commands.spawn(PbrBundle {
                     mesh: meshes.add(new_mesh),
@@ -165,6 +186,16 @@ pub fn test_map(
 }
 
 fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
+    let mut poly_center = Vec3::ZERO;
+    let mut total = 0;
+    for p in &polys {
+        for v in &p.verts {
+            poly_center += v.p;
+            total += 1;
+        }
+    }
+    poly_center /= total as f32;
+    npdbg!(poly_center);
     polys
         .into_iter()
         .map(|Poly { mut verts, plane }| {
@@ -176,20 +207,17 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
 
             for i in 0..verts.length() - 1 {
                 let a = (verts[i].p - center).normalize();
-                let p = Plane::from_points(verts[i].p, center, center + plane.n);
                 let mut smallest_angle = -1.0;
                 let mut smallest = usize::MAX;
 
                 #[allow(clippy::needless_range_loop)]
                 for j in i + 1..verts.length() {
-                    //if !matches!(p.classify_point(verts[j].p), InPlane::Back) {
                     let b = (verts[j].p - center).normalize();
                     let angle = a.dot(b);
                     if angle >= smallest_angle {
                         smallest_angle = angle;
                         smallest = j;
                     }
-                    //}
                 }
                 if smallest == usize::MAX {
                     error!("degenerate polygon")
@@ -198,14 +226,20 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
                 }
             }
 
-            println!(
-                "{}",
-                verts
-                    .iter()
-                    .map(|v| format!("({}, {}, {})", v.p.x, v.p.y, v.p.z))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            );
+            // println!(
+            //     "{}",
+            //     verts
+            //         .iter()
+            //         .map(|v| format!("({}, {}, {})", v.p.x, v.p.y, v.p.z))
+            //         .collect::<Vec<_>>()
+            //         .join(", ")
+            // );
+
+            // let value = (poly_center - plane.n).dot(poly_center);
+            // npdbg!(value);
+            // if value.abs() < f32::EPSILON {
+            //     plane.n = -plane.n;
+            // }
 
             Poly { verts, plane }
         })
@@ -240,6 +274,62 @@ fn get_polys(faces: &[Plane]) -> Vec<Poly> {
     polys
 }
 
+fn is_pos(f32: f32) -> bool {
+    f32 > f32::EPSILON
+}
+fn is_neg(f32: f32) -> bool {
+    f32 < f32::EPSILON
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Magn {
+    X,
+    Y,
+    Z,
+    NA,
+}
+trait CheckVec {
+    fn check(self, xf: fn(f32) -> bool, yf: fn(f32) -> bool, zf: fn(f32) -> bool) -> bool;
+    fn magn_max(self) -> Magn;
+    fn magn_min(self) -> Magn;
+    fn magn_abs(self) -> Magn;
+}
+impl CheckVec for Vec3 {
+    fn check(self, xf: fn(f32) -> bool, yf: fn(f32) -> bool, zf: fn(f32) -> bool) -> bool {
+        xf(self.x) && yf(self.y) && zf(self.z)
+    }
+
+    fn magn_max(self) -> Magn {
+        use Magn::*;
+        let Vec3 { x, y, z } = self;
+        if x > y && x > z {
+            X
+        } else if y > x && y > z {
+            Y
+        } else if z > x && z > y {
+            Z
+        } else {
+            NA
+        }
+    }
+
+    fn magn_min(self) -> Magn {
+        use Magn::*;
+        let Vec3 { x, y, z } = self;
+        if x < y && x < z {
+            X
+        } else if y < x && y < z {
+            Y
+        } else if z < x && z < y {
+            Z
+        } else {
+            NA
+        }
+    }
+    fn magn_abs(self) -> Magn {
+        self.abs().magn_max()
+    }
+}
+
 #[derive(Debug, Default)]
 struct Poly {
     verts: Vec<Vertex>,
@@ -247,42 +337,31 @@ struct Poly {
 }
 impl Poly {
     pub fn calculate_indices(&self) -> Vec<u32> {
+        use Magn::*;
         let mut indices = Vec::new();
 
         let xvert;
         let yvert;
         let zvert;
-        let n = self.plane.n;
-        // This only works for the paper cube, not ones made in a map editor
-        if n.x < n.y && n.x < n.z {
-            xvert = 0;
-            yvert = 2;
-            zvert = 1;
-        } else if n.y < n.x && n.y < n.z {
+        let dir = (self.verts[0].p - self.verts[1].p).normalize();
+        let min = dir.magn_min();
+        let max = dir.magn_max();
+        let abs = dir.magn_abs();
+        let magn_min = self.plane.n.magn_min();
+        if min == Y && abs == Y && magn_min == Y {
             xvert = 0;
             yvert = 1;
             zvert = 2;
-        } else if n.z < n.x && n.z < n.y {
+        } else if min == X && abs == X && magn_min == X {
             xvert = 1;
             yvert = 0;
             zvert = 2;
-        } else if n.x > n.y && n.x > n.z {
-            xvert = 0;
-            yvert = 1;
-            zvert = 2;
-        } else if n.y > n.x && n.y > n.z {
-            xvert = 2;
-            yvert = 1;
-            zvert = 0;
-        } else if n.z > n.x && n.z > n.y {
-            xvert = 2;
-            yvert = 0;
-            zvert = 1;
         } else {
             xvert = 0;
             yvert = 0;
             zvert = 0;
         }
+        println!("min: {min:?}, max: {max:?}, abs: {abs:?}");
 
         let mut verts = (0..self.verts.len() as u32).collect::<Vec<_>>();
         while verts.len() > 2 {
