@@ -130,7 +130,7 @@ pub fn tokenizer(str: &str) -> Vec<Token> {
             '{' | '}' | '(' | ')' if matches!(state, Normal | AlmostInComment) => {
                 state = Normal;
                 if !curr.is_empty() {
-                    toks.push((col - curr.len(), row, curr));
+                    toks.push(((col.max(curr.len())) - curr.len(), row, curr));
                 }
                 toks.push((col, row, c.to_string()));
                 curr = String::new();
