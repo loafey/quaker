@@ -133,6 +133,7 @@ pub fn test_map(
                 .map(Plane::from_data)
                 .map(|mut p| {
                     std::mem::swap(&mut p.n.y, &mut p.n.z);
+                    p.n.x *= -1.0;
                     p.n.y *= -1.0;
                     p
                 })
