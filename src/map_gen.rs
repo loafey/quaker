@@ -3,7 +3,7 @@ use std::ops::Div;
 use bevy::{
     prelude::*,
     render::{
-        mesh::Indices,
+        mesh::{Indices, VertexAttributeValues},
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
@@ -11,10 +11,11 @@ use bevy::{
 };
 use macros::error_return;
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 struct Plane {
     n: Vec3,
     d: f32,
+    texture: Option<String>,
 }
 #[derive(Debug, Clone, Copy)]
 pub enum InPlane {
@@ -33,14 +34,21 @@ impl Plane {
         // let n = -(p2 - p1).cross(p3 - p1).normalize();
         // // calculate the parameter
         // let d = (-p1).dot(n);
-        Self { n, d }
+        Self {
+            n,
+            d,
+            texture: None,
+        }
     }
 
     pub fn from_data(plane: map_parser::parser::Plane) -> Self {
         let p1 = Vec3::new(plane.p1.0, plane.p1.1, plane.p1.2);
         let p2 = Vec3::new(plane.p2.0, plane.p2.1, plane.p2.2);
         let p3 = Vec3::new(plane.p3.0, plane.p3.1, plane.p3.2);
-        Self::from_points(p1, p2, p3)
+
+        let mut n_plane = Self::from_points(p1, p2, p3);
+        n_plane.texture = Some(plane.texture);
+        n_plane
     }
 
     pub fn distance_to_plane(&self, v: Vec3) -> f32 {
@@ -72,8 +80,8 @@ impl Plane {
         }
     }
 
-    pub fn calculate_plane(self, verts: &[Vertex]) -> Option<Self> {
-        let mut plane = self;
+    pub fn calculate_plane(&self, verts: &[Vertex]) -> Option<Self> {
+        let mut plane = self.clone();
         let mut center_of_mass = Vec3::ZERO;
         if verts.len() < 3 {
             return None;
@@ -116,6 +124,7 @@ impl Plane {
 
 pub fn test_map(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -180,17 +189,35 @@ pub fn test_map(
                     Mesh::ATTRIBUTE_POSITION,
                     poly.verts.into_iter().map(|p| p.p).collect::<Vec<_>>(),
                 )
-                .with_inserted_indices(Indices::U32(indices));
+                .with_inserted_indices(Indices::U32(indices))
+                .with_inserted_attribute(
+                    Mesh::ATTRIBUTE_UV_0,
+                    VertexAttributeValues::Float32x2(vec![
+                        [0.0, 0.0],
+                        [1.0, 0.0],
+                        [0.0, 1.0],
+                        [1.0, 1.0],
+                    ]),
+                );
                 new_mesh.duplicate_vertices();
                 new_mesh.compute_flat_normals();
 
-                // temp, used as it vizualises Z fighting
-                let n = poly.plane.n * 100.0;
-                let mat = StandardMaterial::from(Color::rgb_u8(
-                    127 + n.x as u8,
-                    127 + n.y as u8,
-                    127 + n.z as u8,
-                ));
+                let mat = if let Some(text) = poly.plane.texture {
+                    let texture_handle = asset_server.load(format!("textures/{}.png", text));
+                    StandardMaterial {
+                        base_color: Color::rgb(0.0, 0.0, 1.0),
+                        base_color_texture: Some(texture_handle.clone()),
+                        ..default()
+                    }
+                } else {
+                    // temp, used as it vizualises Z fighting
+                    let n = poly.plane.n * 100.0;
+                    StandardMaterial::from(Color::rgb_u8(
+                        127 + n.x as u8,
+                        127 + n.y as u8,
+                        127 + n.z as u8,
+                    ))
+                };
                 //mat.cull_mode = None;
 
                 commands.spawn(PbrBundle {
@@ -264,7 +291,7 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
                     }
                 }
 
-                let old_plane = plane;
+                let old_plane = plane.clone();
                 if let Some(p) = plane.calculate_plane(&verts) {
                     plane = p;
                 }
