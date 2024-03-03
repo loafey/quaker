@@ -1,4 +1,4 @@
-use std::ops::Div;
+use std::{collections::HashMap, ops::Div};
 
 use bevy::{
     prelude::*,
@@ -11,6 +11,8 @@ use bevy::{
 };
 use macros::error_return;
 use map_parser::parser::{Brush, TextureOffset};
+
+use crate::CurrentMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 struct Plane {
@@ -116,14 +118,81 @@ impl Plane {
     }
 }
 
-pub fn test_map(
-    mut commands: Commands,
+#[derive(Debug, Resource, Default)]
+pub struct TexturesLoading(Vec<UntypedHandle>);
+
+#[derive(Debug, Resource, Default)]
+pub struct TextureMap(HashMap<String, Handle<Image>>);
+pub fn load_textures(
     asset_server: Res<AssetServer>,
+    current_map: Res<CurrentMap>,
+    mut textures_loading: ResMut<TexturesLoading>,
+    mut texture_map: ResMut<TextureMap>,
+) {
+    warn!("Registering textures...");
+    let time = std::time::Instant::now();
+    let map = error_return!(std::fs::read_to_string(&current_map.0));
+    let map = error_return!(map_parser::parse(&map));
+
+    let mut textures = map
+        .into_iter()
+        .flat_map(|e| e.brushes)
+        .flatten()
+        .map(|p| p.texture)
+        .collect::<Vec<_>>();
+
+    textures.dedup();
+
+    let mut map = HashMap::new();
+    for texture in textures {
+        let handle = asset_server.load::<Image>(&format!("textures/{texture}.png"));
+        textures_loading.0.push(handle.clone().untyped());
+        map.insert(texture, handle);
+    }
+    texture_map.0 = map;
+    warn!(
+        "Done registering textures, took {}s",
+        time.elapsed().as_secs_f32()
+    );
+}
+
+pub fn if_texture_loading(text: Res<TexturesLoading>) -> bool {
+    !text.0.is_empty()
+}
+pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
+    text.0.is_empty()
+}
+
+pub fn texture_checker(
+    mut textures_loading: ResMut<TexturesLoading>,
+    asset_server: Res<AssetServer>,
+) {
+    use bevy::asset::LoadState::*;
+    let mut to_remove = Vec::new();
+    for (i, tex) in textures_loading.0.iter().enumerate() {
+        if let Some(Loaded | Failed) = asset_server.get_load_state(tex.id()) {
+            to_remove.push(i)
+        }
+    }
+    for (offset, i) in to_remove.into_iter().enumerate() {
+        textures_loading.0.remove(i - offset);
+    }
+
+    if textures_loading.0.is_empty() {
+        warn!("Texture loading done...");
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn load_map(
+    mut commands: Commands,
     images: Res<Assets<Image>>,
+    current_map: Res<CurrentMap>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    texture_map: Res<TextureMap>,
 ) {
-    let map = error_return!(std::fs::read_to_string("assets/maps/M1.map"));
+    let map = error_return!(std::fs::read_to_string(&current_map.0));
     let map = error_return!(map_parser::parse(&map));
 
     let t = std::time::Instant::now();
@@ -153,8 +222,8 @@ pub fn test_map(
                 .with_inserted_indices(Indices::U32(indices));
 
                 let mat = if let Some(text) = &poly.texture {
-                    let texture_handle = asset_server.load(format!("textures/{}.png", text));
-                    let uv = poly.calculate_textcoords(&images, &texture_handle);
+                    let uv = poly.calculate_textcoords(&images, &texture_map);
+                    let texture_handle = &texture_map.0[text];
                     new_mesh = new_mesh.with_inserted_attribute(
                         Mesh::ATTRIBUTE_UV_0,
                         VertexAttributeValues::Float32x2(uv),
@@ -264,7 +333,6 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
 }
 
 fn get_polys_brush(brush: Brush) -> Vec<Poly> {
-    let mut polys: Vec<Poly> = Vec::new();
     let faces = brush
         .iter()
         .map(|p| Plane::from_data(p.clone()))
@@ -275,22 +343,20 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
             p
         })
         .collect::<Vec<_>>();
-    for i in 0..faces.len() {
-        polys.push(Poly {
+    let mut polys = brush
+        .iter()
+        .enumerate()
+        .map(|(i, br)| Poly {
             verts: Vec::new(),
             plane: faces[i],
-            texture: if !brush[i].texture.is_empty() {
-                Some(brush[i].texture.clone())
-            } else {
-                None
-            },
-            x_offset: brush[i].x_offset,
-            y_offset: brush[i].y_offset,
-            rotation: brush[i].rotation,
-            x_scale: brush[i].x_scale,
-            y_scale: brush[i].y_scale,
-        });
-    }
+            texture: (!br.texture.is_empty()).then(|| br.texture.clone()),
+            x_offset: br.x_offset,
+            y_offset: br.y_offset,
+            rotation: br.rotation,
+            x_scale: br.x_scale,
+            y_scale: br.y_scale,
+        })
+        .collect::<Vec<_>>();
 
     for i in 0..faces.len() - 2 {
         for j in (i + 1)..faces.len() - 1 {
@@ -341,12 +407,14 @@ impl Poly {
     pub fn calculate_textcoords(
         &self,
         images: &Res<Assets<Image>>,
-        texture_handle: &Handle<Image>,
+        texture_map: &TextureMap,
     ) -> Vec<[f32; 2]> {
-        let img = images.get(texture_handle).unwrap();
-        let width = img.texture_descriptor.size.width;
-        let height = img.texture_descriptor.size.height;
-        todo!()
+        let tex = images
+            .get(texture_map.0[self.texture.as_ref().unwrap()].clone())
+            .unwrap();
+        let width = tex.texture_descriptor.size.width;
+        let height = tex.texture_descriptor.size.height;
+        vec![]
     }
 }
 impl Div<f32> for Poly {

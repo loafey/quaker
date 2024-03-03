@@ -5,7 +5,10 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 mod map_gen;
-use map_gen::test_map;
+use map_gen::{
+    if_texture_done_loading, if_texture_loading, load_map, load_textures, texture_checker,
+    TextureMap, TexturesLoading,
+};
 
 #[derive(Component, Debug)]
 struct Player {
@@ -134,11 +137,22 @@ fn spawn_3d_stuff(
     });
 }
 
+#[derive(Debug, Resource)]
+struct CurrentMap(pub String);
+
 fn main() {
     App::new()
+        .insert_resource(CurrentMap("assets/maps/M1.map".to_string()))
+        .insert_resource(TexturesLoading::default())
+        .insert_resource(TextureMap::default())
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, spawn_3d_stuff)
-        .add_systems(Startup, test_map)
+        .add_systems(Startup, load_textures)
+        .add_systems(
+            Update,
+            load_map.run_if(if_texture_done_loading.and_then(run_once())),
+        )
+        .add_systems(Update, texture_checker.run_if(if_texture_loading))
         .add_systems(Startup, Player::spawn)
         .add_systems(Update, Player::update)
         .run();
