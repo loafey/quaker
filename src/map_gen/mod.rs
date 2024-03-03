@@ -22,6 +22,15 @@ pub mod texture_systems;
 mod vertex;
 
 const EPSILON: f32 = 1e-3;
+fn plane_fix(mut p: Plane) -> Plane {
+    std::mem::swap(&mut p.n.y, &mut p.n.z);
+    p.n.x *= -1.0;
+    p.n.y *= -1.0;
+    p
+}
+fn scale_fix(p: Poly) -> Poly {
+    p / 64.0
+}
 
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
@@ -63,12 +72,17 @@ pub fn load_map(
 
                 let mat = if let Some(text) = poly.texture.clone() {
                     let uv = poly.calculate_textcoords(&images, &texture_map);
-                    println!("{uv:?}");
+                    let tangent = poly.calculate_tangent();
                     let texture_handle = &texture_map.0[&text];
-                    new_mesh = new_mesh.with_inserted_attribute(
-                        Mesh::ATTRIBUTE_UV_0,
-                        VertexAttributeValues::Float32x2(uv),
-                    );
+                    new_mesh = new_mesh
+                        .with_inserted_attribute(
+                            Mesh::ATTRIBUTE_UV_0,
+                            VertexAttributeValues::Float32x2(uv),
+                        )
+                        .with_inserted_attribute(
+                            Mesh::ATTRIBUTE_TANGENT,
+                            VertexAttributeValues::Float32x4(tangent),
+                        );
                     StandardMaterial {
                         base_color: Color::rgb(1.0, 1.0, 1.0),
                         base_color_texture: Some(texture_handle.clone()),
@@ -178,12 +192,7 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
     let faces = brush
         .iter()
         .map(|p| Plane::from_data(p.clone()))
-        .map(|mut p| {
-            std::mem::swap(&mut p.n.y, &mut p.n.z);
-            p.n.x *= -1.0;
-            p.n.y *= -1.0;
-            p
-        })
+        .map(plane_fix)
         .collect::<Vec<_>>();
     let mut polys = brush
         .iter()
@@ -217,5 +226,5 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
             }
         }
     }
-    polys.into_iter().map(|p| p / 64.0).collect()
+    polys.into_iter().map(scale_fix).collect()
 }

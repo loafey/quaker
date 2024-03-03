@@ -1,5 +1,5 @@
 use crate::CurrentMap;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::ImageLoaderSettings};
 use macros::error_return;
 use std::collections::HashMap;
 
@@ -31,6 +31,10 @@ pub fn load_textures(
 
     let mut map = HashMap::new();
     for texture in textures {
+        //let handle = asset_server.load_with_settings::<Image, ImageLoaderSettings>(
+        //    &format!("textures/{texture}.png"),
+        //    |s| {s.sampler.},
+        //);
         let handle = asset_server.load::<Image>(&format!("textures/{texture}.png"));
         textures_loading.0.push(handle.clone().untyped());
         map.insert(texture, handle);

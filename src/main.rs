@@ -1,5 +1,5 @@
 extern crate macros;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::ImageAddressMode};
 mod map_gen;
 mod player;
 use map_gen::{load_map, texture_systems::*};
@@ -39,7 +39,13 @@ fn main() {
         .insert_resource(CurrentMap("assets/maps/M1.map".to_string()))
         .insert_resource(TexturesLoading::default())
         .insert_resource(TextureMap::default())
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set({
+            let mut plug = ImagePlugin::default_nearest();
+            plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
+            plug.default_sampler.address_mode_v = ImageAddressMode::Repeat;
+            plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
+            plug
+        }))
         .add_systems(Startup, spawn_3d_stuff)
         .add_systems(Startup, load_textures)
         .add_systems(
