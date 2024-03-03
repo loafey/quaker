@@ -5,7 +5,7 @@ macro_rules! error_return {
             Ok(map) => map,
             Err(e) => {
                 error!("{e}");
-                return;
+                return Default::default();
             }
         }
     }};
@@ -13,8 +13,8 @@ macro_rules! error_return {
         match $context {
             Ok(map) => map,
             Err(e) => {
-                error!("{e}");
-                return;
+                bevy::log::error!("{e}");
+                return Default::default();
             }
         }
     }};

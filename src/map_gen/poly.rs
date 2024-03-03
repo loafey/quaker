@@ -1,6 +1,7 @@
 use std::ops::Div;
 
 use bevy::{asset::Assets, ecs::system::Res, render::texture::Image};
+use macros::error_return;
 use map_parser::parser::TextureOffset;
 
 use crate::TextureMap;
@@ -38,9 +39,11 @@ impl Poly {
         images: &Res<Assets<Image>>,
         texture_map: &TextureMap,
     ) -> Vec<[f32; 2]> {
-        let tex = images
-            .get(texture_map.0[self.texture.as_ref().unwrap()].clone())
-            .unwrap();
+        let tex_ref = error_return!(self.texture.as_ref().ok_or("missing texture for object"));
+        let tex = error_return!(texture_map.0.get(tex_ref).ok_or("missing texture in map"));
+        let tex = error_return!(images.get(tex).ok_or("missing texture"));
+
+        println!("{tex:?}");
         let width = tex.texture_descriptor.size.width;
         let height = tex.texture_descriptor.size.height;
         vec![]
