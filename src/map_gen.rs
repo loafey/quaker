@@ -125,6 +125,7 @@ impl Plane {
 pub fn test_map(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    images: Res<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -187,23 +188,17 @@ pub fn test_map(
                 )
                 .with_inserted_attribute(
                     Mesh::ATTRIBUTE_POSITION,
-                    poly.verts.into_iter().map(|p| p.p).collect::<Vec<_>>(),
+                    poly.verts.iter().map(|p| p.p).collect::<Vec<_>>(),
                 )
-                .with_inserted_indices(Indices::U32(indices))
-                .with_inserted_attribute(
-                    Mesh::ATTRIBUTE_UV_0,
-                    VertexAttributeValues::Float32x2(vec![
-                        [0.0, 0.0],
-                        [1.0, 0.0],
-                        [0.0, 1.0],
-                        [1.0, 1.0],
-                    ]),
-                );
-                new_mesh.duplicate_vertices();
-                new_mesh.compute_flat_normals();
+                .with_inserted_indices(Indices::U32(indices));
 
-                let mat = if let Some(text) = poly.plane.texture {
+                let mat = if let Some(text) = &poly.plane.texture {
                     let texture_handle = asset_server.load(format!("textures/{}.png", text));
+                    let uv = poly.calculate_textcoords(&images, &texture_handle);
+                    new_mesh = new_mesh.with_inserted_attribute(
+                        Mesh::ATTRIBUTE_UV_0,
+                        VertexAttributeValues::Float32x2(uv),
+                    );
                     StandardMaterial {
                         base_color: Color::rgb(0.0, 0.0, 1.0),
                         base_color_texture: Some(texture_handle.clone()),
@@ -218,6 +213,8 @@ pub fn test_map(
                         127 + n.z as u8,
                     ))
                 };
+                new_mesh.duplicate_vertices();
+                new_mesh.compute_flat_normals();
                 //mat.cull_mode = None;
 
                 commands.spawn(PbrBundle {
@@ -352,6 +349,17 @@ impl Poly {
 
         indices
     }
+
+    pub fn calculate_textcoords(
+        &self,
+        images: &Res<Assets<Image>>,
+        texture_handle: &Handle<Image>,
+    ) -> Vec<[f32; 2]> {
+        let img = images.get(texture_handle).unwrap();
+        let width = img.texture_descriptor.size.width;
+        let height = img.texture_descriptor.size.height;
+        todo!()
+    }
 }
 impl Div<f32> for Poly {
     type Output = Poly;
@@ -367,16 +375,20 @@ impl Div<f32> for Poly {
 #[derive(Debug, Default, Clone, Copy)]
 struct Vertex {
     p: Vec3,
+    uv: [f32; 2],
 }
 impl Vertex {
     pub fn from_p(p: Vec3) -> Self {
-        Self { p }
+        Self { p, ..default() }
     }
 }
 impl Div<f32> for Vertex {
     type Output = Vertex;
 
     fn div(self, rhs: f32) -> Self::Output {
-        Self { p: self.p / rhs }
+        Self {
+            p: self.p / rhs,
+            uv: self.uv,
+        }
     }
 }
