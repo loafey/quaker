@@ -1,12 +1,17 @@
-use std::ops::Div;
+use std::{hint::unreachable_unchecked, ops::Div};
 
-use bevy::{asset::Assets, ecs::system::Res, math::Vec3, render::texture::Image};
+use bevy::{
+    asset::Assets,
+    ecs::system::Res,
+    math::{Quat, Vec2, Vec3},
+    render::texture::Image,
+};
 use macros::{error_return, npdbg};
 use map_parser::parser::TextureOffset;
 
 use crate::TextureMap;
 
-use super::{plane::Plane, vertex::Vertex};
+use super::{plane::Plane, vertex::Vertex, SCALE_FIX};
 
 #[derive(Debug)]
 pub struct Poly {
@@ -35,6 +40,43 @@ impl Poly {
     }
 
     pub fn calculate_tangent(&self) -> Vec<[f32; 4]> {
+        if let TextureOffset::V220(..) = self.x_offset {
+            self.pipe_tangent()
+        } else {
+            self.standard_tangent()
+        }
+    }
+
+    fn standard_tangent(&self) -> Vec<[f32; 4]> {
+        let du = self.plane.n.dot(Vec3::Y);
+        let dr = self.plane.n.dot(Vec3::Z);
+        let df = self.plane.n.dot(Vec3::X);
+        let dua = du.abs();
+        let dra = dr.abs();
+        let dfa = df.abs();
+
+        let mut u_axis = Vec3::ZERO;
+        let mut v_sign = 0.0;
+
+        if dua >= dra && dua >= dfa {
+            u_axis = Vec3::Y;
+            v_sign = du.signum();
+        } else if dra >= dua && dra >= dfa {
+            u_axis = Vec3::X;
+            v_sign = -dr.signum();
+        } else if dfa >= dua && dfa >= dra {
+            u_axis = Vec3::Z;
+            v_sign = df.signum();
+        }
+
+        v_sign *= (self.y_scale).signum();
+        u_axis = Quat::from_axis_angle(self.plane.n, -self.rotation.to_radians() * v_sign)
+            .mul_vec3(u_axis);
+
+        vec![[u_axis.x, u_axis.y, u_axis.z, v_sign]; self.verts.len()]
+    }
+
+    fn pipe_tangent(&self) -> Vec<[f32; 4]> {
         let tex_axis = [
             Plane::from_texoffset(self.x_offset),
             Plane::from_texoffset(self.y_offset),
@@ -58,6 +100,57 @@ impl Poly {
         let tex_width = tex.texture_descriptor.size.width as f32;
         let tex_height = tex.texture_descriptor.size.height as f32;
 
+        if let TextureOffset::V220(..) = self.x_offset {
+            self.pipe_textcoords(tex_width, tex_height)
+        } else {
+            self.normal_textcoords(tex_width, tex_width)
+        }
+    }
+    fn normal_textcoords(&mut self, tex_width: f32, tex_height: f32) -> Vec<[f32; 2]> {
+        let (TextureOffset::Simple(x_offset), TextureOffset::Simple(y_offset)) =
+            (self.x_offset, self.y_offset)
+        else {
+            unsafe { unreachable_unchecked() };
+        };
+        for vert in &mut self.verts {
+            let mut uv_out = Vec2::ZERO;
+            let du = (self.plane.n.dot(Vec3::Y)).abs();
+            let dr = (self.plane.n.dot(Vec3::Z)).abs();
+            let df = (self.plane.n.dot(Vec3::X)).abs();
+
+            if du >= dr && du >= df {
+                uv_out = Vec2::new(vert.p.x, -vert.p.y)
+            } else if dr >= du && dr >= df {
+                uv_out = Vec2::new(vert.p.x, -vert.p.z)
+            } else if df >= du && df >= dr {
+                uv_out = Vec2::new(vert.p.y, -vert.p.z)
+            }
+
+            let angle = self.rotation.to_radians();
+            uv_out = Vec2::new(
+                uv_out.x * angle.cos() - uv_out.y * angle.sin(),
+                uv_out.x * angle.sin() + uv_out.y * angle.cos(),
+            );
+
+            uv_out.x /= tex_width;
+            uv_out.y /= tex_height;
+
+            uv_out.x /= self.x_scale;
+            uv_out.y /= self.y_scale;
+
+            uv_out.x *= SCALE_FIX;
+            uv_out.y *= SCALE_FIX;
+
+            uv_out.x += x_offset / tex_width;
+            uv_out.y += y_offset / tex_height;
+
+            vert.uv = [uv_out.x, uv_out.y];
+        }
+
+        self.verts.iter().map(|v| v.uv).collect()
+    }
+
+    fn pipe_textcoords(&mut self, tex_width: f32, tex_height: f32) -> Vec<[f32; 2]> {
         let tex_axis = [
             Plane::from_texoffset(self.x_offset),
             Plane::from_texoffset(self.y_offset),

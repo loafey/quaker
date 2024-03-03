@@ -28,9 +28,8 @@ fn plane_fix(mut p: Plane) -> Plane {
     p.n.y *= -1.0;
     p
 }
-fn scale_fix(p: Poly) -> Poly {
-    p / 64.0
-}
+
+const SCALE_FIX: f32 = 64.0;
 
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
@@ -226,5 +225,5 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
             }
         }
     }
-    polys.into_iter().map(scale_fix).collect()
+    polys.into_iter().map(|p| p / 64.0).collect()
 }
