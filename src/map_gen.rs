@@ -10,12 +10,12 @@ use bevy::{
     utils::warn,
 };
 use macros::error_return;
+use map_parser::parser::{Brush, TextureOffset};
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 struct Plane {
     n: Vec3,
     d: f32,
-    texture: Option<String>,
 }
 #[derive(Debug, Clone, Copy)]
 pub enum InPlane {
@@ -34,11 +34,7 @@ impl Plane {
         // let n = -(p2 - p1).cross(p3 - p1).normalize();
         // // calculate the parameter
         // let d = (-p1).dot(n);
-        Self {
-            n,
-            d,
-            texture: None,
-        }
+        Self { n, d }
     }
 
     pub fn from_data(plane: map_parser::parser::Plane) -> Self {
@@ -46,9 +42,7 @@ impl Plane {
         let p2 = Vec3::new(plane.p2.0, plane.p2.1, plane.p2.2);
         let p3 = Vec3::new(plane.p3.0, plane.p3.1, plane.p3.2);
 
-        let mut n_plane = Self::from_points(p1, p2, p3);
-        n_plane.texture = Some(plane.texture);
-        n_plane
+        Self::from_points(p1, p2, p3)
     }
 
     pub fn distance_to_plane(&self, v: Vec3) -> f32 {
@@ -138,46 +132,12 @@ pub fn test_map(
     for entity in map {
         for brush in entity.brushes {
             // Calculate the verticies for the mesh
-            let faces = brush
-                .into_iter()
-                .map(Plane::from_data)
-                .map(|mut p| {
-                    std::mem::swap(&mut p.n.y, &mut p.n.z);
-                    p.n.x *= -1.0;
-                    p.n.y *= -1.0;
-                    p
-                })
-                .collect::<Vec<_>>();
-            let polys = get_polys(&faces)
-                .into_iter()
-                .map(|p| p / 64.0)
-                .collect::<Vec<_>>();
-
-            let polys = polys
-                .into_iter()
-                .zip(faces)
-                .map(|(mut p, f)| {
-                    p.plane = f;
-                    // let mut c = p.verts.clone();
-                    // c.reverse();
-                    // p.verts.append(&mut c);
-                    p
-                })
-                .collect::<Vec<_>>();
-
-            let polys = sort_verticies_cw(polys);
+            let polys = sort_verticies_cw(get_polys_brush(brush));
 
             for poly in polys {
-                // println!("Poly verts amount: {:?}", poly.verts.length());
                 let mut plane_center = Vec3::ZERO;
                 for vert in &poly.verts {
                     plane_center += vert.p;
-                    // commands.spawn(PbrBundle {
-                    //     mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                    //     material: materials.add(Color::rgba_u8(0, 255, 0, 20)),
-                    //     transform: Transform::from_translation(vert.p),
-                    //     ..default()
-                    // });
                 }
                 plane_center /= poly.verts.len() as f32;
 
@@ -192,7 +152,7 @@ pub fn test_map(
                 )
                 .with_inserted_indices(Indices::U32(indices));
 
-                let mat = if let Some(text) = &poly.plane.texture {
+                let mat = if let Some(text) = &poly.texture {
                     let texture_handle = asset_server.load(format!("textures/{}.png", text));
                     let uv = poly.calculate_textcoords(&images, &texture_handle);
                     new_mesh = new_mesh.with_inserted_attribute(
@@ -224,21 +184,6 @@ pub fn test_map(
                     ..default()
                 });
             }
-
-            //
-            // let mut new_mesh = Mesh::new(
-            //     PrimitiveTopology::TriangleList,
-            //     RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
-            // )
-            // .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, verts);
-            // new_mesh.compute_flat_normals();
-            //
-            // commands.spawn(PbrBundle {
-            //     mesh: meshes.add(new_mesh),
-            //     material: materials.add(Color::rgb_u8(255, 0, 0)),
-            //     transform: Transform::default(),
-            //     ..default()
-            // });
         }
     }
 
@@ -262,6 +207,12 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
             |Poly {
                  mut verts,
                  mut plane,
+                 texture,
+                 x_offset,
+                 y_offset,
+                 rotation,
+                 x_scale,
+                 y_scale,
              }| {
                 let mut center = Vec3::ZERO;
                 for vert in &verts {
@@ -297,17 +248,48 @@ fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
                     verts.reverse();
                 }
 
-                Poly { verts, plane }
+                Poly {
+                    verts,
+                    plane,
+                    texture,
+                    x_offset,
+                    y_offset,
+                    rotation,
+                    x_scale,
+                    y_scale,
+                }
             },
         )
         .collect()
 }
 
-fn get_polys(faces: &[Plane]) -> Vec<Poly> {
-    let ui_faces = faces.len();
-    let mut polys = Vec::new();
-    for _ in 0..ui_faces {
-        polys.push(Poly::default());
+fn get_polys_brush(brush: Brush) -> Vec<Poly> {
+    let mut polys: Vec<Poly> = Vec::new();
+    let faces = brush
+        .iter()
+        .map(|p| Plane::from_data(p.clone()))
+        .map(|mut p| {
+            std::mem::swap(&mut p.n.y, &mut p.n.z);
+            p.n.x *= -1.0;
+            p.n.y *= -1.0;
+            p
+        })
+        .collect::<Vec<_>>();
+    for i in 0..faces.len() {
+        polys.push(Poly {
+            verts: Vec::new(),
+            plane: faces[i],
+            texture: if !brush[i].texture.is_empty() {
+                Some(brush[i].texture.clone())
+            } else {
+                None
+            },
+            x_offset: brush[i].x_offset,
+            y_offset: brush[i].y_offset,
+            rotation: brush[i].rotation,
+            x_scale: brush[i].x_scale,
+            y_scale: brush[i].y_scale,
+        });
     }
 
     for i in 0..faces.len() - 2 {
@@ -327,13 +309,19 @@ fn get_polys(faces: &[Plane]) -> Vec<Poly> {
             }
         }
     }
-    polys
+    polys.into_iter().map(|p| p / 64.0).collect()
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Poly {
     verts: Vec<Vertex>,
     plane: Plane,
+    texture: Option<String>,
+    x_offset: TextureOffset,
+    y_offset: TextureOffset,
+    rotation: f32,
+    x_scale: f32,
+    y_scale: f32,
 }
 impl Poly {
     pub fn calculate_indices(&self) -> Vec<u32> {
@@ -368,6 +356,12 @@ impl Div<f32> for Poly {
         Self {
             verts: self.verts.into_iter().map(|v| v / rhs).collect(),
             plane: self.plane,
+            texture: self.texture,
+            x_offset: self.x_offset,
+            y_offset: self.y_offset,
+            rotation: self.rotation,
+            x_scale: self.x_scale,
+            y_scale: self.y_scale,
         }
     }
 }
