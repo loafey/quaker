@@ -26,6 +26,7 @@ pub fn load_textures(
         .map(|p| p.texture)
         .collect::<Vec<_>>();
 
+    textures.sort();
     textures.dedup();
 
     let mut map = HashMap::new();
