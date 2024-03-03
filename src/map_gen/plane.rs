@@ -1,6 +1,7 @@
 use bevy::math::Vec3;
+use map_parser::parser::TextureOffset;
 
-use super::vertex::Vertex;
+use super::{vertex::Vertex, EPSILON};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Plane {
@@ -14,6 +15,17 @@ pub enum InPlane {
     In,
 }
 impl Plane {
+    pub fn new(n: Vec3, d: f32) -> Self {
+        Self { n, d }
+    }
+
+    pub fn from_texoffset(offset: TextureOffset) -> Self {
+        match offset {
+            TextureOffset::Simple(d) => Plane::new(Vec3::Y, d),
+            TextureOffset::V220(x, y, z, d) => Plane::new(Vec3::new(x, y, z), d),
+        }
+    }
+
     pub fn from_points(a: Vec3, b: Vec3, c: Vec3) -> Self {
         // calculate the normal vector
         let n = (c - b).cross(a - b).normalize();
@@ -40,11 +52,10 @@ impl Plane {
     }
 
     pub fn classify_point(&self, point: Vec3) -> InPlane {
-        use std::f32::EPSILON as E;
         let distance = self.distance_to_plane(point);
-        if distance > E * 100.0 {
+        if distance > EPSILON {
             InPlane::Front
-        } else if distance < -E {
+        } else if distance < -EPSILON {
             InPlane::Back
         } else {
             InPlane::In
@@ -53,7 +64,7 @@ impl Plane {
 
     pub fn get_intersection(&self, a: &Plane, b: &Plane) -> Option<Vec3> {
         let denom = self.n.dot(a.n.cross(b.n));
-        match denom.abs() < f32::EPSILON {
+        match denom.abs() < EPSILON {
             true => None,
             false => Some(
                 ((a.n.cross(b.n)) * -self.d
@@ -82,9 +93,7 @@ impl Plane {
             center_of_mass += verts[i].p;
         }
 
-        if (plane.n.x.abs() < f32::EPSILON)
-            && (plane.n.y.abs() < f32::EPSILON)
-            && (plane.n.z.abs() < f32::EPSILON)
+        if (plane.n.x.abs() < EPSILON) && (plane.n.y.abs() < EPSILON) && (plane.n.z.abs() < EPSILON)
         {
             return None;
         }
@@ -92,7 +101,7 @@ impl Plane {
         let magnitude =
             (plane.n.x * plane.n.x + plane.n.y * plane.n.y + plane.n.z * plane.n.z).sqrt();
 
-        if magnitude < f32::EPSILON {
+        if magnitude < EPSILON {
             return None;
         }
 

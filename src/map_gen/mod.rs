@@ -21,6 +21,8 @@ mod poly;
 pub mod texture_systems;
 mod vertex;
 
+const EPSILON: f32 = 1e-3;
+
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
     mut commands: Commands,
@@ -41,7 +43,7 @@ pub fn load_map(
             // Calculate the verticies for the mesh
             let polys = sort_verticies_cw(get_polys_brush(brush));
 
-            for poly in polys {
+            for mut poly in polys {
                 let mut plane_center = Vec3::ZERO;
                 for vert in &poly.verts {
                     plane_center += vert.p;
@@ -59,16 +61,18 @@ pub fn load_map(
                 )
                 .with_inserted_indices(Indices::U32(indices));
 
-                let mat = if let Some(text) = &poly.texture {
+                let mat = if let Some(text) = poly.texture.clone() {
                     let uv = poly.calculate_textcoords(&images, &texture_map);
-                    let texture_handle = &texture_map.0[text];
+                    println!("{uv:?}");
+                    let texture_handle = &texture_map.0[&text];
                     new_mesh = new_mesh.with_inserted_attribute(
                         Mesh::ATTRIBUTE_UV_0,
                         VertexAttributeValues::Float32x2(uv),
                     );
                     StandardMaterial {
-                        base_color: Color::rgb(0.0, 0.0, 1.0),
+                        base_color: Color::rgb(1.0, 1.0, 1.0),
                         base_color_texture: Some(texture_handle.clone()),
+                        unlit: false,
                         ..default()
                     }
                 } else {

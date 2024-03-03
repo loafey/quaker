@@ -3,7 +3,7 @@
 // entity 0
 {
 "classname" "worldspawn"
-"_tb_textures" "textures/Maps"
+"_tb_textures" "textures/maps"
 "_tb_def" "external:/home/samuel/Git/Ondth/maps/Entites/Base.fgd"
 // brush 0
 {
