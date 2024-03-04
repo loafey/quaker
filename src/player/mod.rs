@@ -49,14 +49,14 @@ impl Player {
             }
 
             if player.toggle_cam {
-                player.auto_rot += time.delta_seconds();
-                let dist = 7.0;
-                gt.translation = Vec3::new(
-                    player.auto_rot.sin() * dist,
-                    2.5,
-                    player.auto_rot.cos() * dist,
-                );
-                gt.rotate_y(time.delta_seconds());
+                // player.auto_rot += time.delta_seconds();
+                // let dist = 7.0;
+                // gt.translation = Vec3::new(
+                //     player.auto_rot.sin() * dist,
+                //     2.5,
+                //     player.auto_rot.cos() * dist,
+                // );
+                // gt.rotate_y(time.delta_seconds());
             } else {
                 // handle cursor
 

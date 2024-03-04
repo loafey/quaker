@@ -22,7 +22,7 @@ mod poly;
 pub mod texture_systems;
 mod vertex;
 
-const EPSILON: f32 = 1e-3;
+const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
 const SCALE_FIX: f32 = 64.0;
 fn plane_fix(mut p: Plane) -> Plane {
@@ -101,7 +101,7 @@ pub fn load_map(
                     }
                 } else {
                     StandardMaterial {
-                        base_color: Color::rgba(0.0, 0.0, 0.0, 0.0),
+                        base_color: Color::rgb(0.5, 0.5, 0.5),
                         alpha_mode: AlphaMode::Blend,
                         ..default()
                     }

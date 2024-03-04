@@ -1,4 +1,4 @@
-use std::{hint::unreachable_unchecked, mem::swap, ops::Div};
+use std::{hint::unreachable_unchecked, ops::Div};
 
 use bevy::{
     asset::Assets,
@@ -6,7 +6,7 @@ use bevy::{
     math::{Quat, Vec2, Vec3},
     render::texture::Image,
 };
-use macros::{error_return, npdbg};
+use macros::error_return;
 use map_parser::parser::TextureOffset;
 
 use crate::TextureMap;
@@ -107,7 +107,7 @@ impl Poly {
         if let TextureOffset::V220(..) = self.x_offset {
             self.pipe_textcoords(tex_width, tex_height)
         } else {
-            self.normal_textcoords(tex_width, tex_width)
+            self.normal_textcoords(tex_width, tex_height)
         }
     }
     fn normal_textcoords(&mut self, tex_width: f32, tex_height: f32) -> Vec<[f32; 2]> {
@@ -142,8 +142,8 @@ impl Poly {
             uv_out.x /= tex_width;
             uv_out.y /= tex_height;
 
-            uv_out.x /= self.x_scale; //.powf(std::f32::consts::PI * angle.abs());
-            uv_out.y /= self.y_scale; //.powf(std::f32::consts::PI * angle.abs());
+            uv_out.x /= self.x_scale;
+            uv_out.y /= self.y_scale;
 
             uv_out *= SCALE_FIX;
 
