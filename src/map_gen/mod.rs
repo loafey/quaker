@@ -88,7 +88,8 @@ pub fn load_map(
                         StandardMaterial {
                             base_color: Color::rgb(1.0, 1.0, 1.0),
                             base_color_texture: Some(texture_handle.clone()),
-                            unlit: true,
+                            unlit: false,
+                            perceptual_roughness: 1.0,
                             ..default()
                         }
                     } else {
@@ -100,8 +101,9 @@ pub fn load_map(
                     }
                 } else {
                     StandardMaterial {
-                        base_color: Color::rgb(0.5, 0.5, 0.5),
+                        base_color: Color::rgb(0.0, 1.0, 0.0),
                         alpha_mode: AlphaMode::Blend,
+                        unlit: true,
                         ..default()
                     }
                 };
