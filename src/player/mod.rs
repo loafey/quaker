@@ -6,17 +6,15 @@ use bevy::{
 
 #[derive(Component, Debug)]
 pub struct Player {
-    auto_rot: f32,
     self_rot: f32,
-    toggle_cam: bool,
+    no_control: bool,
 }
 impl Player {
     pub fn spawn(mut commands: Commands) {
         commands
             .spawn(Player {
-                auto_rot: 0.0,
                 self_rot: 0.0,
-                toggle_cam: true,
+                no_control: true,
             })
             .add(|mut c: EntityWorldMut| {
                 c.insert(GlobalTransform::default());
@@ -29,7 +27,6 @@ impl Player {
             });
     }
     pub fn update(
-        time: Res<Time>,
         keys: Res<ButtonInput<KeyCode>>,
         mut query: Query<(&mut Player, &mut Transform)>,
         mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
@@ -37,9 +34,9 @@ impl Player {
     ) {
         for (mut player, mut gt) in &mut query {
             if keys.just_pressed(KeyCode::Tab) {
-                player.toggle_cam = !player.toggle_cam;
+                player.no_control = !player.no_control;
                 let mut primary_window = q_windows.single_mut();
-                if player.toggle_cam {
+                if player.no_control {
                     primary_window.cursor.grab_mode = CursorGrabMode::None;
                     primary_window.cursor.visible = true;
                 } else {
@@ -48,16 +45,7 @@ impl Player {
                 }
             }
 
-            if player.toggle_cam {
-                // player.auto_rot += time.delta_seconds();
-                // let dist = 7.0;
-                // gt.translation = Vec3::new(
-                //     player.auto_rot.sin() * dist,
-                //     2.5,
-                //     player.auto_rot.cos() * dist,
-                // );
-                // gt.rotate_y(time.delta_seconds());
-            } else {
+            if !player.no_control {
                 // handle cursor
 
                 for ev in motion_evr.read() {
