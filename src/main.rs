@@ -5,17 +5,6 @@ mod player;
 use map_gen::{load_map, texture_systems::*};
 use player::Player;
 
-fn spawn_3d_stuff(mut commands: Commands) {
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..default()
-    });
-}
-
 #[derive(Debug, Resource)]
 struct CurrentMap(pub String);
 
@@ -31,7 +20,6 @@ fn main() {
             plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
             plug
         }))
-        .add_systems(Startup, spawn_3d_stuff)
         .add_systems(Startup, load_textures)
         .add_systems(
             Update,

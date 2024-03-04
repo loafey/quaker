@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use self::{
     plane::{InPlane, Plane},
     poly::Poly,
@@ -24,11 +26,11 @@ mod vertex;
 const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
 const SCALE_FIX: f32 = 64.0;
-fn plane_fix(mut p: Plane) -> Plane {
-    std::mem::swap(&mut p.n.y, &mut p.n.z);
-    p.n.x *= -1.0;
-    p.n.y *= -1.0;
-    p
+fn vec_fix(mut v: Vec3) -> Vec3 {
+    std::mem::swap(&mut v.y, &mut v.z);
+    v.x *= -1.0;
+    v.y *= -1.0;
+    v
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -47,6 +49,8 @@ pub fn load_map(
     warn!("Loading map...");
 
     for entity in map {
+        spawn_entity(entity.attributes, &mut commands, &mut meshes);
+
         for brush in entity.brushes {
             // Calculate the verticies for the mesh
             let polys = sort_verticies_cw(get_polys_brush(brush));
@@ -90,6 +94,7 @@ pub fn load_map(
                             base_color_texture: Some(texture_handle.clone()),
                             unlit: false,
                             perceptual_roughness: 1.0,
+                            reflectance: 0.0,
                             ..default()
                         }
                     } else {
@@ -122,6 +127,65 @@ pub fn load_map(
     }
 
     warn!("Done loading map, took {}s", t.elapsed().as_secs_f32())
+}
+
+fn parse_vec(str: &str) -> Vec3 {
+    let mut splat = str.split_whitespace();
+    let x = splat
+        .next()
+        .unwrap_or_default()
+        .parse::<f32>()
+        .unwrap_or_default();
+    let y = splat
+        .next()
+        .unwrap_or_default()
+        .parse::<f32>()
+        .unwrap_or_default();
+    let z = splat
+        .next()
+        .unwrap_or_default()
+        .parse::<f32>()
+        .unwrap_or_default();
+
+    Vec3::new(x, y, z)
+}
+fn spawn_entity(
+    attributes: HashMap<String, String>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+) {
+    match attributes.get("classname").as_ref().map(|s| &s[..]) {
+        Some("light") => {
+            let light_level = attributes
+                .get("light")
+                .and_then(|l| l.parse::<f32>().ok())
+                .unwrap_or(150.0);
+
+            let pos = attributes
+                .get("origin")
+                .map(|p| parse_vec(p))
+                .unwrap_or_default();
+            let pos = Vec3::new(pos.x, pos.z, -pos.y);
+
+            commands.spawn(PointLightBundle {
+                transform: Transform::from_translation(pos / SCALE_FIX),
+                point_light: PointLight {
+                    intensity: light_level * 100.0,
+                    range: light_level * 100.0,
+                    shadows_enabled: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+            // let mesh = meshes.add(Cuboid::new(0.2, 0.2, 0.2));
+            // commands.spawn(PbrBundle {
+            //     transform: Transform::from_translation(pos / SCALE_FIX),
+            //     mesh,
+            //     ..Default::default()
+            // });
+        }
+        _ => error!("unhandled entity: {attributes:?}"),
+    }
 }
 
 fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
@@ -201,7 +265,10 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
     let faces = brush
         .iter()
         .map(|p| Plane::from_data(p.clone()))
-        .map(plane_fix)
+        .map(|mut p| {
+            p.n = vec_fix(p.n);
+            p
+        })
         .collect::<Vec<_>>();
     let mut polys = brush
         .iter()
