@@ -22,14 +22,14 @@ pub mod texture_systems;
 mod vertex;
 
 const EPSILON: f32 = 1e-3;
+const ROTATION_FIX: f32 = -90.0;
+const SCALE_FIX: f32 = 64.0;
 fn plane_fix(mut p: Plane) -> Plane {
     std::mem::swap(&mut p.n.y, &mut p.n.z);
     p.n.x *= -1.0;
     p.n.y *= -1.0;
     p
 }
-
-const SCALE_FIX: f32 = 64.0;
 
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
@@ -85,7 +85,7 @@ pub fn load_map(
                     StandardMaterial {
                         base_color: Color::rgb(1.0, 1.0, 1.0),
                         base_color_texture: Some(texture_handle.clone()),
-                        unlit: false,
+                        unlit: true,
                         ..default()
                     }
                 } else {
@@ -202,7 +202,7 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
             texture: (!br.texture.is_empty()).then(|| br.texture.clone()),
             x_offset: br.x_offset,
             y_offset: br.y_offset,
-            rotation: br.rotation,
+            rotation: br.rotation + ROTATION_FIX,
             x_scale: br.x_scale,
             y_scale: br.y_scale,
         })
