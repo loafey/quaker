@@ -6,6 +6,7 @@ use self::{
 };
 use crate::CurrentMap;
 use bevy::{
+    pbr::OpaqueRendererMethod,
     prelude::*,
     render::{
         mesh::{Indices, VertexAttributeValues},
@@ -73,29 +74,37 @@ pub fn load_map(
                     let uv = poly.calculate_textcoords(&images, &texture_map);
                     let tangent = poly.calculate_tangent();
                     let texture_handle = &texture_map.0[&text];
-                    new_mesh = new_mesh
-                        .with_inserted_attribute(
-                            Mesh::ATTRIBUTE_UV_0,
-                            VertexAttributeValues::Float32x2(uv),
-                        )
-                        .with_inserted_attribute(
-                            Mesh::ATTRIBUTE_TANGENT,
-                            VertexAttributeValues::Float32x4(tangent),
-                        );
-                    StandardMaterial {
-                        base_color: Color::rgb(1.0, 1.0, 1.0),
-                        base_color_texture: Some(texture_handle.clone()),
-                        unlit: true,
-                        ..default()
+                    let path = texture_handle.path().unwrap();
+                    // very hacky :)
+                    if !format!("{path}").ends_with("Invisible.png") {
+                        new_mesh = new_mesh
+                            .with_inserted_attribute(
+                                Mesh::ATTRIBUTE_UV_0,
+                                VertexAttributeValues::Float32x2(uv),
+                            )
+                            .with_inserted_attribute(
+                                Mesh::ATTRIBUTE_TANGENT,
+                                VertexAttributeValues::Float32x4(tangent),
+                            );
+                        StandardMaterial {
+                            base_color: Color::rgb(1.0, 1.0, 1.0),
+                            base_color_texture: Some(texture_handle.clone()),
+                            unlit: true,
+                            ..default()
+                        }
+                    } else {
+                        StandardMaterial {
+                            base_color: Color::rgba(0.0, 0.0, 0.0, 0.0),
+                            alpha_mode: AlphaMode::Blend,
+                            ..default()
+                        }
                     }
                 } else {
-                    // temp, used as it vizualises Z fighting
-                    let n = poly.plane.n * 100.0;
-                    StandardMaterial::from(Color::rgb_u8(
-                        127 + n.x as u8,
-                        127 + n.y as u8,
-                        127 + n.z as u8,
-                    ))
+                    StandardMaterial {
+                        base_color: Color::rgba(0.0, 0.0, 0.0, 0.0),
+                        alpha_mode: AlphaMode::Blend,
+                        ..default()
+                    }
                 };
                 new_mesh.duplicate_vertices();
                 new_mesh.compute_flat_normals();

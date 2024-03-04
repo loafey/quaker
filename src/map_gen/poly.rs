@@ -1,4 +1,4 @@
-use std::{hint::unreachable_unchecked, ops::Div};
+use std::{hint::unreachable_unchecked, mem::swap, ops::Div};
 
 use bevy::{
     asset::Assets,
@@ -12,6 +12,10 @@ use map_parser::parser::TextureOffset;
 use crate::TextureMap;
 
 use super::{plane::Plane, vertex::Vertex, SCALE_FIX};
+
+const UP_VECTOR: Vec3 = Vec3::Z;
+const FORWARD_VECTOR: Vec3 = Vec3::X;
+const RIGHT_VECTOR: Vec3 = Vec3::Y;
 
 #[derive(Debug)]
 pub struct Poly {
@@ -48,9 +52,9 @@ impl Poly {
     }
 
     fn standard_tangent(&self) -> Vec<[f32; 4]> {
-        let du = self.plane.n.dot(Vec3::Y);
-        let dr = self.plane.n.dot(Vec3::Z);
-        let df = self.plane.n.dot(Vec3::X);
+        let du = self.plane.n.dot(UP_VECTOR);
+        let dr = self.plane.n.dot(RIGHT_VECTOR);
+        let df = self.plane.n.dot(FORWARD_VECTOR);
         let dua = du.abs();
         let dra = dr.abs();
         let dfa = df.abs();
@@ -59,18 +63,18 @@ impl Poly {
         let mut v_sign = 0.0;
 
         if dua >= dra && dua >= dfa {
-            u_axis = Vec3::Y;
+            u_axis = FORWARD_VECTOR;
             v_sign = du.signum();
         } else if dra >= dua && dra >= dfa {
-            u_axis = Vec3::X;
+            u_axis = FORWARD_VECTOR;
             v_sign = -dr.signum();
         } else if dfa >= dua && dfa >= dra {
-            u_axis = Vec3::Z;
+            u_axis = UP_VECTOR;
             v_sign = df.signum();
         }
 
         v_sign *= (self.y_scale).signum();
-        u_axis = Quat::from_axis_angle(self.plane.n, -self.rotation.to_radians() * v_sign)
+        u_axis = Quat::from_axis_angle(self.plane.n, self.rotation.to_radians() * v_sign)
             .mul_vec3(u_axis);
 
         vec![[u_axis.x, u_axis.y, u_axis.z, v_sign]; self.verts.len()]
@@ -112,19 +116,22 @@ impl Poly {
         else {
             unsafe { unreachable_unchecked() };
         };
-        for vert in &mut self.verts {
-            let mut uv_out = Vec2::ZERO;
-            let du = (self.plane.n.dot(Vec3::Y)).abs();
-            let dr = (self.plane.n.dot(Vec3::Z)).abs();
-            let df = (self.plane.n.dot(Vec3::X)).abs();
 
-            if du >= dr && du >= df {
-                uv_out = Vec2::new(vert.p.x, -vert.p.y)
+        let n = self.plane.n;
+        for vert in &mut self.verts {
+            let du = n.dot(UP_VECTOR).abs();
+            let dr = n.dot(RIGHT_VECTOR).abs();
+            let df = n.dot(FORWARD_VECTOR).abs();
+
+            let mut uv_out = if du >= dr && du >= df {
+                Vec2::new(-vert.p.y, vert.p.x)
             } else if dr >= du && dr >= df {
-                uv_out = Vec2::new(vert.p.x, -vert.p.z)
+                Vec2::new(-vert.p.z, vert.p.x)
             } else if df >= du && df >= dr {
-                uv_out = Vec2::new(vert.p.y, -vert.p.z)
-            }
+                Vec2::new(vert.p.y, -vert.p.z)
+            } else {
+                Vec2::ZERO
+            };
 
             let angle = self.rotation.to_radians();
             uv_out = Vec2::new(
@@ -135,11 +142,10 @@ impl Poly {
             uv_out.x /= tex_width;
             uv_out.y /= tex_height;
 
-            uv_out.x /= self.x_scale;
-            uv_out.y /= self.y_scale;
+            uv_out.x /= self.x_scale; //.powf(std::f32::consts::PI * angle.abs());
+            uv_out.y /= self.y_scale; //.powf(std::f32::consts::PI * angle.abs());
 
-            uv_out.x *= SCALE_FIX;
-            uv_out.y *= SCALE_FIX;
+            uv_out *= SCALE_FIX;
 
             uv_out.x += x_offset / tex_width;
             uv_out.y += y_offset / tex_height;

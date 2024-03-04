@@ -1,7 +1,6 @@
+use super::{vertex::Vertex, EPSILON};
 use bevy::math::Vec3;
 use map_parser::parser::TextureOffset;
-
-use super::{vertex::Vertex, EPSILON};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Plane {

@@ -1,5 +1,5 @@
 use crate::CurrentMap;
-use bevy::{prelude::*, render::texture::ImageLoaderSettings};
+use bevy::prelude::*;
 use macros::error_return;
 use std::collections::HashMap;
 

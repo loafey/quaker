@@ -11,15 +11,15 @@ fn spawn_3d_stuff(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // circular base
-    let mut circle_trans =
-        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2));
-    circle_trans.translation = Vec3::new(0.0, -1.4, 0.0);
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Circle::new(4.0)),
-        material: materials.add(Color::WHITE),
-        transform: circle_trans,
-        ..default()
-    });
+    //let mut circle_trans =
+    //    Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2));
+    //circle_trans.translation = Vec3::new(0.0, -1.4, 0.0);
+    //commands.spawn(PbrBundle {
+    //    mesh: meshes.add(Circle::new(4.0)),
+    //    material: materials.add(Color::WHITE),
+    //    transform: circle_trans,
+    //    ..default()
+    //});
     // light
     commands.spawn(PointLightBundle {
         point_light: PointLight {

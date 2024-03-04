@@ -1,0 +1,16 @@
+// Game: Generic
+// Format: Standard
+// entity 0
+{
+"classname" "worldspawn"
+"_tb_textures" "textures/maps"
+// brush 0
+{
+( 0 32 144 ) ( 0 -16 144 ) ( 0 -16 -16 ) maps/DoorWood -32 -5.333332 0 1 1.2
+( 0 -16 144 ) ( 16 -16 144 ) ( 16 -16 -16 ) maps/DoorWood -32 -5.333332 0 1 1.2
+( 16 -16 -16 ) ( 16 32 -16 ) ( 0 32 -16 ) maps/DoorWood -32 48 0 1 1.2
+( 0 32 144 ) ( 16 32 144 ) ( 16 -16 144 ) maps/DoorWood -32 48 0 1 1.2
+( 16 32 -16 ) ( 16 32 144 ) ( 0 32 144 ) maps/DoorWood -32 -5.333332 0 1 1.2
+( 16 -16 144 ) ( 16 32 144 ) ( 16 32 -16 ) maps/DoorWood -32 -5.333332 0 1 1.2
+}
+}
