@@ -23,7 +23,15 @@ impl Player {
                 c.insert(trans);
             })
             .with_children(|c| {
-                c.spawn(Camera3dBundle::default());
+                c.spawn({
+                    Camera3dBundle {
+                        projection: Projection::Perspective(PerspectiveProjection {
+                            fov: 80.0f32.to_radians(),
+                            ..default()
+                        }),
+                        ..Default::default()
+                    }
+                });
             });
     }
     pub fn update(
