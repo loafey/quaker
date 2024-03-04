@@ -6,7 +6,6 @@ use self::{
 };
 use crate::CurrentMap;
 use bevy::{
-    pbr::OpaqueRendererMethod,
     prelude::*,
     render::{
         mesh::{Indices, VertexAttributeValues},

@@ -20,7 +20,7 @@ impl Plane {
 
     pub fn from_texoffset(offset: TextureOffset) -> Self {
         match offset {
-            TextureOffset::Simple(d) => Plane::new(Vec3::new(0.0, 1.0, 0.0), 0.0),
+            TextureOffset::Simple(_) => Plane::new(Vec3::new(0.0, 1.0, 0.0), 0.0),
             TextureOffset::V220(x, y, z, d) => Plane::new(Vec3::new(x, y, z), d),
         }
     }
