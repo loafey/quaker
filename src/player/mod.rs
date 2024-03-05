@@ -39,12 +39,8 @@ impl Player {
                     }
                 })
                 .insert(ScreenSpaceAmbientOcclusionBundle::default())
-                .insert((
-                    DepthPrepass,
-                    MotionVectorPrepass,
-                    TemporalJitter::default(),
-                ));
-                //.insert(TemporalAntiAliasBundle::default());
+                .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
+                .insert(TemporalAntiAliasBundle::default());
             });
     }
     pub fn update(
