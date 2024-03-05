@@ -1,0 +1,736 @@
+// Game: Generic
+// Format: Standard
+// entity 0
+{
+"classname" "worldspawn"
+"_tb_textures" "textures/maps"
+"_tb_def" "external:../Entites/Base.fgd"
+// brush 0
+{
+( -272 112 -16 ) ( -96 -176 -16 ) ( -96 -176 -32 ) maps/Granite -0 -0 0 1 1
+( 80 -176 -16 ) ( 80 -176 -32 ) ( -96 -176 -32 ) maps/Granite 16 -16 0 1 1
+( -96 -176 -32 ) ( 80 -176 -32 ) ( 80 112 -32 ) maps/Granite -0 -0 0 1 1
+( 80 112 -16 ) ( 80 -176 -16 ) ( -96 -176 -16 ) maps/Granite -0 -0 0 1 1
+( 80 112 -32 ) ( 80 112 -16 ) ( -272 112 -16 ) maps/Granite -0 -0 0 1 1
+( 80 112 -32 ) ( 80 -176 -32 ) ( 80 -176 -16 ) maps/Granite -0 -0 0 1 1
+}
+// brush 1
+{
+( -96 288 48 ) ( -96 112 -16 ) ( -96 112 -32 ) maps/Carpet00 -0 -0 -0 1 1
+( -96 288 32 ) ( -96 112 -32 ) ( 80 288 -16 ) maps/Carpet00 -0 -0 -0 1 1
+( -96 112 -16 ) ( 80 112 -16 ) ( 80 112 -32 ) maps/Carpet00 -0 -0 -0 1 1
+( -96 288 48 ) ( 80 112 -16 ) ( -96 112 -16 ) maps/Carpet00 -0 -0 -0 1 1
+( -96 112 -32 ) ( 80 112 -32 ) ( 80 288 -16 ) maps/Carpet00 -0 -0 -0 1 1
+( 80 288 -16 ) ( 80 288 -0 ) ( -96 288 48 ) maps/Carpet00 -0 -0 -0 1 1
+( 80 288 -0 ) ( 80 112 -16 ) ( -96 288 48 ) maps/Carpet00 -0 -0 -0 1 1
+( 80 112 -32 ) ( 80 112 -16 ) ( 80 288 -0 ) maps/Carpet00 -0 -0 -0 1 1
+}
+// brush 2
+{
+( -272 112 -16 ) ( -272 112 -32 ) ( -272 288 -16 ) maps/Plates -0 -0 -0 1 1
+( -272 288 -0 ) ( -96 288 48 ) ( -272 112 -16 ) maps/Plates -0 -0 -0 1 1
+( -96 112 -32 ) ( -272 112 -32 ) ( -272 112 -16 ) maps/Plates -0 -0 -0 1 1
+( -272 112 -16 ) ( -96 288 48 ) ( -96 112 -16 ) maps/Plates -0 -0 -0 1 1
+( -272 288 -16 ) ( -272 112 -32 ) ( -96 112 -32 ) maps/Plates -0 -0 -0 1 1
+( -96 288 32 ) ( -96 288 48 ) ( -272 288 -0 ) maps/Plates -0 -0 -0 1 1
+( -96 288 32 ) ( -272 288 -16 ) ( -96 112 -32 ) maps/Plates -0 -0 -0 1 1
+( -96 112 -16 ) ( -96 288 48 ) ( -96 288 32 ) maps/Plates -0 -0 -0 1 1
+}
+// brush 3
+{
+( -1232 32 -896 ) ( -1232 -1056 -896 ) ( -1232 -1056 -912 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+( -96 -1056 -896 ) ( -96 -1056 -912 ) ( -1232 -1056 -912 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+( -1232 -1056 -912 ) ( -96 -1056 -912 ) ( -96 32 -912 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+( -96 32 -896 ) ( -96 -1056 -896 ) ( -1232 -1056 -896 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+( -96 32 -912 ) ( -96 32 -896 ) ( -1232 32 -896 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+( -96 32 -912 ) ( -96 -1056 -912 ) ( -96 -1056 -896 ) maps/MarbleFloor -0 -0 64 0.2 0.2
+}
+// brush 4
+{
+( 80 112 -144 ) ( 80 -176 -144 ) ( 80 -176 -160 ) maps/Sand -0 -64 -0 1 1
+( 384 -176 -144 ) ( 384 -176 -160 ) ( 80 -176 -160 ) maps/Sand -80 -80 -0 1 1
+( 80 -176 -160 ) ( 384 -176 -160 ) ( 384 112 -160 ) maps/Sand -96 -0 -0 1 1
+( 384 112 -144 ) ( 384 -176 -144 ) ( 80 -176 -144 ) maps/Sand -96 -0 -0 1 1
+( 384 112 -160 ) ( 384 112 -144 ) ( 80 112 -144 ) maps/Sand -96 -64 -0 1 1
+( 384 112 -160 ) ( 384 -176 -160 ) ( 384 -176 -144 ) maps/Sand -0 -64 -0 1 1
+}
+// brush 5
+{
+( -560 112 -144 ) ( -560 -176 -144 ) ( -560 -176 -160 ) maps/Stone -0 -64 -0 1 1
+( -256 -176 -144 ) ( -256 -176 -160 ) ( -560 -176 -160 ) maps/Stone -80 -80 -0 1 1
+( -560 -176 -160 ) ( -256 -176 -160 ) ( -256 112 -160 ) maps/Stone -96 -0 -0 1 1
+( -256 112 -144 ) ( -256 -176 -144 ) ( -560 -176 -144 ) maps/Stone -96 -0 -0 1 1
+( -256 112 -160 ) ( -256 112 -144 ) ( -560 112 -144 ) maps/Stone -96 -64 -0 1 1
+( -256 112 -160 ) ( -256 -176 -160 ) ( -256 -176 -144 ) maps/Stone -0 -64 -0 1 1
+}
+// brush 6
+{
+( 384 784 -896 ) ( 384 -304 -896 ) ( 384 -304 -912 ) maps/MarbleWall -112.277 -51.4648 64 0.2 0.2
+( 1520 -304 -896 ) ( 1520 -304 -912 ) ( 384 -304 -912 ) maps/MarbleWall -86.0413 -94.2563 64 0.2 0.2
+( 384 -304 -912 ) ( 1520 -304 -912 ) ( 1520 784 -912 ) maps/MarbleWall -9.50586 -109.979 64 0.2 0.2
+( 1520 784 -896 ) ( 1520 -304 -896 ) ( 384 -304 -896 ) maps/MarbleWall -9.50586 -109.979 64 0.2 0.2
+( 1520 784 -912 ) ( 1520 784 -896 ) ( 384 784 -896 ) maps/MarbleWall -86.0413 -94.2563 64 0.2 0.2
+( 1520 784 -912 ) ( 1520 -304 -912 ) ( 1520 -304 -896 ) maps/MarbleWall -112.277 -51.4648 64 0.2 0.2
+}
+}
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "-16 -16 8"
+}
+// entity 2
+{
+"classname" "ammo_bullet"
+"origin" "-100 -132 -12"
+}
+// entity 3
+{
+"classname" "ammo_energy"
+"origin" "-116 -92 -12"
+}
+// entity 4
+{
+"classname" "ammo_fuel"
+"origin" "-132 -60 -12"
+}
+// entity 5
+{
+"classname" "ammo_nuke"
+"origin" "-164 -12 -12"
+}
+// entity 6
+{
+"classname" "ammo_rocket"
+"origin" "-180 36 -12"
+}
+// entity 7
+{
+"classname" "ammo_shell"
+"origin" "-84 -164 -12"
+}
+// entity 8
+{
+"classname" "weapon_nukegun"
+"origin" "-60 -164 -12"
+}
+// entity 9
+{
+"classname" "weapon_pumpshotgun"
+"origin" "-28 -164 -12"
+}
+// entity 10
+{
+"classname" "weapon_revolver"
+"origin" "4 -164 -12"
+}
+// entity 11
+{
+"classname" "weapon_rpg"
+"origin" "36 -164 -12"
+}
+// entity 12
+{
+"classname" "weapon_smgbelter"
+"origin" "68 -164 -12"
+}
+// entity 13
+{
+"classname" "weapon_supercoolgun"
+"origin" "-12 -164 -12"
+}
+// entity 14
+{
+"classname" "weapon_supershotgun"
+"origin" "-44 -164 -12"
+}
+// entity 15
+{
+"classname" "enemy_deadman"
+"origin" "-400 -32 -120"
+}
+// entity 16
+{
+"classname" "enemy_grunt"
+"origin" "272 -16 -120"
+}
+// entity 17
+{
+"classname" "enemy_deadman"
+"origin" "-688 -448 -872"
+}
+// entity 18
+{
+"classname" "enemy_deadman"
+"origin" "-688 -496 -872"
+}
+// entity 19
+{
+"classname" "enemy_deadman"
+"origin" "-688 -592 -872"
+}
+// entity 20
+{
+"classname" "enemy_deadman"
+"origin" "-688 -544 -872"
+}
+// entity 21
+{
+"classname" "enemy_deadman"
+"origin" "-688 -784 -872"
+}
+// entity 22
+{
+"classname" "enemy_deadman"
+"origin" "-688 -736 -872"
+}
+// entity 23
+{
+"classname" "enemy_deadman"
+"origin" "-688 -688 -872"
+}
+// entity 24
+{
+"classname" "enemy_deadman"
+"origin" "-688 -640 -872"
+}
+// entity 25
+{
+"classname" "enemy_deadman"
+"origin" "-688 -400 -872"
+}
+// entity 26
+{
+"classname" "enemy_deadman"
+"origin" "-688 -352 -872"
+}
+// entity 27
+{
+"classname" "enemy_deadman"
+"origin" "-688 -304 -872"
+}
+// entity 28
+{
+"classname" "enemy_deadman"
+"origin" "-688 -256 -872"
+}
+// entity 29
+{
+"classname" "enemy_deadman"
+"origin" "-688 -208 -872"
+}
+// entity 30
+{
+"classname" "enemy_deadman"
+"origin" "-688 -160 -872"
+}
+// entity 31
+{
+"classname" "enemy_deadman"
+"origin" "-688 -112 -872"
+}
+// entity 32
+{
+"classname" "enemy_deadman"
+"origin" "-688 -64 -872"
+}
+// entity 33
+{
+"classname" "enemy_deadman"
+"origin" "-736 -784 -872"
+}
+// entity 34
+{
+"classname" "enemy_deadman"
+"origin" "-736 -736 -872"
+}
+// entity 35
+{
+"classname" "enemy_deadman"
+"origin" "-736 -688 -872"
+}
+// entity 36
+{
+"classname" "enemy_deadman"
+"origin" "-736 -640 -872"
+}
+// entity 37
+{
+"classname" "enemy_deadman"
+"origin" "-736 -592 -872"
+}
+// entity 38
+{
+"classname" "enemy_deadman"
+"origin" "-736 -544 -872"
+}
+// entity 39
+{
+"classname" "enemy_deadman"
+"origin" "-736 -496 -872"
+}
+// entity 40
+{
+"classname" "enemy_deadman"
+"origin" "-736 -448 -872"
+}
+// entity 41
+{
+"classname" "enemy_deadman"
+"origin" "-736 -400 -872"
+}
+// entity 42
+{
+"classname" "enemy_deadman"
+"origin" "-736 -352 -872"
+}
+// entity 43
+{
+"classname" "enemy_deadman"
+"origin" "-736 -304 -872"
+}
+// entity 44
+{
+"classname" "enemy_deadman"
+"origin" "-736 -256 -872"
+}
+// entity 45
+{
+"classname" "enemy_deadman"
+"origin" "-736 -208 -872"
+}
+// entity 46
+{
+"classname" "enemy_deadman"
+"origin" "-736 -160 -872"
+}
+// entity 47
+{
+"classname" "enemy_deadman"
+"origin" "-736 -112 -872"
+}
+// entity 48
+{
+"classname" "enemy_deadman"
+"origin" "-736 -64 -872"
+}
+// entity 49
+{
+"classname" "enemy_deadman"
+"origin" "-784 -784 -872"
+}
+// entity 50
+{
+"classname" "enemy_deadman"
+"origin" "-784 -736 -872"
+}
+// entity 51
+{
+"classname" "enemy_deadman"
+"origin" "-784 -688 -872"
+}
+// entity 52
+{
+"classname" "enemy_deadman"
+"origin" "-784 -640 -872"
+}
+// entity 53
+{
+"classname" "enemy_deadman"
+"origin" "-784 -592 -872"
+}
+// entity 54
+{
+"classname" "enemy_deadman"
+"origin" "-784 -544 -872"
+}
+// entity 55
+{
+"classname" "enemy_deadman"
+"origin" "-784 -496 -872"
+}
+// entity 56
+{
+"classname" "enemy_deadman"
+"origin" "-784 -448 -872"
+}
+// entity 57
+{
+"classname" "enemy_deadman"
+"origin" "-784 -400 -872"
+}
+// entity 58
+{
+"classname" "enemy_deadman"
+"origin" "-784 -352 -872"
+}
+// entity 59
+{
+"classname" "enemy_deadman"
+"origin" "-784 -304 -872"
+}
+// entity 60
+{
+"classname" "enemy_deadman"
+"origin" "-784 -256 -872"
+}
+// entity 61
+{
+"classname" "enemy_deadman"
+"origin" "-784 -208 -872"
+}
+// entity 62
+{
+"classname" "enemy_deadman"
+"origin" "-784 -160 -872"
+}
+// entity 63
+{
+"classname" "enemy_deadman"
+"origin" "-784 -112 -872"
+}
+// entity 64
+{
+"classname" "enemy_deadman"
+"origin" "-784 -64 -872"
+}
+// entity 65
+{
+"classname" "enemy_deadman"
+"origin" "-832 -784 -872"
+}
+// entity 66
+{
+"classname" "enemy_deadman"
+"origin" "-832 -736 -872"
+}
+// entity 67
+{
+"classname" "enemy_deadman"
+"origin" "-832 -688 -872"
+}
+// entity 68
+{
+"classname" "enemy_deadman"
+"origin" "-832 -640 -872"
+}
+// entity 69
+{
+"classname" "enemy_deadman"
+"origin" "-832 -592 -872"
+}
+// entity 70
+{
+"classname" "enemy_deadman"
+"origin" "-832 -544 -872"
+}
+// entity 71
+{
+"classname" "enemy_deadman"
+"origin" "-832 -496 -872"
+}
+// entity 72
+{
+"classname" "enemy_deadman"
+"origin" "-832 -448 -872"
+}
+// entity 73
+{
+"classname" "enemy_deadman"
+"origin" "-832 -400 -872"
+}
+// entity 74
+{
+"classname" "enemy_deadman"
+"origin" "-832 -352 -872"
+}
+// entity 75
+{
+"classname" "enemy_deadman"
+"origin" "-832 -304 -872"
+}
+// entity 76
+{
+"classname" "enemy_deadman"
+"origin" "-832 -256 -872"
+}
+// entity 77
+{
+"classname" "enemy_deadman"
+"origin" "-832 -208 -872"
+}
+// entity 78
+{
+"classname" "enemy_deadman"
+"origin" "-832 -160 -872"
+}
+// entity 79
+{
+"classname" "enemy_deadman"
+"origin" "-832 -112 -872"
+}
+// entity 80
+{
+"classname" "enemy_deadman"
+"origin" "-832 -64 -872"
+}
+// entity 81
+{
+"classname" "enemy_deadman"
+"origin" "-880 -784 -872"
+}
+// entity 82
+{
+"classname" "enemy_deadman"
+"origin" "-880 -736 -872"
+}
+// entity 83
+{
+"classname" "enemy_deadman"
+"origin" "-880 -688 -872"
+}
+// entity 84
+{
+"classname" "enemy_deadman"
+"origin" "-880 -640 -872"
+}
+// entity 85
+{
+"classname" "enemy_deadman"
+"origin" "-880 -592 -872"
+}
+// entity 86
+{
+"classname" "enemy_deadman"
+"origin" "-880 -544 -872"
+}
+// entity 87
+{
+"classname" "enemy_deadman"
+"origin" "-880 -496 -872"
+}
+// entity 88
+{
+"classname" "enemy_deadman"
+"origin" "-880 -448 -872"
+}
+// entity 89
+{
+"classname" "enemy_deadman"
+"origin" "-880 -400 -872"
+}
+// entity 90
+{
+"classname" "enemy_deadman"
+"origin" "-880 -352 -872"
+}
+// entity 91
+{
+"classname" "enemy_deadman"
+"origin" "-880 -304 -872"
+}
+// entity 92
+{
+"classname" "enemy_deadman"
+"origin" "-880 -256 -872"
+}
+// entity 93
+{
+"classname" "enemy_deadman"
+"origin" "-880 -208 -872"
+}
+// entity 94
+{
+"classname" "enemy_deadman"
+"origin" "-880 -160 -872"
+}
+// entity 95
+{
+"classname" "enemy_deadman"
+"origin" "-880 -112 -872"
+}
+// entity 96
+{
+"classname" "enemy_deadman"
+"origin" "-880 -64 -872"
+}
+// entity 97
+{
+"classname" "enemy_grunt"
+"origin" "832 240 -872"
+}
+// entity 98
+{
+"classname" "enemy_grunt"
+"origin" "832 192 -872"
+}
+// entity 99
+{
+"classname" "enemy_grunt"
+"origin" "832 96 -872"
+}
+// entity 100
+{
+"classname" "enemy_grunt"
+"origin" "832 144 -872"
+}
+// entity 101
+{
+"classname" "enemy_grunt"
+"origin" "832 288 -872"
+}
+// entity 102
+{
+"classname" "enemy_grunt"
+"origin" "832 336 -872"
+}
+// entity 103
+{
+"classname" "enemy_grunt"
+"origin" "832 384 -872"
+}
+// entity 104
+{
+"classname" "enemy_grunt"
+"origin" "832 432 -872"
+}
+// entity 105
+{
+"classname" "enemy_grunt"
+"origin" "784 288 -872"
+}
+// entity 106
+{
+"classname" "enemy_grunt"
+"origin" "784 336 -872"
+}
+// entity 107
+{
+"classname" "enemy_grunt"
+"origin" "784 384 -872"
+}
+// entity 108
+{
+"classname" "enemy_grunt"
+"origin" "784 432 -872"
+}
+// entity 109
+{
+"classname" "enemy_grunt"
+"origin" "784 240 -872"
+}
+// entity 110
+{
+"classname" "enemy_grunt"
+"origin" "784 192 -872"
+}
+// entity 111
+{
+"classname" "enemy_grunt"
+"origin" "784 144 -872"
+}
+// entity 112
+{
+"classname" "enemy_grunt"
+"origin" "784 96 -872"
+}
+// entity 113
+{
+"classname" "enemy_grunt"
+"origin" "736 288 -872"
+}
+// entity 114
+{
+"classname" "enemy_grunt"
+"origin" "736 336 -872"
+}
+// entity 115
+{
+"classname" "enemy_grunt"
+"origin" "736 384 -872"
+}
+// entity 116
+{
+"classname" "enemy_grunt"
+"origin" "736 432 -872"
+}
+// entity 117
+{
+"classname" "enemy_grunt"
+"origin" "736 240 -872"
+}
+// entity 118
+{
+"classname" "enemy_grunt"
+"origin" "736 192 -872"
+}
+// entity 119
+{
+"classname" "enemy_grunt"
+"origin" "736 144 -872"
+}
+// entity 120
+{
+"classname" "enemy_grunt"
+"origin" "736 96 -872"
+}
+// entity 121
+{
+"classname" "enemy_grunt"
+"origin" "704 288 -872"
+}
+// entity 122
+{
+"classname" "enemy_grunt"
+"origin" "704 336 -872"
+}
+// entity 123
+{
+"classname" "enemy_grunt"
+"origin" "704 384 -872"
+}
+// entity 124
+{
+"classname" "enemy_grunt"
+"origin" "704 432 -872"
+}
+// entity 125
+{
+"classname" "enemy_grunt"
+"origin" "704 240 -872"
+}
+// entity 126
+{
+"classname" "enemy_grunt"
+"origin" "704 192 -872"
+}
+// entity 127
+{
+"classname" "enemy_grunt"
+"origin" "704 144 -872"
+}
+// entity 128
+{
+"classname" "enemy_grunt"
+"origin" "704 96 -872"
+}
+// entity 129
+{
+"classname" "weapon_flamethrower"
+"origin" "20 -164 -12"
+}
+// entity 130
+{
+"classname" "weapon_bayonet"
+"origin" "-12 -20 -12"
+}
+// entity 131
+{
+"classname" "weapon_dynamite"
+"origin" "52 -164 -12"
+}
+// entity 132
+{
+"classname" "enemy_panzer"
+"origin" "-224 80 7"
+"angle" "165"
+}
