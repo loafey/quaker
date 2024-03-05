@@ -3057,6 +3057,7 @@ dependencies = [
  "rayon",
  "rustc-hash",
  "simba",
+ "vec_map",
 ]
 
 [[package]]

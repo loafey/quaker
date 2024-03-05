@@ -5,6 +5,10 @@ use bevy::{
 };
 mod map_gen;
 mod player;
+use bevy_rapier3d::{
+    plugin::{NoUserData, RapierPhysicsPlugin},
+    render::RapierDebugRenderPlugin,
+};
 use map_gen::{if_map_done_loading, load_map, texture_systems::*, MapDoneLoading};
 use player::{Player, PlayerSpawnpoint};
 
@@ -18,6 +22,8 @@ fn main() {
         .insert_resource(TextureMap::default())
         .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
         .insert_resource(MapDoneLoading(false))
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPlugins.set({
             let mut plug = ImagePlugin::default_nearest();
             plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
@@ -36,6 +42,6 @@ fn main() {
             Update,
             Player::spawn.run_if(if_map_done_loading.and_then(run_once())),
         )
-        .add_systems(Update, Player::update)
+        .add_systems(Update, (Player::update, Player::update_cam))
         .run();
 }

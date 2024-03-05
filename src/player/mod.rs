@@ -9,6 +9,7 @@ use bevy::{
     render::camera::TemporalJitter,
     window::{CursorGrabMode, PrimaryWindow},
 };
+use bevy_rapier3d::prelude::*;
 
 #[derive(Resource)]
 pub struct PlayerSpawnpoint(pub Vec3);
@@ -21,12 +22,22 @@ pub struct Player {
 impl Player {
     pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
         let player_spawn = player_spawn.0;
+
         commands
-            .spawn(Player {
-                self_rot: 0.0,
-                no_control: true,
-            })
+            .spawn(Collider::cuboid(100.0, 0.1, 100.0))
+            .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
+
+        commands
+            .spawn(RigidBody::Dynamic)
             .add(move |mut c: EntityWorldMut| {
+                c.insert(Collider::cylinder(1.5, 0.35));
+                c.insert(Restitution::coefficient(0.0));
+                c.insert(LockedAxes::ROTATION_LOCKED);
+
+                c.insert(Player {
+                    self_rot: 0.0,
+                    no_control: true,
+                });
                 c.insert(GlobalTransform::default());
                 let mut trans = Transform::from_translation(player_spawn);
                 trans.rotate_x(std::f32::consts::PI / -8.0);
@@ -46,6 +57,26 @@ impl Player {
                 .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
                 .insert(TemporalAntiAliasBundle::default());
             });
+    }
+    pub fn update_cam(
+        mut query: Query<(&Camera3d, &mut Transform)>,
+        q_parent: Query<(&Player, &Children)>,
+        mut motion_evr: EventReader<MouseMotion>,
+    ) {
+        for (_, children) in q_parent.iter() {
+            for &child in children.iter() {
+                let (_, mut trans) = query.get_mut(child).unwrap();
+                println!("{}", trans.rotation);
+
+                for ev in motion_evr.read() {
+                    let old = trans.rotation;
+                    trans.rotate_local_x(ev.delta.y / -1000.0);
+                    if trans.rotation.x < -0.7 || trans.rotation.x > 0.7 {
+                        trans.rotation = old;
+                    }
+                }
+            }
+        }
     }
     pub fn update(
         keys: Res<ButtonInput<KeyCode>>,
@@ -78,7 +109,7 @@ impl Player {
                         player.self_rot = x_delta;
                     }
                     gt.rotate_y(x_delta);
-                    gt.rotate_local_x(ev.delta.y / -1000.0);
+                    //gt.rotate_local_x(ev.delta.y / -1000.0);
                 }
 
                 // handle input
