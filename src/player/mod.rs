@@ -21,7 +21,7 @@ pub struct Player {
 }
 impl Player {
     pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
-        let player_spawn = player_spawn.0;
+        let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
 
         commands
             .spawn(Collider::cuboid(100.0, 0.1, 100.0))
@@ -30,7 +30,7 @@ impl Player {
         commands
             .spawn(RigidBody::Dynamic)
             .add(move |mut c: EntityWorldMut| {
-                c.insert(Collider::cylinder(1.5, 0.35));
+                c.insert(Collider::cylinder(0.5, 0.15));
                 c.insert(Restitution::coefficient(0.0));
                 c.insert(LockedAxes::ROTATION_LOCKED);
 
@@ -50,6 +50,7 @@ impl Player {
                             fov: 80.0f32.to_radians(),
                             ..default()
                         }),
+                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
                         ..Default::default()
                     }
                 })
@@ -66,7 +67,6 @@ impl Player {
         for (_, children) in q_parent.iter() {
             for &child in children.iter() {
                 let (_, mut trans) = query.get_mut(child).unwrap();
-                println!("{}", trans.rotation);
 
                 for ev in motion_evr.read() {
                     let old = trans.rotation;

@@ -12,7 +12,9 @@ use bevy::{
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
+    utils::warn,
 };
+use bevy_rapier3d::geometry::Collider;
 use macros::error_return;
 use map_parser::parser::Brush;
 
@@ -24,7 +26,7 @@ mod vertex;
 
 const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
-const SCALE_FIX: f32 = 64.0;
+const SCALE_FIX: f32 = 48.0;
 fn vec_fix(mut v: Vec3) -> Vec3 {
     std::mem::swap(&mut v.y, &mut v.z);
     v.x *= -1.0;
@@ -56,6 +58,7 @@ pub fn load_map(
             // Calculate the verticies for the mesh
             let polys = sort_verticies_cw(get_polys_brush(brush));
 
+            let mut brush_poly = Vec::new();
             for mut poly in polys {
                 let mut plane_center = Vec3::ZERO;
                 for vert in &poly.verts {
@@ -64,14 +67,13 @@ pub fn load_map(
                 plane_center /= poly.verts.len() as f32;
 
                 let indices = poly.calculate_indices();
+                let verts = poly.verts.iter().map(|p| p.p).collect::<Vec<_>>();
+                brush_poly.append(&mut verts.clone());
                 let mut new_mesh = Mesh::new(
                     PrimitiveTopology::TriangleList,
                     RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
                 )
-                .with_inserted_attribute(
-                    Mesh::ATTRIBUTE_POSITION,
-                    poly.verts.iter().map(|p| p.p).collect::<Vec<_>>(),
-                )
+                .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, verts)
                 .with_inserted_indices(Indices::U32(indices));
 
                 let mat = if let Some(text) = poly.texture.clone() {
@@ -123,6 +125,21 @@ pub fn load_map(
                     transform: Transform::default(),
                     ..default()
                 });
+            }
+
+            if !brush_poly.is_empty() {
+                brush_poly.sort_by(|a, b| {
+                    a.x.total_cmp(&b.x)
+                        .cmp(&a.y.total_cmp(&b.y))
+                        .cmp(&a.z.total_cmp(&b.z))
+                });
+                brush_poly.dedup();
+
+                if let Some(col) = Collider::convex_hull(&brush_poly) {
+                    commands.spawn(col);
+                } else {
+                    warn!("failed to create collider!!");
+                }
             }
         }
     }
@@ -245,7 +262,7 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
             }
         }
     }
-    polys.into_iter().map(|p| p / 64.0).collect()
+    polys.into_iter().map(|p| p / SCALE_FIX).collect()
 }
 
 #[derive(Resource)]
