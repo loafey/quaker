@@ -10,21 +10,25 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
+#[derive(Resource)]
+pub struct PlayerSpawnpoint(pub Vec3);
+
 #[derive(Component, Debug)]
 pub struct Player {
     self_rot: f32,
     no_control: bool,
 }
 impl Player {
-    pub fn spawn(mut commands: Commands) {
+    pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
+        let player_spawn = player_spawn.0;
         commands
             .spawn(Player {
                 self_rot: 0.0,
                 no_control: true,
             })
-            .add(|mut c: EntityWorldMut| {
+            .add(move |mut c: EntityWorldMut| {
                 c.insert(GlobalTransform::default());
-                let mut trans = Transform::default();
+                let mut trans = Transform::from_translation(player_spawn);
                 trans.rotate_x(std::f32::consts::PI / -8.0);
                 c.insert(trans);
             })

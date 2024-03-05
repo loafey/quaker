@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
 use self::{
     plane::{InPlane, Plane},
     poly::Poly,
     texture_systems::TextureMap,
     vertex::Vertex,
 };
-use crate::CurrentMap;
+use crate::{map_gen::entities::spawn_entity, player::PlayerSpawnpoint, CurrentMap};
 use bevy::{
     prelude::*,
     render::{
@@ -18,6 +16,7 @@ use bevy::{
 use macros::error_return;
 use map_parser::parser::Brush;
 
+mod entities;
 mod plane;
 mod poly;
 pub mod texture_systems;
@@ -41,6 +40,8 @@ pub fn load_map(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     texture_map: Res<TextureMap>,
+    mut done_loading: ResMut<MapDoneLoading>,
+    mut player_spawn: ResMut<PlayerSpawnpoint>,
 ) {
     let map = error_return!(std::fs::read_to_string(&current_map.0));
     let map = error_return!(map_parser::parse(&map));
@@ -49,7 +50,7 @@ pub fn load_map(
     warn!("Loading map...");
 
     for entity in map {
-        spawn_entity(entity.attributes, &mut commands, &mut meshes);
+        spawn_entity(entity.attributes, &mut commands, &mut player_spawn);
 
         for brush in entity.brushes {
             // Calculate the verticies for the mesh
@@ -126,66 +127,8 @@ pub fn load_map(
         }
     }
 
-    warn!("Done loading map, took {}s", t.elapsed().as_secs_f32())
-}
-
-fn parse_vec(str: &str) -> Vec3 {
-    let mut splat = str.split_whitespace();
-    let x = splat
-        .next()
-        .unwrap_or_default()
-        .parse::<f32>()
-        .unwrap_or_default();
-    let y = splat
-        .next()
-        .unwrap_or_default()
-        .parse::<f32>()
-        .unwrap_or_default();
-    let z = splat
-        .next()
-        .unwrap_or_default()
-        .parse::<f32>()
-        .unwrap_or_default();
-
-    Vec3::new(x, y, z)
-}
-fn spawn_entity(
-    attributes: HashMap<String, String>,
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-) {
-    match attributes.get("classname").as_ref().map(|s| &s[..]) {
-        Some("light") => {
-            let light_level = attributes
-                .get("light")
-                .and_then(|l| l.parse::<f32>().ok())
-                .unwrap_or(150.0);
-
-            let pos = attributes
-                .get("origin")
-                .map(|p| parse_vec(p))
-                .unwrap_or_default();
-            let pos = Vec3::new(pos.x, pos.z, -pos.y);
-
-            commands.spawn(PointLightBundle {
-                transform: Transform::from_translation(pos / SCALE_FIX),
-                point_light: PointLight {
-                    intensity: light_level * 100.0,
-                    range: light_level * 100.0,
-                    shadows_enabled: false,
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-            // let mesh = meshes.add(Cuboid::new(0.2, 0.2, 0.2));
-            // commands.spawn(PbrBundle {
-            //     transform: Transform::from_translation(pos / SCALE_FIX),
-            //     mesh,
-            //     ..Default::default()
-            // });
-        }
-        _ => error!("unhandled entity: {attributes:?}"),
-    }
+    warn!("Done loading map, took {}s", t.elapsed().as_secs_f32());
+    done_loading.0 = true;
 }
 
 fn sort_verticies_cw(polys: Vec<Poly>) -> Vec<Poly> {
@@ -303,4 +246,11 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
         }
     }
     polys.into_iter().map(|p| p / 64.0).collect()
+}
+
+#[derive(Resource)]
+pub struct MapDoneLoading(pub bool);
+
+pub fn if_map_done_loading(val: Res<MapDoneLoading>) -> bool {
+    val.0
 }
