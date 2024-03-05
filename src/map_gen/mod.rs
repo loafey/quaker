@@ -69,6 +69,7 @@ pub fn load_map(
                 let indices = poly.calculate_indices();
                 let verts = poly.verts.iter().map(|p| p.p).collect::<Vec<_>>();
                 brush_poly.append(&mut verts.clone());
+                println!("got here 1: {}", verts.len());
                 let mut new_mesh = Mesh::new(
                     PrimitiveTopology::TriangleList,
                     RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
@@ -115,8 +116,10 @@ pub fn load_map(
                         ..default()
                     }
                 };
-                new_mesh.duplicate_vertices();
-                new_mesh.compute_flat_normals();
+                if new_mesh.count_vertices() != 0 {
+                    new_mesh.duplicate_vertices();
+                    new_mesh.compute_flat_normals();
+                }
                 //mat.cull_mode = None;
 
                 commands.spawn(PbrBundle {

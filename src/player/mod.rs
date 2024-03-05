@@ -23,9 +23,9 @@ impl Player {
     pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
         let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
 
-        commands
-            .spawn(Collider::cuboid(100.0, 0.1, 100.0))
-            .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
+        //commands
+        //    .spawn(Collider::cuboid(100.0, 0.1, 100.0))
+        //    .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
 
         commands
             .spawn(RigidBody::Dynamic)

@@ -17,7 +17,7 @@ struct CurrentMap(pub String);
 
 fn main() {
     App::new()
-        .insert_resource(CurrentMap("assets/maps/M1.map".to_string()))
+        .insert_resource(CurrentMap("assets/maps/Test.map".to_string()))
         .insert_resource(TexturesLoading::default())
         .insert_resource(TextureMap::default())
         .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
