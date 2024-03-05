@@ -1,5 +1,9 @@
 extern crate macros;
-use bevy::{prelude::*, render::texture::ImageAddressMode};
+use bevy::{
+    core_pipeline::experimental::taa::{TemporalAntiAliasBundle, TemporalAntiAliasPlugin},
+    prelude::*,
+    render::texture::ImageAddressMode,
+};
 mod map_gen;
 mod player;
 use map_gen::{load_map, texture_systems::*};
@@ -20,6 +24,7 @@ fn main() {
             plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
             plug
         }))
+        .add_plugins(TemporalAntiAliasPlugin)
         .add_systems(Startup, load_textures)
         .add_systems(
             Update,

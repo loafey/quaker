@@ -1,6 +1,12 @@
 use bevy::{
+    core_pipeline::{
+        experimental::taa::TemporalAntiAliasBundle,
+        prepass::{DepthPrepass, MotionVectorPrepass},
+    },
     input::mouse::MouseMotion,
+    pbr::ScreenSpaceAmbientOcclusionBundle,
     prelude::*,
+    render::camera::TemporalJitter,
     window::{CursorGrabMode, PrimaryWindow},
 };
 
@@ -31,7 +37,14 @@ impl Player {
                         }),
                         ..Default::default()
                     }
-                });
+                })
+                .insert(ScreenSpaceAmbientOcclusionBundle::default())
+                .insert((
+                    DepthPrepass,
+                    MotionVectorPrepass,
+                    TemporalJitter::default(),
+                ));
+                //.insert(TemporalAntiAliasBundle::default());
             });
     }
     pub fn update(

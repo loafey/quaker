@@ -172,7 +172,7 @@ fn spawn_entity(
                 point_light: PointLight {
                     intensity: light_level * 100.0,
                     range: light_level * 100.0,
-                    shadows_enabled: true,
+                    shadows_enabled: false,
                     ..Default::default()
                 },
                 ..Default::default()
