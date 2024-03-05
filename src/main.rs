@@ -23,7 +23,7 @@ fn main() {
         .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
         .insert_resource(MapDoneLoading(false))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(DefaultPlugins.set({
             let mut plug = ImagePlugin::default_nearest();
             plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
@@ -42,6 +42,6 @@ fn main() {
             Update,
             Player::spawn.run_if(if_map_done_loading.and_then(run_once())),
         )
-        .add_systems(Update, (Player::update, Player::update_cam))
+        .add_systems(Update, (Player::update, Player::update_cam, Player::debug))
         .run();
 }

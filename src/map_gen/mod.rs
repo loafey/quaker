@@ -12,7 +12,6 @@ use bevy::{
         render_asset::RenderAssetUsages,
         render_resource::{encase::rts_array::Length, PrimitiveTopology},
     },
-    utils::warn,
 };
 use bevy_rapier3d::geometry::Collider;
 use macros::error_return;

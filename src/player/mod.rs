@@ -59,6 +59,11 @@ impl Player {
                 .insert(TemporalAntiAliasBundle::default());
             });
     }
+    pub fn debug(keys: Res<ButtonInput<KeyCode>>, mut debug: ResMut<DebugRenderContext>) {
+        if keys.just_pressed(KeyCode::F2) {
+            debug.enabled = !debug.enabled;
+        }
+    }
     pub fn update_cam(
         mut query: Query<(&Camera3d, &mut Transform)>,
         q_parent: Query<(&Player, &Children)>,
