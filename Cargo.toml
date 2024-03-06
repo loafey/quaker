@@ -9,7 +9,7 @@ edition = "2021"
 [features]
 
 [dependencies]        
-bevy = { version = "0.13.*", features = ["dynamic_linking"] }
+bevy = { version = "0.13.*"  }#, features = ["dynamic_linking"]
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
 bevy_rapier3d = { version = "0.25.0", features = ["parallel","debug-render-3d","simd-stable"] }

@@ -68,16 +68,19 @@ impl Player {
 
             let hort_speed = player.hort_speed;
             if keys.pressed(KeyCode::KeyW) {
-                player.velocity += forward * hort_speed;
+                player.velocity += forward * hort_speed * time.delta_seconds();
             } else if keys.pressed(KeyCode::KeyS) {
-                player.velocity -= forward * hort_speed;
+                player.velocity -= forward * hort_speed * time.delta_seconds();
             }
 
             if keys.pressed(KeyCode::KeyA) {
-                player.velocity -= right * hort_speed;
+                player.velocity -= right * hort_speed * time.delta_seconds();
             } else if keys.pressed(KeyCode::KeyD) {
-                player.velocity += right * hort_speed;
+                player.velocity += right * hort_speed * time.delta_seconds();
             }
+            player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
+            player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
+            println!("{}", player.velocity);
 
             if player.on_ground && player.jump_timer <= 0.0 {
                 player.velocity.y = 0.0;

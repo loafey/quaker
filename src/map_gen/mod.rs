@@ -26,7 +26,7 @@ mod vertex;
 
 const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
-const SCALE_FIX: f32 = 48.0;
+const SCALE_FIX: f32 = 44.0;
 fn vec_fix(mut v: Vec3) -> Vec3 {
     std::mem::swap(&mut v.y, &mut v.z);
     v.x *= -1.0;
