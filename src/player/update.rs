@@ -91,7 +91,6 @@ impl Player {
                 player.velocity.y += time.delta_seconds() * player.jump_timer * player.gravity;
                 player.jump_timer -= time.delta_seconds() * 50.0;
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
-                println!("{}", player.velocity.y);
             }
 
             // println!(
