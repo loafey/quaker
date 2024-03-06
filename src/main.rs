@@ -3,8 +3,6 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
-mod map_gen;
-mod player;
 use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
@@ -13,11 +11,23 @@ use map_gen::{load_map, texture_systems::*};
 use player::Player;
 use resources::*;
 
+mod map_gen;
+mod player;
 mod resources;
+
+fn get_map() -> String {
+    if let Some(map) = std::env::args().nth(1) {
+        if std::fs::File::open(&map).is_ok() {
+            return map;
+        }
+    }
+
+    "assets/maps/M1.map".to_string()
+}
 
 fn main() {
     App::new()
-        .insert_resource(CurrentMap("assets/maps/Test.map".to_string()))
+        .insert_resource(CurrentMap(get_map()))
         .insert_resource(TexturesLoading::default())
         .insert_resource(TextureMap::default())
         .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
