@@ -19,7 +19,7 @@ impl Player {
                 for ev in motion_evr.read() {
                     let old = trans.rotation;
                     trans.rotate_local_x(ev.delta.y / -1000.0);
-                    if trans.rotation.x < -0.7 || trans.rotation.x > 0.7 {
+                    if trans.rotation.x < -0.5 || trans.rotation.x > 0.7 {
                         trans.rotation = old;
                     }
                 }
