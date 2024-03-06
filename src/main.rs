@@ -19,6 +19,8 @@ fn get_map() -> String {
     if let Some(map) = std::env::args().nth(1) {
         if std::fs::File::open(&map).is_ok() {
             return map;
+        } else {
+            error!("Can't find map: \"{map}\"")
         }
     }
 
