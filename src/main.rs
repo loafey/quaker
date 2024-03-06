@@ -7,6 +7,7 @@ use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+use entities::data::load_pickups;
 use map_gen::{load_map, texture_systems::*};
 use player::Player;
 use resources::*;
@@ -46,6 +47,7 @@ fn main() {
             plug
         }))
         .add_plugins(TemporalAntiAliasPlugin)
+        .add_systems(PreStartup, load_pickups)
         .add_systems(Startup, load_textures)
         .add_systems(
             Update,

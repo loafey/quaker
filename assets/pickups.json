@@ -1,0 +1,9 @@
+[
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_shotgun",
+        "gives": "weapon_shotgun",
+        "pickup_model": "models/Pickups/Guns/SuperShotgun.obj",
+        "pickup_material": "models/Pickups/Guns/SuperShotgun.mtl"
+    }
+]

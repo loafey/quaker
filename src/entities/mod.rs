@@ -8,6 +8,8 @@ use bevy::{
 };
 use std::collections::HashMap;
 
+pub mod data;
+
 fn parse_vec(str: &str) -> Vec3 {
     let mut splat = str.split_whitespace();
     let x = splat

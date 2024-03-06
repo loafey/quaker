@@ -76,7 +76,10 @@ pub fn load_map(
                 let mat = if let Some(text) = poly.texture.clone() {
                     let uv = poly.calculate_textcoords(&images, &texture_map);
                     let tangent = poly.calculate_tangent();
-                    let texture_handle = &texture_map.0[&text];
+                    let texture_handle = texture_map
+                        .0
+                        .get(&text)
+                        .unwrap_or_else(|| panic!("missing texture: {text:?}"));
                     let path = texture_handle.path().unwrap();
                     // very hacky :)
                     if !format!("{path}").ends_with("Invisible.png") {

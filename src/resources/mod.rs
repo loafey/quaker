@@ -31,8 +31,19 @@ pub fn if_map_done_loading(val: Res<MapDoneLoading>) -> bool {
 pub struct PlayerSpawnpoint(pub Vec3);
 
 /// A list of which textures are currently being loaded
-#[derive(Debug, Resource, Default)]
-pub struct TexturesLoading(pub Vec<UntypedHandle>);
+#[derive(Debug, Resource)]
+pub struct TexturesLoading(pub Vec<UntypedHandle>, pub bool);
+impl Default for TexturesLoading {
+    fn default() -> Self {
+        Self(Default::default(), true)
+    }
+}
+pub fn if_texture_loading(text: Res<TexturesLoading>) -> bool {
+    text.1 && !text.0.is_empty()
+}
+pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
+    !text.1 && text.0.is_empty()
+}
 
 /// A map which provides Path -> Handle for textures
 #[derive(Debug, Resource, Default)]

@@ -41,13 +41,6 @@ pub fn load_textures(
     );
 }
 
-pub fn if_texture_loading(text: Res<TexturesLoading>) -> bool {
-    !text.0.is_empty()
-}
-pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
-    text.0.is_empty()
-}
-
 pub fn texture_checker(
     mut textures_loading: ResMut<TexturesLoading>,
     asset_server: Res<AssetServer>,
@@ -66,4 +59,5 @@ pub fn texture_checker(
     if textures_loading.0.is_empty() {
         warn!("Texture loading done...");
     }
+    textures_loading.1 = false;
 }
