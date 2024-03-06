@@ -25,7 +25,6 @@ impl Player {
                 c.insert(Collider::cylinder(0.5, 0.15))
                     .insert(Restitution::coefficient(0.0))
                     .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(GravityScale(0.0))
                     .insert(Player::default())
                     .insert(GlobalTransform::default())
                     .insert(trans);
