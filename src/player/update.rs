@@ -84,11 +84,11 @@ impl Player {
                 player.jump_timer = 0.0;
                 if keys.just_pressed(KeyCode::Space) {
                     player.jump_timer = 0.1;
-                    player.velocity.y = 0.1;
+                    player.velocity.y = 0.2;
                 }
             } else {
-                player.velocity.y += player.jump_timer * player.fall_lerp;
-                player.jump_timer -= time.delta_seconds() / 4.0;
+                player.velocity.y += player.jump_timer * 0.1; //player.fall_lerp;
+                player.jump_timer -= time.delta_seconds() * 2.0;
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
                 player.velocity.y = player.velocity.y.max(player.gravity);
             }
