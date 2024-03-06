@@ -7,7 +7,7 @@ use bevy::{
 };
 
 impl Player {
-    pub fn update_cam(
+    pub fn update_cam_vert(
         mut query: Query<(&Camera3d, &mut Transform)>,
         q_parent: Query<(&Player, &Children)>,
         mut motion_evr: EventReader<MouseMotion>,
@@ -26,14 +26,13 @@ impl Player {
             }
         }
     }
-    pub fn update(
-        keys: Res<ButtonInput<KeyCode>>,
+
+    pub fn update_cam_hort(
         mut query: Query<(&mut Player, &mut Transform)>,
         mut motion_evr: EventReader<MouseMotion>,
     ) {
         for (mut player, mut gt) in &mut query {
             // handle cursor
-
             for ev in motion_evr.read() {
                 let x_delta = ev.delta.x / -1000.0;
                 player.self_rot += x_delta;
@@ -45,7 +44,14 @@ impl Player {
                 gt.rotate_y(x_delta);
                 //gt.rotate_local_x(ev.delta.y / -1000.0);
             }
+        }
+    }
 
+    pub fn update(
+        keys: Res<ButtonInput<KeyCode>>,
+        mut query: Query<(&mut Player, &mut Transform)>,
+    ) {
+        for (player, mut gt) in &mut query {
             // handle input
             let local_z = gt.local_z();
             let forward = -Vec3::new(local_z.x, 0., local_z.z);

@@ -54,7 +54,12 @@ fn main() {
         )
         .add_systems(
             Update,
-            (Player::update, Player::update_cam).run_if(if_not_paused),
+            (
+                Player::update,
+                Player::update_cam_vert,
+                Player::update_cam_hort,
+            )
+                .run_if(if_not_paused),
         )
         .add_systems(Update, (Player::pause_handler, Player::debug))
         .run();
