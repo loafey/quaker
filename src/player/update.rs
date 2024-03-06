@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use super::Player;
 use crate::Paused;
 use bevy::{
@@ -7,7 +5,6 @@ use bevy::{
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use bevy_rapier3d::dynamics::RigidBody;
 
 impl Player {
     pub fn update_cam_vert(
