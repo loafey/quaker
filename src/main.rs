@@ -24,7 +24,7 @@ fn get_map() -> String {
         }
     }
 
-    "assets/maps/M1.map".to_string()
+    "assets/maps/Test.map".to_string()
 }
 
 fn main() {

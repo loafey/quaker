@@ -80,7 +80,6 @@ impl Player {
             }
             player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
             player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
-            println!("{}", player.velocity);
 
             if player.on_ground && player.jump_timer <= 0.0 {
                 player.velocity.y = 0.0;
