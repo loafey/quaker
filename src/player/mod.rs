@@ -10,5 +10,4 @@ pub struct PlayerSpawnpoint(pub Vec3);
 #[derive(Component, Debug)]
 pub struct Player {
     self_rot: f32,
-    no_control: bool,
 }

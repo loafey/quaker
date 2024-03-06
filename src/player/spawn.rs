@@ -21,18 +21,16 @@ impl Player {
         commands
             .spawn(RigidBody::Dynamic)
             .add(move |mut c: EntityWorldMut| {
-                c.insert(Collider::cylinder(0.5, 0.15));
-                c.insert(Restitution::coefficient(0.0));
-                c.insert(LockedAxes::ROTATION_LOCKED);
-
-                c.insert(Player {
-                    self_rot: 0.0,
-                    no_control: true,
-                });
-                c.insert(GlobalTransform::default());
                 let mut trans = Transform::from_translation(player_spawn);
                 trans.rotate_x(std::f32::consts::PI / -8.0);
-                c.insert(trans);
+
+                c.insert(Collider::cylinder(0.5, 0.15))
+                    .insert(Restitution::coefficient(0.0))
+                    .insert(LockedAxes::ROTATION_LOCKED)
+                    .insert(GravityScale(0.0))
+                    .insert(Player { self_rot: 0.0 })
+                    .insert(GlobalTransform::default())
+                    .insert(trans);
             })
             .with_children(|c| {
                 c.spawn({
