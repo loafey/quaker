@@ -84,29 +84,30 @@ impl Player {
                 player.jump_timer = 0.0;
                 if keys.just_pressed(KeyCode::Space) {
                     player.jump_timer = 0.1;
-                    player.velocity.y = 0.2;
+                    player.velocity.y = player.jump_height;
+                    player.air_time = Some(std::time::Instant::now())
                 }
             } else {
-                player.velocity.y += player.jump_timer * 0.1; //player.fall_lerp;
-                player.jump_timer -= time.delta_seconds() * 2.0;
+                player.velocity.y += time.delta_seconds() * player.jump_timer * player.gravity;
+                player.jump_timer -= time.delta_seconds() * 50.0;
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
-                player.velocity.y = player.velocity.y.max(player.gravity);
+                println!("{}", player.velocity.y);
             }
 
-            println!(
-                "onground: {}\t|\tvelocity: {}\t|\tjump timer: {}",
-                player.on_ground, player.velocity.y, player.jump_timer
-            );
+            // println!(
+            //     "onground: {}\t|\tvelocity: {}\t|\tjump timer: {}",
+            //     player.on_ground, player.velocity.y, player.jump_timer
+            // );
 
-            controller.translation = Some(player.velocity);
+            controller.translation = Some(player.velocity * time.delta_seconds());
 
             let x = player.velocity.x;
             let z = player.velocity.z;
             player.velocity = Vec3::new(
-                x.lerp(0.0, time.delta_seconds() * player.hort_friction)
+                x.lerp(0.0, player.hort_friction)
                     .clamp(-player.hort_max_speed, player.hort_max_speed),
                 player.velocity.y,
-                z.lerp(0.0, time.delta_seconds() * player.hort_friction)
+                z.lerp(0.0, player.hort_friction)
                     .clamp(-player.hort_max_speed, player.hort_max_speed),
             );
 
@@ -171,6 +172,15 @@ impl Player {
                     filter,
                 )
                 .is_some();
+
+            if player.on_ground {
+                if let Some(air_time) = player.air_time {
+                    if air_time.elapsed().as_secs_f32() > 0.01 {
+                        println!("Airtime of {}s", air_time.elapsed().as_secs_f32());
+                        player.air_time = None;
+                    }
+                }
+            }
         }
     }
 }
