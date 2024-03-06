@@ -11,6 +11,7 @@ use map_gen::{load_map, texture_systems::*};
 use player::Player;
 use resources::*;
 
+mod entities;
 mod map_gen;
 mod player;
 mod resources;

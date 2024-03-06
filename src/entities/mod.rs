@@ -1,5 +1,4 @@
-use super::SCALE_FIX;
-use crate::PlayerSpawnpoint;
+use crate::{map_gen::SCALE_FIX, PlayerSpawnpoint};
 use bevy::{
     ecs::system::{Commands, ResMut},
     log::error,
@@ -27,7 +26,7 @@ fn parse_vec(str: &str) -> Vec3 {
         .parse::<f32>()
         .unwrap_or_default();
 
-    Vec3::new(x, z, -y)
+    Vec3::new(x, z, -y) / SCALE_FIX
 }
 pub fn spawn_entity(
     attributes: HashMap<String, String>,
@@ -47,7 +46,7 @@ pub fn spawn_entity(
                 .unwrap_or_default();
 
             commands.spawn(PointLightBundle {
-                transform: Transform::from_translation(pos / SCALE_FIX),
+                transform: Transform::from_translation(pos),
                 point_light: PointLight {
                     intensity: light_level * 100.0,
                     range: light_level * 100.0,
@@ -61,8 +60,7 @@ pub fn spawn_entity(
             let mut pos = attributes
                 .get("origin")
                 .map(|p| parse_vec(p))
-                .unwrap_or_default()
-                / SCALE_FIX;
+                .unwrap_or_default();
 
             pos.y += 0.5;
 

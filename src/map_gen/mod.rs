@@ -3,9 +3,7 @@ use self::{
     poly::Poly,
     vertex::Vertex,
 };
-use crate::{
-    map_gen::entities::spawn_entity, CurrentMap, MapDoneLoading, PlayerSpawnpoint, TextureMap,
-};
+use crate::{entities::spawn_entity, CurrentMap, MapDoneLoading, PlayerSpawnpoint, TextureMap};
 use bevy::{
     prelude::*,
     render::{
@@ -18,7 +16,6 @@ use bevy_rapier3d::geometry::Collider;
 use macros::error_return;
 use map_parser::parser::Brush;
 
-mod entities;
 mod plane;
 mod poly;
 pub mod texture_systems;
@@ -26,7 +23,7 @@ mod vertex;
 
 const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
-const SCALE_FIX: f32 = 44.0;
+pub const SCALE_FIX: f32 = 44.0;
 fn vec_fix(mut v: Vec3) -> Vec3 {
     std::mem::swap(&mut v.y, &mut v.z);
     v.x *= -1.0;
