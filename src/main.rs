@@ -61,6 +61,7 @@ fn main() {
                 Player::update,
                 Player::update_cam_vert,
                 Player::update_cam_hort,
+                Player::ground_detection,
             )
                 .run_if(if_not_paused),
         )

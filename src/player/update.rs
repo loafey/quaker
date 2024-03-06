@@ -5,6 +5,10 @@ use bevy::{
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
+use bevy_rapier3d::{
+    control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
+    plugin::RapierContext,
+};
 
 impl Player {
     pub fn update_cam_vert(
@@ -49,24 +53,62 @@ impl Player {
 
     pub fn update(
         keys: Res<ButtonInput<KeyCode>>,
-        mut query: Query<(&mut Player, &mut Transform)>,
+        time: Res<Time>,
+        mut query: Query<(
+            &mut KinematicCharacterController,
+            &mut Player,
+            &mut Transform,
+        )>,
     ) {
-        for (_player, mut gt) in &mut query {
+        for (mut controller, mut player, mut gt) in &mut query {
             // handle input
             let local_z = gt.local_z();
             let forward = -Vec3::new(local_z.x, 0., local_z.z);
             let right = Vec3::new(local_z.z, 0., -local_z.x);
+
+            let hort_speed = player.hort_speed;
             if keys.pressed(KeyCode::KeyW) {
-                gt.translation += forward / 10.0;
+                player.velocity += forward * hort_speed;
             } else if keys.pressed(KeyCode::KeyS) {
-                gt.translation -= forward / 10.0;
+                player.velocity -= forward * hort_speed;
             }
 
             if keys.pressed(KeyCode::KeyA) {
-                gt.translation -= right / 10.0;
+                player.velocity -= right * hort_speed;
             } else if keys.pressed(KeyCode::KeyD) {
-                gt.translation += right / 10.0;
+                player.velocity += right * hort_speed;
             }
+
+            if player.on_ground && player.jump_timer <= 0.0 {
+                player.velocity.y = 0.0;
+                player.jump_timer = 0.0;
+                if keys.just_pressed(KeyCode::Space) {
+                    player.jump_timer = 0.1;
+                    player.velocity.y = 0.1;
+                }
+            } else {
+                player.velocity.y += player.jump_timer * player.fall_lerp;
+                player.jump_timer -= time.delta_seconds() / 4.0;
+                player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
+                player.velocity.y = player.velocity.y.max(player.gravity);
+            }
+
+            println!(
+                "onground: {}\t|\tvelocity: {}\t|\tjump timer: {}",
+                player.on_ground, player.velocity.y, player.jump_timer
+            );
+
+            controller.translation = Some(player.velocity);
+
+            let x = player.velocity.x;
+            let z = player.velocity.z;
+            player.velocity = Vec3::new(
+                x.lerp(0.0, time.delta_seconds() * player.hort_friction)
+                    .clamp(-player.hort_max_speed, player.hort_max_speed),
+                player.velocity.y,
+                z.lerp(0.0, time.delta_seconds() * player.hort_friction)
+                    .clamp(-player.hort_max_speed, player.hort_max_speed),
+            );
 
             if keys.pressed(KeyCode::ShiftLeft) {
                 gt.translation.y += 0.1;
@@ -100,6 +142,35 @@ impl Player {
                 primary_window.cursor.visible = false;
                 time.unpause();
             }
+        }
+    }
+
+    pub fn ground_detection(
+        rapier_context: Res<RapierContext>,
+        mut query: Query<(&mut Player, &Transform)>,
+    ) {
+        for (mut player, trans) in query.iter_mut() {
+            let collider_height = 0.01;
+            let shape = Collider::cylinder(collider_height, player.radius);
+            let mut shape_pos = trans.translation;
+            shape_pos.y -= player.half_height + collider_height * 4.0;
+            let shape_rot = Quat::default();
+            let shape_vel = Vec3::new(0.0, -0.2, 0.0);
+            let max_toi = 0.0;
+            let filter = QueryFilter::default();
+            let stop_at_penetration = true;
+
+            player.on_ground = rapier_context
+                .cast_shape(
+                    shape_pos,
+                    shape_rot,
+                    shape_vel,
+                    &shape,
+                    max_toi,
+                    stop_at_penetration,
+                    filter,
+                )
+                .is_some();
         }
     }
 }

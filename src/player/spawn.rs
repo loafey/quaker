@@ -17,12 +17,12 @@ impl Player {
         let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
 
         commands
-            .spawn(RigidBody::Dynamic)
+            .spawn(Collider::cylinder(0.5, 0.15))
             .add(move |mut c: EntityWorldMut| {
                 let mut trans = Transform::from_translation(player_spawn);
                 trans.rotate_x(std::f32::consts::PI / -8.0);
 
-                c.insert(Collider::cylinder(0.5, 0.15))
+                c.insert(KinematicCharacterController::default())
                     .insert(Restitution::coefficient(0.0))
                     .insert(LockedAxes::ROTATION_LOCKED)
                     .insert(Player::default())
