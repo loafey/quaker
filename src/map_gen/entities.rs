@@ -1,3 +1,5 @@
+use super::SCALE_FIX;
+use crate::PlayerSpawnpoint;
 use bevy::{
     ecs::system::{Commands, ResMut},
     log::error,
@@ -6,10 +8,6 @@ use bevy::{
     transform::components::Transform,
 };
 use std::collections::HashMap;
-
-use crate::player::PlayerSpawnpoint;
-
-use super::SCALE_FIX;
 
 fn parse_vec(str: &str) -> Vec3 {
     let mut splat = str.split_whitespace();

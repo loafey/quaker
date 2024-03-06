@@ -1,10 +1,11 @@
 use self::{
     plane::{InPlane, Plane},
     poly::Poly,
-    texture_systems::TextureMap,
     vertex::Vertex,
 };
-use crate::{map_gen::entities::spawn_entity, player::PlayerSpawnpoint, CurrentMap};
+use crate::{
+    map_gen::entities::spawn_entity, CurrentMap, MapDoneLoading, PlayerSpawnpoint, TextureMap,
+};
 use bevy::{
     prelude::*,
     render::{
@@ -265,11 +266,4 @@ fn get_polys_brush(brush: Brush) -> Vec<Poly> {
         }
     }
     polys.into_iter().map(|p| p / SCALE_FIX).collect()
-}
-
-#[derive(Resource)]
-pub struct MapDoneLoading(pub bool);
-
-pub fn if_map_done_loading(val: Res<MapDoneLoading>) -> bool {
-    val.0
 }

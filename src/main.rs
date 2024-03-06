@@ -9,20 +9,11 @@ use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
-use map_gen::{if_map_done_loading, load_map, texture_systems::*, MapDoneLoading};
-use player::{Player, PlayerSpawnpoint};
+use map_gen::{load_map, texture_systems::*};
+use player::Player;
+use resources::*;
 
-#[derive(Debug, Resource)]
-struct CurrentMap(pub String);
-
-#[derive(Debug, Resource)]
-pub struct Paused(pub bool);
-pub fn if_paused(val: Res<Paused>) -> bool {
-    val.0
-}
-pub fn if_not_paused(val: Res<Paused>) -> bool {
-    !val.0
-}
+mod resources;
 
 fn main() {
     App::new()

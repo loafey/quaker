@@ -51,7 +51,7 @@ impl Player {
         keys: Res<ButtonInput<KeyCode>>,
         mut query: Query<(&mut Player, &mut Transform)>,
     ) {
-        for (player, mut gt) in &mut query {
+        for (_player, mut gt) in &mut query {
             // handle input
             let local_z = gt.local_z();
             let forward = -Vec3::new(local_z.x, 0., local_z.z);

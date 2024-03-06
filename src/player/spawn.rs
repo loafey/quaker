@@ -1,4 +1,6 @@
-use super::{Player, PlayerSpawnpoint};
+use crate::PlayerSpawnpoint;
+
+use super::Player;
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,

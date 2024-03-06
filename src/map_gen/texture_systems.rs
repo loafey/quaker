@@ -1,13 +1,8 @@
-use crate::CurrentMap;
+use crate::{CurrentMap, TextureMap, TexturesLoading};
 use bevy::prelude::*;
 use macros::error_return;
 use std::collections::HashMap;
 
-#[derive(Debug, Resource, Default)]
-pub struct TexturesLoading(Vec<UntypedHandle>);
-
-#[derive(Debug, Resource, Default)]
-pub struct TextureMap(pub HashMap<String, Handle<Image>>);
 pub fn load_textures(
     asset_server: Res<AssetServer>,
     current_map: Res<CurrentMap>,
