@@ -4,6 +4,89 @@
         "classname": "weapon_supershotgun",
         "gives": "weapon_supershotgun",
         "pickup_model": "models/Pickups/Guns/SuperShotgun.obj",
-        "pickup_material": "models/Pickups/Guns/SuperShotgun.mtl"
+        "pickup_material": "models/Pickups/Guns/SuperShotgun.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_bayonet",
+        "gives": "weapon_bayonet",
+        "pickup_model": "models/Pickups/Guns/Bayonet.obj",
+        "pickup_material": "models/Pickups/Guns/Bayonet.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_dynamite",
+        "gives": "weapon_dynamite",
+        "pickup_model": "models/Pickups/Guns/Dynamite.obj",
+        "pickup_material": "models/Pickups/Guns/Dynamite.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_flamethrower",
+        "gives": "weapon_flamethrower",
+        "pickup_model": "models/Pickups/Guns/Flamethrower.obj",
+        "pickup_material": "models/Pickups/Guns/Flamethrower.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_nukegun",
+        "gives": "weapon_nukegun",
+        "pickup_model": "models/Pickups/Guns/NukeGun.obj",
+        "pickup_material": "models/Pickups/Guns/NukeGun.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_pumpshotgun",
+        "gives": "weapon_pumpshotgun",
+        "pickup_model": "models/Pickups/Guns/PumpShotgun.obj",
+        "pickup_material": "models/Pickups/Guns/PumpShotgun.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_revolver",
+        "gives": "weapon_revolver",
+        "pickup_model": "models/Pickups/Guns/Revolver.obj",
+        "pickup_material": "models/Pickups/Guns/Revolver.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_rpg",
+        "gives": "weapon_rpg",
+        "pickup_model": "models/Pickups/Guns/Rpg.obj",
+        "pickup_material": "models/Pickups/Guns/Rpg.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_smgbelter",
+        "gives": "weapon_smgbelter",
+        "pickup_model": "models/Pickups/Guns/SmgBelter.obj",
+        "pickup_material": "models/Pickups/Guns/SmgBelter.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
+    },
+    {
+        "pickup_type": "Weapon",
+        "classname": "weapon_supercoolgun",
+        "gives": "weapon_supercoolgun",
+        "pickup_model": "models/Pickups/Guns/SuperCoolGun.obj",
+        "pickup_material": "models/Pickups/Guns/SuperCoolGun.mtl",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01
     }
 ]

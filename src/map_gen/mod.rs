@@ -35,12 +35,13 @@ fn vec_fix(mut v: Vec3) -> Vec3 {
 
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
     images: Res<Assets<Image>>,
     current_map: Res<CurrentMap>,
     mut meshes: ResMut<Assets<Mesh>>,
-    pickup_map: Res<PickupMap>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    pickup_map: Res<PickupMap>,
     texture_map: Res<TextureMap>,
     mut done_loading: ResMut<MapDoneLoading>,
     mut player_spawn: ResMut<PlayerSpawnpoint>,
@@ -53,10 +54,13 @@ pub fn load_map(
 
     for entity in map {
         spawn_entity(
+            &asset_server,
             entity.attributes,
             &mut commands,
             &mut player_spawn,
             &pickup_map,
+            &mut meshes,
+            &mut materials,
         );
 
         for brush in entity.brushes {

@@ -1,9 +1,12 @@
-use crate::{map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
+use crate::{entities::pickup::PickupEntity, map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
 use bevy::{
-    ecs::system::{Commands, ResMut},
+    asset::{AssetServer, Assets},
+    ecs::system::{Commands, Res, ResMut},
     log::error,
     math::Vec3,
-    pbr::{PointLight, PointLightBundle},
+    pbr::{PbrBundle, PointLight, PointLightBundle, StandardMaterial},
+    render::{color::Color, mesh::Mesh},
+    scene::SceneBundle,
     transform::components::Transform,
 };
 use std::collections::HashMap;
@@ -33,10 +36,13 @@ fn parse_vec(str: &str) -> Vec3 {
     Vec3::new(x, z, -y) / SCALE_FIX
 }
 pub fn spawn_entity(
+    asset_server: &Res<AssetServer>,
     attributes: HashMap<String, String>,
     commands: &mut Commands,
     player_spawn: &mut ResMut<PlayerSpawnpoint>,
     pickup_map: &PickupMap,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     match attributes.get("classname").as_ref().map(|s| &s[..]) {
         Some("light") => {
@@ -73,15 +79,80 @@ pub fn spawn_entity(
         }
         Some(x) if pickup_map.0.contains_key(x) => {
             let data = pickup_map.0.get(x).unwrap();
-            spawn_pickup(data, attributes, commands);
+            spawn_pickup(asset_server, data, attributes, commands, meshes, materials);
         }
         _ => error!("unhandled entity: {attributes:?}"),
     }
 }
 
-fn spawn_pickup(data: &PickupData, attributes: HashMap<String, String>, commands: &mut Commands) {
+fn spawn_pickup(
+    asset_server: &Res<AssetServer>,
+    data: &PickupData,
+    attributes: HashMap<String, String>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
     let pos = attributes
         .get("origin")
         .map(|p| parse_vec(p))
         .unwrap_or_default();
+
+    match data {
+        PickupData::Weapon {
+            classname,
+            gives,
+            pickup_model,
+            pickup_material,
+            texture_file,
+            scale,
+        } => {
+            let mesh_handle = asset_server.load(pickup_model);
+            let mut trans = Transform::from_translation(pos);
+            trans.scale = Vec3::splat(*scale);
+
+            let mat_handle = materials.add(StandardMaterial {
+                base_color_texture: Some(asset_server.load(texture_file)),
+                diffuse_transmission: 0.64,
+                specular_transmission: 0.5,
+                perceptual_roughness: 1.0,
+                reflectance: 0.0,
+                metallic: 0.0,
+                ..Default::default()
+            });
+
+            commands
+                .spawn(PickupEntity::new(data.clone()))
+                .insert(trans)
+                .insert(PbrBundle {
+                    mesh: mesh_handle,
+                    material: mat_handle,
+                    transform: trans,
+                    ..Default::default()
+                })
+                .insert(PointLightBundle {
+                    transform: trans,
+                    point_light: PointLight {
+                        color: Color::rgba(1.0, 1.0, 1.0, 0.5),
+                        intensity: 200.0,
+                        radius: 4.0,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
+
+            // let scene_handle = asset_server.load(pickup_model);
+            // let mut trans = Transform::from_translation(pos);
+            // trans.scale = Vec3::splat(*scale);
+
+            // commands
+            //     .spawn(PickupEntity::new(data.clone()))
+            //     .insert(trans)
+            //     .insert(SceneBundle {
+            //         scene: scene_handle,
+            //         transform: trans,
+            //         ..Default::default()
+            //     });
+        }
+    }
 }

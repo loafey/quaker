@@ -3,14 +3,17 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
+use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+use entities::pickup::PickupEntity;
 use map_gen::{entities::data::load_pickups, load_map, texture_systems::*};
 use player::Player;
 use resources::*;
 
+mod entities;
 mod map_gen;
 mod player;
 mod resources;
@@ -46,6 +49,7 @@ fn main() {
             plug
         }))
         .add_plugins(TemporalAntiAliasPlugin)
+        .add_plugins(ObjPlugin)
         .add_systems(PreStartup, load_pickups)
         .add_systems(Startup, load_textures)
         .add_systems(
@@ -64,6 +68,7 @@ fn main() {
                 Player::update_cam_vert,
                 Player::update_cam_hort,
                 Player::ground_detection,
+                PickupEntity::update,
             )
                 .run_if(if_not_paused),
         )

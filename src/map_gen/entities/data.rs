@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::PickupMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "pickup_type")]
 pub enum PickupData {
     Weapon {
@@ -14,6 +14,8 @@ pub enum PickupData {
         gives: String,
         pickup_model: String,
         pickup_material: String,
+        texture_file: String,
+        scale: f32,
     },
 }
 impl PickupData {
