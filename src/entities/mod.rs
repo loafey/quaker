@@ -1,4 +1,4 @@
-use crate::{map_gen::SCALE_FIX, PlayerSpawnpoint};
+use crate::{map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
 use bevy::{
     ecs::system::{Commands, ResMut},
     log::error,
@@ -7,6 +7,8 @@ use bevy::{
     transform::components::Transform,
 };
 use std::collections::HashMap;
+
+use self::data::PickupData;
 
 pub mod data;
 
@@ -34,6 +36,7 @@ pub fn spawn_entity(
     attributes: HashMap<String, String>,
     commands: &mut Commands,
     player_spawn: &mut ResMut<PlayerSpawnpoint>,
+    pickup_map: &PickupMap,
 ) {
     match attributes.get("classname").as_ref().map(|s| &s[..]) {
         Some("light") => {
@@ -68,6 +71,17 @@ pub fn spawn_entity(
 
             player_spawn.0 = pos;
         }
+        Some(x) if pickup_map.0.contains_key(x) => {
+            let data = pickup_map.0.get(x).unwrap();
+            spawn_pickup(data, attributes, commands);
+        }
         _ => error!("unhandled entity: {attributes:?}"),
     }
+}
+
+fn spawn_pickup(data: &PickupData, attributes: HashMap<String, String>, commands: &mut Commands) {
+    let pos = attributes
+        .get("origin")
+        .map(|p| parse_vec(p))
+        .unwrap_or_default();
 }

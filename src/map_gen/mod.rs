@@ -3,7 +3,9 @@ use self::{
     poly::Poly,
     vertex::Vertex,
 };
-use crate::{entities::spawn_entity, CurrentMap, MapDoneLoading, PlayerSpawnpoint, TextureMap};
+use crate::{
+    entities::spawn_entity, CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap,
+};
 use bevy::{
     prelude::*,
     render::{
@@ -37,6 +39,7 @@ pub fn load_map(
     images: Res<Assets<Image>>,
     current_map: Res<CurrentMap>,
     mut meshes: ResMut<Assets<Mesh>>,
+    pickup_map: Res<PickupMap>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     texture_map: Res<TextureMap>,
     mut done_loading: ResMut<MapDoneLoading>,
@@ -49,7 +52,12 @@ pub fn load_map(
     warn!("Loading map...");
 
     for entity in map {
-        spawn_entity(entity.attributes, &mut commands, &mut player_spawn);
+        spawn_entity(
+            entity.attributes,
+            &mut commands,
+            &mut player_spawn,
+            &pickup_map,
+        );
 
         for brush in entity.brushes {
             // Calculate the verticies for the mesh

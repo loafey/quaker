@@ -37,6 +37,7 @@ fn main() {
         .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
         .insert_resource(MapDoneLoading(false))
         .insert_resource(Paused(true))
+        .insert_resource(PickupMap::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(DefaultPlugins.set({
