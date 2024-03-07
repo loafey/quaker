@@ -7,7 +7,7 @@ use bevy::{
     render::texture::Image,
 };
 
-use crate::entities::data::PickupData;
+use crate::map_gen::entities::data::PickupData;
 
 /// String to the current map
 #[derive(Debug, Resource)]

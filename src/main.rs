@@ -7,12 +7,10 @@ use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
-use entities::data::load_pickups;
-use map_gen::{load_map, texture_systems::*};
+use map_gen::{entities::data::load_pickups, load_map, texture_systems::*};
 use player::Player;
 use resources::*;
 
-mod entities;
 mod map_gen;
 mod player;
 mod resources;

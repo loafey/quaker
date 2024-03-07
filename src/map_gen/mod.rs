@@ -3,9 +3,7 @@ use self::{
     poly::Poly,
     vertex::Vertex,
 };
-use crate::{
-    entities::spawn_entity, CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap,
-};
+use crate::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
 use bevy::{
     prelude::*,
     render::{
@@ -15,9 +13,11 @@ use bevy::{
     },
 };
 use bevy_rapier3d::geometry::Collider;
+use entities::spawn_entity;
 use macros::error_return;
 use map_parser::parser::Brush;
 
+pub mod entities;
 mod plane;
 mod poly;
 pub mod texture_systems;
