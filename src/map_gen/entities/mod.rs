@@ -1,13 +1,21 @@
 use crate::{entities::pickup::PickupEntity, map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
 use bevy::{
     asset::{AssetServer, Assets},
-    ecs::system::{Commands, Res, ResMut},
+    ecs::{
+        system::{Commands, Res, ResMut},
+        world::EntityWorldMut,
+    },
+    hierarchy::BuildChildren,
     log::error,
     math::Vec3,
     pbr::{PbrBundle, PointLight, PointLightBundle, StandardMaterial},
     render::{color::Color, mesh::Mesh},
     scene::SceneBundle,
-    transform::components::Transform,
+    transform::{components::Transform, TransformBundle},
+};
+use bevy_rapier3d::{
+    geometry::{ActiveEvents, Collider, Sensor},
+    pipeline::CollisionEvent,
 };
 use std::collections::HashMap;
 
@@ -122,8 +130,11 @@ fn spawn_pickup(
             });
 
             commands
-                .spawn(PickupEntity::new(data.clone()))
-                .insert(trans)
+                .spawn(Collider::cylinder(1.0, 10.0))
+                .insert(Sensor)
+                .insert(ActiveEvents::COLLISION_EVENTS)
+                .insert(TransformBundle::from(Transform::from_translation(pos)))
+                .insert(PickupEntity::new(data.clone()))
                 .insert(PbrBundle {
                     mesh: mesh_handle,
                     material: mat_handle,
