@@ -19,6 +19,7 @@ pub struct Player {
     pub on_ground: bool,
 
     pub weapons: [Vec<WeaponData>; 10],
+    pub current_weapon: Option<(usize, usize)>,
 
     pub half_height: f32,
     pub radius: f32,
@@ -39,6 +40,7 @@ impl Default for Player {
             half_height: 0.5,
             radius: 0.15,
             air_time: None,
+            current_weapon: None,
             weapons: Default::default(),
         }
     }

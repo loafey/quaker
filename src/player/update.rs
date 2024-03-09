@@ -1,7 +1,7 @@
 use super::Player;
 use crate::Paused;
 use bevy::{
-    input::mouse::MouseMotion,
+    input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
@@ -10,6 +10,10 @@ use bevy_rapier3d::{
     plugin::RapierContext,
 };
 
+enum SwitchDirection {
+    Back,
+    Forward,
+}
 impl Player {
     pub fn update_cam_vert(
         mut query: Query<(&Camera3d, &mut Transform)>,
@@ -54,6 +58,7 @@ impl Player {
     pub fn update(
         keys: Res<ButtonInput<KeyCode>>,
         time: Res<Time>,
+        mut mouse_wheel: EventReader<MouseWheel>,
         mut query: Query<(
             &mut KinematicCharacterController,
             &mut Player,
@@ -61,7 +66,7 @@ impl Player {
         )>,
     ) {
         for (mut controller, mut player, mut gt) in &mut query {
-            // handle input
+            // movement
             let local_z = gt.local_z();
             let forward = -Vec3::new(local_z.x, 0., local_z.z);
             let right = Vec3::new(local_z.z, 0., -local_z.x);
@@ -95,11 +100,6 @@ impl Player {
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
             }
 
-            // println!(
-            //     "onground: {}\t|\tvelocity: {}\t|\tjump timer: {}",
-            //     player.on_ground, player.velocity.y, player.jump_timer
-            // );
-
             controller.translation = Some(player.velocity * time.delta_seconds());
 
             let x = player.velocity.x;
@@ -116,6 +116,53 @@ impl Player {
                 gt.translation.y += 0.1;
             } else if keys.pressed(KeyCode::ControlLeft) {
                 gt.translation.y -= 0.1;
+            }
+
+            // Weaponry
+            player.weaponry_switch(&mut mouse_wheel);
+        }
+    }
+
+    fn weaponry_switch(&mut self, mouse_wheel: &mut EventReader<MouseWheel>) {
+        if let Some((slot, row)) = self.current_weapon {
+            println!("Currently using: {}", self.weapons[slot][row].id);
+        }
+        for ev in mouse_wheel.read() {
+            let inv_len = self.weapons.len() - 1;
+            if let Some((mut slot, mut row)) = self.current_weapon {
+                let dir = if ev.y < 0.0 {
+                    SwitchDirection::Back
+                } else {
+                    SwitchDirection::Forward
+                };
+                loop {
+                    match dir {
+                        SwitchDirection::Back => {
+                            if slot == 0 {
+                                slot = inv_len;
+                            } else {
+                                slot -= 1;
+                            }
+                            if !self.weapons[slot].is_empty() {
+                                row = self.weapons[slot].len() - 1;
+                                break;
+                            }
+                        }
+                        SwitchDirection::Forward => {
+                            if slot == inv_len {
+                                slot = 0;
+                            } else {
+                                slot += 1;
+                            }
+                            if !self.weapons[slot].is_empty() {
+                                row = 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                self.current_weapon = Some((slot, row));
             }
         }
     }
