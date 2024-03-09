@@ -4,7 +4,7 @@ use bevy::{ecs::system::ResMut, log::warn};
 use macros::error_return;
 use serde::{Deserialize, Serialize};
 
-use crate::PickupMap;
+use crate::{PickupMap, WeaponMap};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "pickup_type")]
@@ -36,4 +36,23 @@ pub fn load_pickups(mut map: ResMut<PickupMap>) {
     }
 
     warn!("Done loading pickups...");
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct WeaponData {
+    pub id: String,
+    #[serde(default)]
+    pub slot: usize,
+}
+
+pub fn load_weapons(mut map: ResMut<WeaponMap>) {
+    warn!("Loading pickups...");
+    let data = error_return!(fs::read_to_string("assets/weapons.json"));
+    let parsed = error_return!(serde_json::from_str::<Vec<WeaponData>>(&data));
+
+    for item in parsed {
+        map.0.insert(item.id.clone(), item);
+    }
+
+    warn!("Done loading weapons...");
 }

@@ -1,0 +1,42 @@
+[
+    {
+        "id": "weapon_bayonet",
+        "slot": 0
+    },
+    {
+        "id": "weapon_revolver",
+        "slot": 1
+    },
+    {
+        "id": "weapon_pumpshotgun",
+        "slot": 2
+    },
+    {
+        "id": "weapon_smgbelter",
+        "slot": 3
+    },
+    {
+        "id": "weapon_rpg",
+        "slot": 4
+    },
+    {
+        "id": "weapon_dynamite",
+        "slot": 5
+    },
+    {
+        "id": "weapon_supershotgun",
+        "slot": 6
+    },
+    {
+        "id": "weapon_flamethrower",
+        "slot": 7
+    },
+    {
+        "id": "weapon_supercoolgun",
+        "slot": 8
+    },
+    {
+        "id": "weapon_nukegun",
+        "slot": 9
+    }
+]

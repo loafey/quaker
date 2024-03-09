@@ -59,7 +59,6 @@ pub fn load_map(
             &mut commands,
             &mut player_spawn,
             &pickup_map,
-            &mut meshes,
             &mut materials,
         );
 

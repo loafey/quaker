@@ -1,19 +1,18 @@
-use crate::{map_gen::entities::data::PickupData, player::Player};
+use crate::{map_gen::entities::data::PickupData, player::Player, WeaponMap};
 use bevy::{
+    asset::AssetServer,
     ecs::{
         component::Component,
-        entity::Entity,
         event::EventReader,
         system::{Commands, Query, Res},
     },
+    log::error,
     time::Time,
     transform::components::Transform,
 };
-use bevy_rapier3d::{
-    geometry::{ActiveEvents, Sensor},
-    pipeline::{CollisionEvent, ContactForceEvent},
-    rapier::geometry::CollisionEventFlags,
-};
+use bevy_kira_audio::Audio;
+use bevy_kira_audio::AudioControl;
+use bevy_rapier3d::{pipeline::CollisionEvent, rapier::geometry::CollisionEventFlags};
 
 #[derive(Debug, Component)]
 pub struct PickupEntity {
@@ -23,23 +22,54 @@ impl PickupEntity {
     pub fn new(data: PickupData) -> Self {
         Self { data }
     }
-    pub fn update(
+    pub fn handle_pickups(
         mut commands: Commands,
-        mut query: Query<(&mut PickupEntity, &mut Transform)>,
-        mut entities: Query<&mut Player>,
+        pickups: Query<&PickupEntity>,
+        mut players: Query<&mut Player>,
         mut reader: EventReader<CollisionEvent>,
-        time: Res<Time>,
+        weapon_map: Res<WeaponMap>,
+        asset_server: Res<AssetServer>,
+        audio: Res<Audio>,
     ) {
         for event in reader.read() {
-            if let CollisionEvent::Started(pickup, player, CollisionEventFlags::SENSOR) = event {
-                if let Ok(player) = entities.get_mut(*player) {
-                    println!("{:?}", player.weapons);
+            if let CollisionEvent::Started(ent_pickup, player, CollisionEventFlags::SENSOR) = event
+            {
+                if let (Ok(mut player), Ok(pickup)) =
+                    (players.get_mut(*player), pickups.get(*ent_pickup))
+                {
+                    let classname = pickup.data.classname();
+                    if let Some(weapon_data) = weapon_map.0.get(classname) {
+                        let slot = weapon_data.slot;
+                        player.weapons[slot].push(weapon_data.clone());
+                        audio.play(
+                            asset_server.load("sounds/Player/Guns/SuperShotty/shotgunCock.ogg"),
+                        );
+                    } else {
+                        error!("tried to pickup nonexisting weapon: \"{classname}\"")
+                    }
 
-                    commands.entity(*pickup).despawn();
+                    println!(
+                        "Player inventory: [\n    {}\n]",
+                        player
+                            .weapons
+                            .iter()
+                            .map(|v| format!(
+                                "[{}]",
+                                v.iter()
+                                    .map(|w| w.id.clone())
+                                    .collect::<Vec<_>>()
+                                    .join(", ")
+                            ))
+                            .collect::<Vec<_>>()
+                            .join(",\n    ")
+                    );
+
+                    commands.entity(*ent_pickup).despawn();
                 }
             }
         }
-
+    }
+    pub fn update(mut query: Query<(&mut PickupEntity, &mut Transform)>, time: Res<Time>) {
         for (_pe, mut trans) in query.iter_mut() {
             trans.rotate_y(time.delta_seconds());
         }

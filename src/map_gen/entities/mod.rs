@@ -1,22 +1,16 @@
 use crate::{entities::pickup::PickupEntity, map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
 use bevy::{
     asset::{AssetServer, Assets},
-    ecs::{
-        system::{Commands, Res, ResMut},
-        world::EntityWorldMut,
-    },
-    hierarchy::BuildChildren,
+    ecs::system::{Commands, Res, ResMut},
     log::error,
     math::Vec3,
     pbr::{PbrBundle, PointLight, PointLightBundle, StandardMaterial},
-    render::{color::Color, mesh::Mesh},
-    scene::SceneBundle,
+    render::color::Color,
     transform::{components::Transform, TransformBundle},
 };
 use bevy_rapier3d::{
     dynamics::Ccd,
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, Sensor},
-    pipeline::CollisionEvent,
 };
 use std::collections::HashMap;
 
@@ -50,7 +44,6 @@ pub fn spawn_entity(
     commands: &mut Commands,
     player_spawn: &mut ResMut<PlayerSpawnpoint>,
     pickup_map: &PickupMap,
-    meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     match attributes.get("classname").as_ref().map(|s| &s[..]) {
@@ -88,7 +81,7 @@ pub fn spawn_entity(
         }
         Some(x) if pickup_map.0.contains_key(x) => {
             let data = pickup_map.0.get(x).unwrap();
-            spawn_pickup(asset_server, data, attributes, commands, meshes, materials);
+            spawn_pickup(asset_server, data, attributes, commands, materials);
         }
         _ => error!("unhandled entity: {attributes:?}"),
     }
@@ -99,7 +92,6 @@ fn spawn_pickup(
     data: &PickupData,
     attributes: HashMap<String, String>,
     commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     let pos = attributes
@@ -109,12 +101,10 @@ fn spawn_pickup(
 
     match data {
         PickupData::Weapon {
-            classname,
-            gives,
             pickup_model,
-            pickup_material,
             texture_file,
             scale,
+            ..
         } => {
             let mesh_handle = asset_server.load(pickup_model);
             let mut trans = Transform::from_translation(pos);
@@ -154,19 +144,6 @@ fn spawn_pickup(
                     ..Default::default()
                 })
                 .insert(Ccd::enabled());
-
-            // let scene_handle = asset_server.load(pickup_model);
-            // let mut trans = Transform::from_translation(pos);
-            // trans.scale = Vec3::splat(*scale);
-
-            // commands
-            //     .spawn(PickupEntity::new(data.clone()))
-            //     .insert(trans)
-            //     .insert(SceneBundle {
-            //         scene: scene_handle,
-            //         transform: trans,
-            //         ..Default::default()
-            //     });
         }
     }
 }

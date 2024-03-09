@@ -7,7 +7,7 @@ use bevy::{
     render::texture::Image,
 };
 
-use crate::map_gen::entities::data::PickupData;
+use crate::map_gen::entities::data::{PickupData, WeaponData};
 
 /// String to the current map
 #[derive(Debug, Resource)]
@@ -52,6 +52,9 @@ pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
 pub struct TextureMap(pub HashMap<String, Handle<Image>>);
 
 /// A map with pickup data
-
 #[derive(Debug, Resource, Default)]
 pub struct PickupMap(pub HashMap<String, PickupData>);
+
+/// A map with weapon data
+#[derive(Debug, Resource, Default)]
+pub struct WeaponMap(pub HashMap<String, WeaponData>);

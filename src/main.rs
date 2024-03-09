@@ -3,13 +3,18 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
+use bevy_kira_audio::AudioPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
 use entities::pickup::PickupEntity;
-use map_gen::{entities::data::load_pickups, load_map, texture_systems::*};
+use map_gen::{
+    entities::data::{load_pickups, load_weapons},
+    load_map,
+    texture_systems::*,
+};
 use player::Player;
 use resources::*;
 
@@ -39,6 +44,7 @@ fn main() {
         .insert_resource(MapDoneLoading(false))
         .insert_resource(Paused(true))
         .insert_resource(PickupMap::default())
+        .insert_resource(WeaponMap::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(DefaultPlugins.set({
@@ -50,7 +56,9 @@ fn main() {
         }))
         .add_plugins(TemporalAntiAliasPlugin)
         .add_plugins(ObjPlugin)
+        .add_plugins(AudioPlugin)
         .add_systems(PreStartup, load_pickups)
+        .add_systems(PreStartup, load_weapons)
         .add_systems(Startup, load_textures)
         .add_systems(
             Update,
@@ -69,6 +77,7 @@ fn main() {
                 Player::update_cam_hort,
                 Player::ground_detection,
                 PickupEntity::update,
+                PickupEntity::handle_pickups,
             )
                 .run_if(if_not_paused),
         )

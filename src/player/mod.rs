@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::map_gen::entities::data::WeaponData;
+
 mod debug;
 mod spawn;
 mod update;
@@ -16,7 +18,7 @@ pub struct Player {
     pub gravity: f32,
     pub on_ground: bool,
 
-    pub weapons: [Vec<Weapon>; 10],
+    pub weapons: [Vec<WeaponData>; 10],
 
     pub half_height: f32,
     pub radius: f32,
@@ -41,6 +43,3 @@ impl Default for Player {
         }
     }
 }
-
-#[derive(Debug)]
-pub struct Weapon {}
