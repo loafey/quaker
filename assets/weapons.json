@@ -1,42 +1,54 @@
 [
     {
         "id": "weapon_bayonet",
-        "slot": 0
+        "slot": 0,
+        "scale": 0.1
     },
     {
         "id": "weapon_revolver",
-        "slot": 1
+        "slot": 1,
+        "scale": 0.1
     },
     {
         "id": "weapon_pumpshotgun",
-        "slot": 2
+        "slot": 2,
+        "scale": 0.1
     },
     {
         "id": "weapon_smgbelter",
-        "slot": 3
+        "slot": 3,
+        "scale": 0.1
     },
     {
         "id": "weapon_rpg",
-        "slot": 4
+        "slot": 4,
+        "scale": 0.1
     },
     {
         "id": "weapon_dynamite",
-        "slot": 5
+        "slot": 5,
+        "scale": 0.1
     },
     {
         "id": "weapon_supershotgun",
-        "slot": 6
+        "slot": 6,
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "model_file": "models/Player/First Person/SuperShotgun/SuperShotgun.gltf",
+        "scale": 0.1
     },
     {
         "id": "weapon_flamethrower",
-        "slot": 7
+        "slot": 7,
+        "scale": 0.1
     },
     {
         "id": "weapon_supercoolgun",
-        "slot": 8
+        "slot": 8,
+        "scale": 0.1
     },
     {
         "id": "weapon_nukegun",
-        "slot": 9
+        "slot": 9,
+        "scale": 0.1
     }
 ]

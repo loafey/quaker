@@ -7,6 +7,9 @@ mod spawn;
 mod update;
 
 #[derive(Component, Debug)]
+pub struct PlayerFpsModel;
+
+#[derive(Component, Debug)]
 pub struct Player {
     pub self_rot: f32,
     pub velocity: Vec3,

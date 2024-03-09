@@ -1,3 +1,4 @@
+#![feature(let_chains)]
 extern crate macros;
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
@@ -76,6 +77,7 @@ fn main() {
                 Player::update_cam_vert,
                 Player::update_cam_hort,
                 Player::ground_detection,
+                Player::weaponry_switch,
                 PickupEntity::update,
                 PickupEntity::handle_pickups,
             )

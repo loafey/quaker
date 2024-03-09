@@ -1,6 +1,6 @@
 use crate::PlayerSpawnpoint;
 
-use super::Player;
+use super::{Player, PlayerFpsModel};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -45,6 +45,8 @@ impl Player {
                 .insert(ScreenSpaceAmbientOcclusionBundle::default())
                 .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
                 .insert(TemporalAntiAliasBundle::default());
+
+                c.spawn(PlayerFpsModel).insert(SceneBundle::default());
             });
     }
 }

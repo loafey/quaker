@@ -1,4 +1,4 @@
-use super::Player;
+use super::{Player, PlayerFpsModel};
 use crate::Paused;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
@@ -22,13 +22,13 @@ impl Player {
     ) {
         for (_, children) in q_parent.iter() {
             for &child in children.iter() {
-                let (_, mut trans) = query.get_mut(child).unwrap();
-
-                for ev in motion_evr.read() {
-                    let old = trans.rotation;
-                    trans.rotate_local_x(ev.delta.y / -1000.0);
-                    if trans.rotation.x < -0.5 || trans.rotation.x > 0.7 {
-                        trans.rotation = old;
+                if let Ok((_, mut trans)) = query.get_mut(child) {
+                    for ev in motion_evr.read() {
+                        let old = trans.rotation;
+                        trans.rotate_local_x(ev.delta.y / -1000.0);
+                        if trans.rotation.x < -0.5 || trans.rotation.x > 0.7 {
+                            trans.rotation = old;
+                        }
                     }
                 }
             }
@@ -117,51 +117,75 @@ impl Player {
             } else if keys.pressed(KeyCode::ControlLeft) {
                 gt.translation.y -= 0.1;
             }
-
-            // Weaponry
-            player.weaponry_switch(&mut mouse_wheel);
         }
     }
 
-    fn weaponry_switch(&mut self, mouse_wheel: &mut EventReader<MouseWheel>) {
-        for ev in mouse_wheel.read() {
-            let inv_len = self.weapons.len() - 1;
-            if let Some((mut slot, mut row)) = self.current_weapon {
-                let dir = if ev.y < 0.0 {
-                    SwitchDirection::Back
-                } else {
-                    SwitchDirection::Forward
-                };
-                loop {
-                    match dir {
-                        SwitchDirection::Back => {
-                            if slot == 0 {
-                                slot = inv_len;
-                            } else {
-                                slot -= 1;
+    pub fn weaponry_switch(
+        mut query: Query<(&mut Player, &mut Children)>,
+        mut model_query: Query<(&mut Handle<Scene>, &mut Transform), With<PlayerFpsModel>>,
+        mut mouse_wheel: EventReader<MouseWheel>,
+        asset_server: Res<AssetServer>,
+    ) {
+        for (mut player, children) in query.iter_mut() {
+            for ev in mouse_wheel.read() {
+                let inv_len = player.weapons.len() - 1;
+                if let Some((mut slot, mut row)) = player.current_weapon {
+                    let dir = if ev.y < 0.0 {
+                        SwitchDirection::Back
+                    } else {
+                        SwitchDirection::Forward
+                    };
+                    loop {
+                        match dir {
+                            SwitchDirection::Back => {
+                                if slot == 0 {
+                                    slot = inv_len;
+                                } else {
+                                    slot -= 1;
+                                }
+                                if !player.weapons[slot].is_empty() {
+                                    row = player.weapons[slot].len() - 1;
+                                    break;
+                                }
                             }
-                            if !self.weapons[slot].is_empty() {
-                                row = self.weapons[slot].len() - 1;
-                                break;
-                            }
-                        }
-                        SwitchDirection::Forward => {
-                            if slot == inv_len {
-                                slot = 0;
-                            } else {
-                                slot += 1;
-                            }
-                            if !self.weapons[slot].is_empty() {
-                                row = 0;
-                                break;
+                            SwitchDirection::Forward => {
+                                if slot == inv_len {
+                                    slot = 0;
+                                } else {
+                                    slot += 1;
+                                }
+                                if !player.weapons[slot].is_empty() {
+                                    row = 0;
+                                    break;
+                                }
                             }
                         }
                     }
+                    info!("Currently using: {}", player.weapons[slot][row].id);
+                    player.current_weapon = Some((slot, row));
+
+                    for child in children.iter() {
+                        println!("{:?}", model_query.get(*child).is_ok());
+                        if let Ok((mut mesh, mut trans)) = model_query.get_mut(*child)
+                            && !player.weapons[slot][row].model_file.is_empty()
+                        {
+                            let data = &player.weapons[slot][row];
+                            let new_mesh =
+                                asset_server.load(&format!("{}#Scene0", data.model_file));
+                            //anim_player
+                            //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
+                            //    .repeat();
+                            trans.scale = Vec3::splat(data.scale);
+                            *mesh = new_mesh;
+                        }
+                    }
                 }
-                info!("Currently using: {}", self.weapons[slot][row].id);
-                self.current_weapon = Some((slot, row));
             }
         }
+
+        // for model in model_query.iter() {
+        //     println!("{:?}", model);
+        // }
     }
 
     pub fn pause_handler(

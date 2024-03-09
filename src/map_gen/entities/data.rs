@@ -43,6 +43,11 @@ pub struct WeaponData {
     pub id: String,
     #[serde(default)]
     pub slot: usize,
+    #[serde(default)]
+    pub texture_file: String,
+    #[serde(default)]
+    pub model_file: String,
+    pub scale: f32,
 }
 
 pub fn load_weapons(mut map: ResMut<WeaponMap>) {

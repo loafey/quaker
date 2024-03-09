@@ -41,7 +41,11 @@ impl PickupEntity {
                     if let Some(weapon_data) = weapon_map.0.get(classname) {
                         let slot = weapon_data.slot;
                         player.weapons[slot].push(weapon_data.clone());
+                        if player.current_weapon.is_none() {
+                            player.current_weapon = Some((slot, 0))
+                        }
                         audio.play(
+                            // TODO, make this customizable
                             asset_server.load("sounds/Player/Guns/SuperShotty/shotgunCock.ogg"),
                         );
                     } else {
