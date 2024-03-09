@@ -14,7 +14,8 @@ use bevy::{
     transform::{components::Transform, TransformBundle},
 };
 use bevy_rapier3d::{
-    geometry::{ActiveEvents, Collider, Sensor},
+    dynamics::Ccd,
+    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, Sensor},
     pipeline::CollisionEvent,
 };
 use std::collections::HashMap;
@@ -135,6 +136,7 @@ fn spawn_pickup(
                 .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(TransformBundle::from(Transform::from_translation(pos)))
                 .insert(PickupEntity::new(data.clone()))
+                .insert(ActiveCollisionTypes::all())
                 .insert(PbrBundle {
                     mesh: mesh_handle,
                     material: mat_handle,
@@ -150,7 +152,8 @@ fn spawn_pickup(
                         ..Default::default()
                     },
                     ..Default::default()
-                });
+                })
+                .insert(Ccd::enabled());
 
             // let scene_handle = asset_server.load(pickup_model);
             // let mut trans = Transform::from_translation(pos);

@@ -18,6 +18,7 @@ impl Player {
 
         commands
             .spawn(Collider::cylinder(0.5, 0.15))
+            .insert(ActiveEvents::COLLISION_EVENTS)
             .add(move |mut c: EntityWorldMut| {
                 let mut trans = Transform::from_translation(player_spawn);
                 trans.rotate_x(std::f32::consts::PI / -8.0);
@@ -27,7 +28,8 @@ impl Player {
                     .insert(LockedAxes::ROTATION_LOCKED)
                     .insert(Player::default())
                     .insert(GlobalTransform::default())
-                    .insert(trans);
+                    .insert(trans)
+                    .insert(Ccd::enabled());
             })
             .with_children(|c| {
                 c.spawn({
