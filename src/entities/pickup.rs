@@ -4,7 +4,7 @@ use bevy::{
         component::Component,
         entity::Entity,
         event::EventReader,
-        system::{Query, Res},
+        system::{Commands, Query, Res},
     },
     time::Time,
     transform::components::Transform,
@@ -24,15 +24,18 @@ impl PickupEntity {
         Self { data }
     }
     pub fn update(
+        mut commands: Commands,
         mut query: Query<(&mut PickupEntity, &mut Transform)>,
         mut entities: Query<&mut Player>,
         mut reader: EventReader<CollisionEvent>,
         time: Res<Time>,
     ) {
         for event in reader.read() {
-            if let CollisionEvent::Started(_, e2, CollisionEventFlags::SENSOR) = event {
-                if let Ok(player) = entities.get_mut(*e2) {
-                    println!("{player:?}");
+            if let CollisionEvent::Started(pickup, player, CollisionEventFlags::SENSOR) = event {
+                if let Ok(player) = entities.get_mut(*player) {
+                    println!("{:?}", player.weapons);
+
+                    commands.entity(*pickup).despawn();
                 }
             }
         }
