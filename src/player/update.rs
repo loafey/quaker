@@ -124,9 +124,6 @@ impl Player {
     }
 
     fn weaponry_switch(&mut self, mouse_wheel: &mut EventReader<MouseWheel>) {
-        if let Some((slot, row)) = self.current_weapon {
-            println!("Currently using: {}", self.weapons[slot][row].id);
-        }
         for ev in mouse_wheel.read() {
             let inv_len = self.weapons.len() - 1;
             if let Some((mut slot, mut row)) = self.current_weapon {
@@ -161,7 +158,7 @@ impl Player {
                         }
                     }
                 }
-
+                info!("Currently using: {}", self.weapons[slot][row].id);
                 self.current_weapon = Some((slot, row));
             }
         }
