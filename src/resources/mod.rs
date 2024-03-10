@@ -41,7 +41,7 @@ impl Default for TexturesLoading {
     }
 }
 pub fn if_texture_loading(text: Res<TexturesLoading>) -> bool {
-    text.1 && !text.0.is_empty()
+    text.1 || !text.0.is_empty()
 }
 pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
     !text.1 && text.0.is_empty()
