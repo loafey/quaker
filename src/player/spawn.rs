@@ -54,7 +54,7 @@ impl Player {
                                 if entity.get::<Handle<Mesh>>().is_some() {
                                     commands.insert(NoFrustumCulling);
                                 }
-                                if let Some(old_mat) = entity.get::<Handle<StandardMaterial>>() {
+                                if entity.get::<Handle<StandardMaterial>>().is_some() {
                                     if let Some(material) =
                                         world.entity(root).get::<PlayerFpsMaterial>()
                                     {
