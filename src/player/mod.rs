@@ -11,6 +11,21 @@ mod update;
 #[derive(Component, Debug)]
 pub struct PlayerFpsModel;
 
+#[derive(Debug)]
+pub struct CameraMovement {
+    pub backdrift: f32,
+    pub backdrift_goal: f32,
+    pub backdrift_max: f32,
+    pub original_trans: Vec3,
+
+    pub bob_goal: f32,
+    pub bob_current: f32,
+
+    pub cam_rot_max_goal: f32,
+    pub cam_rot_goal: f32,
+    pub cam_rot_current: f32,
+}
+
 #[derive(Component, Debug, Default)]
 pub struct PlayerFpsAnimations(HashMap<String, Handle<AnimationClip>>);
 #[derive(Component, Debug, Default)]
@@ -28,9 +43,7 @@ pub struct Player {
     pub gravity: f32,
     pub on_ground: bool,
 
-    pub cam_rot_max_goal: f32,
-    pub cam_rot_goal: f32,
-    pub cam_rot_current: f32,
+    pub camera_movement: CameraMovement,
 
     pub weapons: [Vec<WeaponData>; 10],
     pub current_weapon: Option<(usize, usize)>,
@@ -58,9 +71,18 @@ impl Default for Player {
             current_weapon: None,
             weapons: Default::default(),
             current_weapon_anim: String::new(),
-            cam_rot_max_goal: 0.03,
-            cam_rot_goal: 0.03,
-            cam_rot_current: 0.0,
+            camera_movement: CameraMovement {
+                backdrift: 0.0,
+                backdrift_goal: 0.0,
+                backdrift_max: 0.02,
+                original_trans: Vec3::ZERO,
+                cam_rot_max_goal: 0.03,
+                cam_rot_goal: 0.03,
+                cam_rot_current: 0.0,
+
+                bob_current: 0.0,
+                bob_goal: 0.0,
+            },
         }
     }
 }

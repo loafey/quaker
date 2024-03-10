@@ -17,18 +17,41 @@ enum SwitchDirection {
 }
 impl Player {
     pub fn camera_movement(
-        mut query: Query<(&Camera3d, &mut Transform)>,
+        mut query: Query<(&Camera3d, &mut Transform, &Children)>,
+        mut q_model: Query<(&PlayerFpsModel, &mut Transform), Without<Camera3d>>,
         mut q_parent: Query<(&mut Player, &Children)>,
         time: Res<Time>,
     ) {
         for (mut player, children) in q_parent.iter_mut() {
-            player.cam_rot_current = player
-                .cam_rot_current
-                .lerp(player.cam_rot_goal, time.delta_seconds() * 10.0);
+            player.camera_movement.cam_rot_current = player.camera_movement.cam_rot_current.lerp(
+                player.camera_movement.cam_rot_goal,
+                time.delta_seconds() * 10.0,
+            );
 
-            for &child in children.iter() {
-                if let Ok((_, mut cam_trans)) = query.get_mut(child) {
-                    cam_trans.rotation.z = player.cam_rot_current;
+            player.camera_movement.backdrift = player.camera_movement.backdrift.lerp(
+                player.camera_movement.backdrift_goal,
+                time.delta_seconds() * 10.0,
+            );
+
+            player.camera_movement.bob_current = player.camera_movement.bob_current.lerp(
+                player.camera_movement.bob_goal.sin(),
+                time.delta_seconds() * 10.0,
+            );
+
+            for child in children {
+                if let Ok((_, mut cam_trans, children)) = query.get_mut(*child) {
+                    cam_trans.rotation.z = player.camera_movement.cam_rot_current;
+
+                    for child in children {
+                        if let Ok((_, mut trans)) = q_model.get_mut(*child) {
+                            let mut new_trans = player.camera_movement.original_trans;
+                            new_trans.z += player.camera_movement.backdrift;
+                            new_trans.x += player.camera_movement.cam_rot_current / 2.0;
+                            new_trans.y += player.camera_movement.bob_current / 100.0;
+
+                            trans.translation = new_trans;
+                        }
+                    }
                 }
             }
         }
@@ -92,22 +115,43 @@ impl Player {
             let hort_speed = player.hort_speed;
             if keys.pressed(KeyCode::KeyW) {
                 player.velocity += forward * hort_speed * time.delta_seconds();
+                player.camera_movement.backdrift_goal = player.camera_movement.backdrift_max;
             } else if keys.pressed(KeyCode::KeyS) {
                 player.velocity -= forward * hort_speed * time.delta_seconds();
+                player.camera_movement.backdrift_goal = -player.camera_movement.backdrift_max;
+            } else {
+                player.camera_movement.backdrift_goal = 0.0;
             }
 
             if keys.pressed(KeyCode::KeyA) {
                 player.velocity -= right * hort_speed * time.delta_seconds();
-                player.cam_rot_goal = player.cam_rot_max_goal;
+                player.camera_movement.cam_rot_goal = player.camera_movement.cam_rot_max_goal;
             } else if keys.pressed(KeyCode::KeyD) {
                 player.velocity += right * hort_speed * time.delta_seconds();
-                player.cam_rot_goal = -player.cam_rot_max_goal;
+                player.camera_movement.cam_rot_goal = -player.camera_movement.cam_rot_max_goal;
             } else {
-                player.cam_rot_goal = 0.0;
+                player.camera_movement.cam_rot_goal = 0.0;
             }
+
+            player.camera_movement.backdrift_goal += (player.velocity.y.abs() / 5.0).min(0.03);
 
             player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
             player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
+
+            if player.velocity != Vec3::ZERO {
+                player.camera_movement.bob_goal += time.delta_seconds()
+                    * (Vec3::new(player.velocity.x, 0.0, player.velocity.z)
+                        .abs()
+                        .length()
+                        - player.velocity.y.abs())
+                    .max(0.0)
+                    * 2.0;
+                if player.camera_movement.bob_goal > std::f32::consts::PI * 2.0 {
+                    player.camera_movement.bob_goal -= std::f32::consts::PI * 2.0;
+                }
+            } else {
+                player.camera_movement.bob_goal = 0.0;
+            }
 
             if player.on_ground && player.jump_timer <= 0.0 {
                 player.velocity.y = 0.0;
@@ -146,27 +190,28 @@ impl Player {
     //Player <- FPsModel <- Scene thing <- Mesh <- AnimationPlayer
     pub fn weapon_animations(
         players: Query<(&Player, &Children)>,
-        cam_query: Query<(&Camera3d, &Children)>,
-        player_fps_anims: Query<(&PlayerFpsAnimations, &Children)>,
-        scenes: Query<&Children>,
-        mut anim_players: Query<&mut AnimationPlayer>,
+        q_cam: Query<(&Camera3d, &Children)>,
+        q_player_fps_anims: Query<(&PlayerFpsAnimations, &Children)>,
+        q_scenes: Query<&Children>,
+        mut q_anim_players: Query<&mut AnimationPlayer>,
     ) {
         for (player, children) in &players {
             // TODO replace these with proper gets.
             for child in children {
-                if let Ok((_, children)) = cam_query.get(*child) {
+                if let Ok((_, children)) = q_cam.get(*child) {
                     // Got camera
                     // TODO replace these with proper gets.
                     for child in children {
-                        if let Ok((anims, children)) = player_fps_anims.get(*child) {
+                        if let Ok((anims, children)) = q_player_fps_anims.get(*child) {
                             // Got FPS model entity
                             // TODO replace these with proper gets.
                             for child in children {
-                                if let Ok(children) = scenes.get(*child) {
+                                if let Ok(children) = q_scenes.get(*child) {
                                     // Got GLTF scene
                                     // TODO replace these with proper gets.
                                     for child in children {
-                                        if let Ok(mut anim_player) = anim_players.get_mut(*child) {
+                                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child)
+                                        {
                                             // now we have the animation player
                                             let clip = &anims.0[&player.current_weapon_anim];
                                             if !anim_player.is_playing_clip(clip) {
@@ -186,8 +231,8 @@ impl Player {
     #[allow(clippy::type_complexity)]
     pub fn weaponry_switch(
         mut query: Query<(&mut Player, &Children)>,
-        cam_query: Query<(&Camera3d, &Children)>,
-        mut model_query: Query<
+        q_cam: Query<(&Camera3d, &Children)>,
+        mut q_model: Query<
             (
                 &mut Handle<Scene>,
                 &mut Transform,
@@ -241,11 +286,11 @@ impl Player {
 
                     // TODO replace these with proper gets.
                     for child in children {
-                        if let Ok((_, children)) = cam_query.get(*child) {
+                        if let Ok((_, children)) = q_cam.get(*child) {
                             // TODO replace these with proper gets.
                             for child in children {
                                 if let Ok((mut mesh, mut trans, mut anims, mut mat, mut hook)) =
-                                    model_query.get_mut(*child)
+                                    q_model.get_mut(*child)
                                     && !player.weapons[slot][row].model_file.is_empty()
                                 {
                                     let data = &player.weapons[slot][row];
@@ -282,6 +327,7 @@ impl Player {
                                     trans.translation = Vec3::from(data.offset);
                                     *mesh = new_mesh;
                                     player.current_weapon_anim = "idle".to_string();
+                                    player.camera_movement.original_trans = trans.translation;
                                     hook.state = HookState::MustReload;
                                 }
                             }
