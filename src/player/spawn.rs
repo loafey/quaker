@@ -1,6 +1,5 @@
+use super::{Player, PlayerFpsAnimations, PlayerFpsMaterial, PlayerFpsModel};
 use crate::PlayerSpawnpoint;
-
-use super::{Player, PlayerFpsAnimations, PlayerFpsModel};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -11,6 +10,7 @@ use bevy::{
     render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
 use bevy_rapier3d::prelude::*;
+use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 
 impl Player {
     pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
@@ -39,18 +39,33 @@ impl Player {
                             ..default()
                         }),
                         //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
-                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
                         ..Default::default()
                     }
                 })
                 .insert(ScreenSpaceAmbientOcclusionBundle::default())
                 .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
-                .insert(TemporalAntiAliasBundle::default());
-
-                c.spawn(PlayerFpsModel)
-                    .insert(SceneBundle::default())
-                    .insert(PlayerFpsAnimations::default())
-                    .insert(NoFrustumCulling);
+                .insert(TemporalAntiAliasBundle::default())
+                .with_children(|c| {
+                    c.spawn(PlayerFpsModel)
+                        .insert(HookedSceneBundle {
+                            scene: SceneBundle::default(),
+                            reload: Hook::new(|entity, commands, world, root| {
+                                if entity.get::<Handle<Mesh>>().is_some() {
+                                    commands.insert(NoFrustumCulling);
+                                }
+                                if let Some(old_mat) = entity.get::<Handle<StandardMaterial>>() {
+                                    if let Some(material) =
+                                        world.entity(root).get::<PlayerFpsMaterial>()
+                                    {
+                                        commands.insert(material.0.clone());
+                                    }
+                                }
+                            }),
+                        })
+                        .insert(PlayerFpsAnimations::default())
+                        .insert(PlayerFpsMaterial::default());
+                });
             });
     }
 }

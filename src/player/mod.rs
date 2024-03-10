@@ -13,6 +13,8 @@ pub struct PlayerFpsModel;
 
 #[derive(Component, Debug, Default)]
 pub struct PlayerFpsAnimations(HashMap<String, Handle<AnimationClip>>);
+#[derive(Component, Debug, Default)]
+pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
 pub struct Player {

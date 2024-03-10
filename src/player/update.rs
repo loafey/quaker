@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsAnimations, PlayerFpsModel};
+use super::{Player, PlayerFpsAnimations, PlayerFpsMaterial, PlayerFpsModel};
 use crate::Paused;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
@@ -9,6 +9,7 @@ use bevy_rapier3d::{
     control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
     plugin::RapierContext,
 };
+use bevy_scene_hook::reload::{Hook, State as HookState};
 
 enum SwitchDirection {
     Back,
@@ -122,23 +123,29 @@ impl Player {
     //Player <- FPsModel <- Scene thing <- Mesh <- AnimationPlayer
     pub fn weapon_animations(
         players: Query<(&Player, &Children)>,
+        cam_query: Query<(&Camera3d, &Children)>,
         player_fps_anims: Query<(&PlayerFpsAnimations, &Children)>,
         scenes: Query<&Children>,
         mut anim_players: Query<&mut AnimationPlayer>,
     ) {
         for (player, children) in &players {
             for child in children {
-                if let Ok((anims, children)) = player_fps_anims.get(*child) {
-                    // Got FPS model entity
+                if let Ok((_, children)) = cam_query.get(*child) {
+                    // Got camera
                     for child in children {
-                        if let Ok(children) = scenes.get(*child) {
-                            // Got GLTF scene
+                        if let Ok((anims, children)) = player_fps_anims.get(*child) {
+                            // Got FPS model entity
                             for child in children {
-                                if let Ok(mut anim_player) = anim_players.get_mut(*child) {
-                                    // now we have the animation player
-                                    let clip = &anims.0[&player.current_weapon_anim];
-                                    if !anim_player.is_playing_clip(clip) {
-                                        anim_player.play(clip.clone());
+                                if let Ok(children) = scenes.get(*child) {
+                                    // Got GLTF scene
+                                    for child in children {
+                                        if let Ok(mut anim_player) = anim_players.get_mut(*child) {
+                                            // now we have the animation player
+                                            let clip = &anims.0[&player.current_weapon_anim];
+                                            if !anim_player.is_playing_clip(clip) {
+                                                anim_player.play(clip.clone());
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -149,13 +156,22 @@ impl Player {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn weaponry_switch(
-        mut query: Query<(&mut Player, &mut Children)>,
+        mut query: Query<(&mut Player, &Children)>,
+        cam_query: Query<(&Camera3d, &Children)>,
         mut model_query: Query<
-            (&mut Handle<Scene>, &mut Transform, &mut PlayerFpsAnimations),
+            (
+                &mut Handle<Scene>,
+                &mut Transform,
+                &mut PlayerFpsAnimations,
+                &mut PlayerFpsMaterial,
+                &mut Hook,
+            ),
             With<PlayerFpsModel>,
         >,
         mut mouse_wheel: EventReader<MouseWheel>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,
     ) {
         for (mut player, children) in query.iter_mut() {
@@ -197,31 +213,49 @@ impl Player {
                     player.current_weapon = Some((slot, row));
 
                     for child in children.iter() {
-                        if let Ok((mut mesh, mut trans, mut anims)) = model_query.get_mut(*child)
-                            && !player.weapons[slot][row].model_file.is_empty()
-                        {
-                            let data = &player.weapons[slot][row];
-                            let new_mesh =
-                                asset_server.load(&format!("{}#Scene0", data.model_file));
+                        if let Ok((_, children)) = cam_query.get(*child) {
+                            for child in children.iter() {
+                                if let Ok((mut mesh, mut trans, mut anims, mut mat, mut hook)) =
+                                    model_query.get_mut(*child)
+                                    && !player.weapons[slot][row].model_file.is_empty()
+                                {
+                                    let data = &player.weapons[slot][row];
+                                    let new_mesh =
+                                        asset_server.load(&format!("{}#Scene0", data.model_file));
 
-                            anims.0.insert(
-                                "idle".to_string(),
-                                asset_server
-                                    .load(&format!("{}#{}", data.model_file, data.animations.idle)),
-                            );
-                            //anim_player
-                            //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
-                            //    .repeat();
-                            trans.scale = Vec3::splat(data.scale);
-                            trans.rotation = Quat::from_euler(
-                                EulerRot::XYZ,
-                                data.rotation[0].to_radians(),
-                                data.rotation[1].to_radians(),
-                                data.rotation[2].to_radians(),
-                            );
-                            trans.translation = Vec3::from(data.offset);
-                            *mesh = new_mesh;
-                            player.current_weapon_anim = "idle".to_string();
+                                    let new_mat = StandardMaterial {
+                                        base_color_texture: Some(
+                                            asset_server.load(&data.texture_file),
+                                        ),
+                                        perceptual_roughness: 1.0,
+                                        reflectance: 0.0,
+                                        ..Default::default()
+                                    };
+                                    mat.0 = materials.add(new_mat);
+
+                                    anims.0.insert(
+                                        "idle".to_string(),
+                                        asset_server.load(&format!(
+                                            "{}#{}",
+                                            data.model_file, data.animations.idle
+                                        )),
+                                    );
+                                    //anim_player
+                                    //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
+                                    //    .repeat();
+                                    trans.scale = Vec3::splat(data.scale);
+                                    trans.rotation = Quat::from_euler(
+                                        EulerRot::XYZ,
+                                        data.rotation[0].to_radians(),
+                                        data.rotation[1].to_radians(),
+                                        data.rotation[2].to_radians(),
+                                    );
+                                    trans.translation = Vec3::from(data.offset);
+                                    *mesh = new_mesh;
+                                    player.current_weapon_anim = "idle".to_string();
+                                    hook.state = HookState::MustReload;
+                                }
+                            }
                         }
                     }
                 }

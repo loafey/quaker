@@ -11,6 +11,7 @@ use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+use bevy_scene_hook::reload::Plugin as HookPlugin;
 use entities::pickup::PickupEntity;
 use map_gen::{
     entities::data::{load_pickups, load_weapons},
@@ -60,6 +61,7 @@ fn main() {
         .add_plugins(TemporalAntiAliasPlugin)
         .add_plugins(ObjPlugin)
         .add_plugins(AudioPlugin)
+        .add_plugins(HookPlugin)
         .add_systems(PreStartup, load_pickups)
         .add_systems(PreStartup, load_weapons)
         .add_systems(Startup, load_textures)
