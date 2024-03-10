@@ -129,15 +129,19 @@ impl Player {
         mut anim_players: Query<&mut AnimationPlayer>,
     ) {
         for (player, children) in &players {
+            // TODO replace these with proper gets.
             for child in children {
                 if let Ok((_, children)) = cam_query.get(*child) {
                     // Got camera
+                    // TODO replace these with proper gets.
                     for child in children {
                         if let Ok((anims, children)) = player_fps_anims.get(*child) {
                             // Got FPS model entity
+                            // TODO replace these with proper gets.
                             for child in children {
                                 if let Ok(children) = scenes.get(*child) {
                                     // Got GLTF scene
+                                    // TODO replace these with proper gets.
                                     for child in children {
                                         if let Ok(mut anim_player) = anim_players.get_mut(*child) {
                                             // now we have the animation player
@@ -212,9 +216,11 @@ impl Player {
                     info!("Currently using: {}", player.weapons[slot][row].id);
                     player.current_weapon = Some((slot, row));
 
-                    for child in children.iter() {
+                    // TODO replace these with proper gets.
+                    for child in children {
                         if let Ok((_, children)) = cam_query.get(*child) {
-                            for child in children.iter() {
+                            // TODO replace these with proper gets.
+                            for child in children {
                                 if let Ok((mut mesh, mut trans, mut anims, mut mat, mut hook)) =
                                     model_query.get_mut(*child)
                                     && !player.weapons[slot][row].model_file.is_empty()
