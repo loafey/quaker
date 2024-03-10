@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsModel};
+use super::{Player, PlayerFpsAnimations, PlayerFpsModel};
 use crate::Paused;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
@@ -58,7 +58,6 @@ impl Player {
     pub fn update(
         keys: Res<ButtonInput<KeyCode>>,
         time: Res<Time>,
-        mut mouse_wheel: EventReader<MouseWheel>,
         mut query: Query<(
             &mut KinematicCharacterController,
             &mut Player,
@@ -120,9 +119,42 @@ impl Player {
         }
     }
 
+    //Player <- FPsModel <- Scene thing <- Mesh <- AnimationPlayer
+    pub fn weapon_animations(
+        players: Query<(&Player, &Children)>,
+        player_fps_anims: Query<(&PlayerFpsAnimations, &Children)>,
+        scenes: Query<&Children>,
+        mut anim_players: Query<&mut AnimationPlayer>,
+    ) {
+        for (player, children) in &players {
+            for child in children {
+                if let Ok((anims, children)) = player_fps_anims.get(*child) {
+                    // Got FPS model entity
+                    for child in children {
+                        if let Ok(children) = scenes.get(*child) {
+                            // Got GLTF scene
+                            for child in children {
+                                if let Ok(mut anim_player) = anim_players.get_mut(*child) {
+                                    // now we have the animation player
+                                    let clip = &anims.0[&player.current_weapon_anim];
+                                    if !anim_player.is_playing_clip(clip) {
+                                        anim_player.play(clip.clone());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     pub fn weaponry_switch(
         mut query: Query<(&mut Player, &mut Children)>,
-        mut model_query: Query<(&mut Handle<Scene>, &mut Transform), With<PlayerFpsModel>>,
+        mut model_query: Query<
+            (&mut Handle<Scene>, &mut Transform, &mut PlayerFpsAnimations),
+            With<PlayerFpsModel>,
+        >,
         mut mouse_wheel: EventReader<MouseWheel>,
         asset_server: Res<AssetServer>,
     ) {
@@ -166,17 +198,24 @@ impl Player {
 
                     for child in children.iter() {
                         println!("{:?}", model_query.get(*child).is_ok());
-                        if let Ok((mut mesh, mut trans)) = model_query.get_mut(*child)
+                        if let Ok((mut mesh, mut trans, mut anims)) = model_query.get_mut(*child)
                             && !player.weapons[slot][row].model_file.is_empty()
                         {
                             let data = &player.weapons[slot][row];
                             let new_mesh =
                                 asset_server.load(&format!("{}#Scene0", data.model_file));
+
+                            anims.0.insert(
+                                "idle".to_string(),
+                                asset_server
+                                    .load(&format!("{}#{}", data.model_file, data.animations.idle)),
+                            );
                             //anim_player
                             //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
                             //    .repeat();
                             trans.scale = Vec3::splat(data.scale);
                             *mesh = new_mesh;
+                            player.current_weapon_anim = "idle".to_string();
                         }
                     }
                 }

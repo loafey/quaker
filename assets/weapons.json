@@ -34,7 +34,10 @@
         "slot": 6,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/SuperShotgun/SuperShotgun.gltf",
-        "scale": 0.1
+        "scale": 0.01,
+        "animations": {
+            "idle": "Animation0"
+        }
     },
     {
         "id": "weapon_flamethrower",

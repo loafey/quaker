@@ -48,6 +48,8 @@ pub struct WeaponData {
     #[serde(default)]
     pub model_file: String,
     pub scale: f32,
+    #[serde(default)]
+    pub animations: WeaponAnimations,
 }
 
 pub fn load_weapons(mut map: ResMut<WeaponMap>) {
@@ -60,4 +62,9 @@ pub fn load_weapons(mut map: ResMut<WeaponMap>) {
     }
 
     warn!("Done loading weapons...");
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct WeaponAnimations {
+    pub idle: String,
 }

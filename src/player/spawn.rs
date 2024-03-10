@@ -1,6 +1,6 @@
 use crate::PlayerSpawnpoint;
 
-use super::{Player, PlayerFpsModel};
+use super::{Player, PlayerFpsAnimations, PlayerFpsModel};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -38,7 +38,7 @@ impl Player {
                             fov: 80.0f32.to_radians(),
                             ..default()
                         }),
-                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
+                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
                         ..Default::default()
                     }
                 })
@@ -46,7 +46,9 @@ impl Player {
                 .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
                 .insert(TemporalAntiAliasBundle::default());
 
-                c.spawn(PlayerFpsModel).insert(SceneBundle::default());
+                c.spawn(PlayerFpsModel)
+                    .insert(SceneBundle::default())
+                    .insert(PlayerFpsAnimations::default());
             });
     }
 }

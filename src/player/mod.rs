@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 
 use crate::map_gen::entities::data::WeaponData;
@@ -8,6 +10,9 @@ mod update;
 
 #[derive(Component, Debug)]
 pub struct PlayerFpsModel;
+
+#[derive(Component, Debug, Default)]
+pub struct PlayerFpsAnimations(HashMap<String, Handle<AnimationClip>>);
 
 #[derive(Component, Debug)]
 pub struct Player {
@@ -23,6 +28,7 @@ pub struct Player {
 
     pub weapons: [Vec<WeaponData>; 10],
     pub current_weapon: Option<(usize, usize)>,
+    pub current_weapon_anim: String,
 
     pub half_height: f32,
     pub radius: f32,
@@ -45,6 +51,7 @@ impl Default for Player {
             air_time: None,
             current_weapon: None,
             weapons: Default::default(),
+            current_weapon_anim: String::new(),
         }
     }
 }

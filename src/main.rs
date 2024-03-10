@@ -4,6 +4,7 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kira_audio::AudioPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
@@ -55,6 +56,7 @@ fn main() {
             plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
             plug
         }))
+        .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(TemporalAntiAliasPlugin)
         .add_plugins(ObjPlugin)
         .add_plugins(AudioPlugin)
@@ -78,6 +80,7 @@ fn main() {
                 Player::update_cam_hort,
                 Player::ground_detection,
                 Player::weaponry_switch,
+                Player::weapon_animations,
                 PickupEntity::update,
                 PickupEntity::handle_pickups,
             )
