@@ -77,12 +77,13 @@ fn main() {
         .add_systems(
             Update,
             (
-                Player::update,
+                Player::update_input,
                 Player::update_cam_vert,
                 Player::update_cam_hort,
                 Player::ground_detection,
                 Player::weaponry_switch,
                 Player::weapon_animations,
+                Player::camera_movement,
                 PickupEntity::update,
                 PickupEntity::handle_pickups,
             )

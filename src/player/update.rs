@@ -16,6 +16,24 @@ enum SwitchDirection {
     Forward,
 }
 impl Player {
+    pub fn camera_movement(
+        mut query: Query<(&Camera3d, &mut Transform)>,
+        mut q_parent: Query<(&mut Player, &Children)>,
+        time: Res<Time>,
+    ) {
+        for (mut player, children) in q_parent.iter_mut() {
+            player.cam_rot_current = player
+                .cam_rot_current
+                .lerp(player.cam_rot_goal, time.delta_seconds() * 10.0);
+
+            for &child in children.iter() {
+                if let Ok((_, mut cam_trans)) = query.get_mut(child) {
+                    cam_trans.rotation.z = player.cam_rot_current;
+                }
+            }
+        }
+    }
+
     pub fn update_cam_vert(
         mut query: Query<(&Camera3d, &mut Transform)>,
         q_parent: Query<(&Player, &Children)>,
@@ -56,7 +74,7 @@ impl Player {
         }
     }
 
-    pub fn update(
+    pub fn update_input(
         keys: Res<ButtonInput<KeyCode>>,
         time: Res<Time>,
         mut query: Query<(
@@ -80,9 +98,14 @@ impl Player {
 
             if keys.pressed(KeyCode::KeyA) {
                 player.velocity -= right * hort_speed * time.delta_seconds();
+                player.cam_rot_goal = player.cam_rot_max_goal;
             } else if keys.pressed(KeyCode::KeyD) {
                 player.velocity += right * hort_speed * time.delta_seconds();
+                player.cam_rot_goal = -player.cam_rot_max_goal;
+            } else {
+                player.cam_rot_goal = 0.0;
             }
+
             player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
             player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
 

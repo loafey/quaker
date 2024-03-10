@@ -28,6 +28,10 @@ pub struct Player {
     pub gravity: f32,
     pub on_ground: bool,
 
+    pub cam_rot_max_goal: f32,
+    pub cam_rot_goal: f32,
+    pub cam_rot_current: f32,
+
     pub weapons: [Vec<WeaponData>; 10],
     pub current_weapon: Option<(usize, usize)>,
     pub current_weapon_anim: String,
@@ -54,6 +58,9 @@ impl Default for Player {
             current_weapon: None,
             weapons: Default::default(),
             current_weapon_anim: String::new(),
+            cam_rot_max_goal: 0.03,
+            cam_rot_goal: 0.03,
+            cam_rot_current: 0.0,
         }
     }
 }
