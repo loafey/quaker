@@ -197,7 +197,6 @@ impl Player {
                     player.current_weapon = Some((slot, row));
 
                     for child in children.iter() {
-                        println!("{:?}", model_query.get(*child).is_ok());
                         if let Ok((mut mesh, mut trans, mut anims)) = model_query.get_mut(*child)
                             && !player.weapons[slot][row].model_file.is_empty()
                         {
@@ -214,6 +213,13 @@ impl Player {
                             //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
                             //    .repeat();
                             trans.scale = Vec3::splat(data.scale);
+                            trans.rotation = Quat::from_euler(
+                                EulerRot::XYZ,
+                                data.rotation[0].to_radians(),
+                                data.rotation[1].to_radians(),
+                                data.rotation[2].to_radians(),
+                            );
+                            trans.translation = Vec3::from(data.offset);
                             *mesh = new_mesh;
                             player.current_weapon_anim = "idle".to_string();
                         }

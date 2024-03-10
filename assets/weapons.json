@@ -37,7 +37,17 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
-        }
+        },
+        "rotation": [
+            0.0,
+            180.0,
+            0.0
+        ],
+        "offset": [
+            0.0,
+            -0.8,
+            0.0
+        ]
     },
     {
         "id": "weapon_flamethrower",

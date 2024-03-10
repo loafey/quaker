@@ -8,7 +8,7 @@ use bevy::{
     },
     pbr::ScreenSpaceAmbientOcclusionBundle,
     prelude::*,
-    render::camera::TemporalJitter,
+    render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
 use bevy_rapier3d::prelude::*;
 
@@ -38,6 +38,7 @@ impl Player {
                             fov: 80.0f32.to_radians(),
                             ..default()
                         }),
+                        //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
                         transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
                         ..Default::default()
                     }
@@ -48,7 +49,8 @@ impl Player {
 
                 c.spawn(PlayerFpsModel)
                     .insert(SceneBundle::default())
-                    .insert(PlayerFpsAnimations::default());
+                    .insert(PlayerFpsAnimations::default())
+                    .insert(NoFrustumCulling);
             });
     }
 }

@@ -50,6 +50,10 @@ pub struct WeaponData {
     pub scale: f32,
     #[serde(default)]
     pub animations: WeaponAnimations,
+    #[serde(default)]
+    pub offset: [f32; 3],
+    #[serde(default)]
+    pub rotation: [f32; 3],
 }
 
 pub fn load_weapons(mut map: ResMut<WeaponMap>) {
