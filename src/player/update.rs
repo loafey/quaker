@@ -38,6 +38,11 @@ impl Player {
                 time.delta_seconds() * 10.0,
             );
 
+            player.camera_movement.switch_offset = player
+                .camera_movement
+                .switch_offset
+                .lerp(0.0, time.delta_seconds() * 10.0);
+
             for child in children {
                 if let Ok((_, mut cam_trans, children)) = query.get_mut(*child) {
                     cam_trans.rotation.z = player.camera_movement.cam_rot_current;
@@ -48,6 +53,7 @@ impl Player {
                             new_trans.z += player.camera_movement.backdrift;
                             new_trans.x += player.camera_movement.cam_rot_current / 2.0;
                             new_trans.y += player.camera_movement.bob_current / 100.0;
+                            new_trans.y += player.camera_movement.switch_offset;
 
                             trans.translation = new_trans;
                         }
@@ -328,6 +334,7 @@ impl Player {
                                     *mesh = new_mesh;
                                     player.current_weapon_anim = "idle".to_string();
                                     player.camera_movement.original_trans = trans.translation;
+                                    player.camera_movement.switch_offset = -1.0;
                                     hook.state = HookState::MustReload;
                                 }
                             }

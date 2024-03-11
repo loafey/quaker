@@ -24,6 +24,8 @@ pub struct CameraMovement {
     pub cam_rot_max_goal: f32,
     pub cam_rot_goal: f32,
     pub cam_rot_current: f32,
+
+    pub switch_offset: f32,
 }
 
 #[derive(Component, Debug, Default)]
@@ -82,6 +84,8 @@ impl Default for Player {
 
                 bob_current: 0.0,
                 bob_goal: 0.0,
+
+                switch_offset: 0.0,
             },
         }
     }
