@@ -28,6 +28,12 @@ pub struct CameraMovement {
     pub switch_offset: f32,
 }
 
+#[derive(Debug, Default)]
+pub struct PlayerChildren {
+    pub camera: Option<Entity>,
+    pub fps_model: Option<Entity>,
+}
+
 #[derive(Component, Debug, Default)]
 pub struct PlayerFpsAnimations(HashMap<String, Handle<AnimationClip>>);
 #[derive(Component, Debug, Default)]
@@ -46,6 +52,8 @@ pub struct Player {
     pub on_ground: bool,
 
     pub camera_movement: CameraMovement,
+
+    pub children: PlayerChildren,
 
     pub weapons: [Vec<WeaponData>; 10],
     pub current_weapon: Option<(usize, usize)>,
@@ -73,6 +81,7 @@ impl Default for Player {
             current_weapon: None,
             weapons: Default::default(),
             current_weapon_anim: String::new(),
+            children: Default::default(),
             camera_movement: CameraMovement {
                 backdrift: 0.0,
                 backdrift_goal: 0.0,

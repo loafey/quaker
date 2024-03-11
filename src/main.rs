@@ -57,7 +57,7 @@ fn main() {
             plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
             plug
         }))
-        //.add_plugins(WorldInspectorPlugin::new())
+        .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(TemporalAntiAliasPlugin)
         .add_plugins(ObjPlugin)
         .add_plugins(AudioPlugin)

@@ -15,7 +15,8 @@ use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 impl Player {
     pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
         let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
-
+        let mut camera = None;
+        let mut fps_model = None;
         commands
             .spawn(Collider::cylinder(0.5, 0.15))
             .insert(ActiveEvents::COLLISION_EVENTS)
@@ -32,40 +33,51 @@ impl Player {
                     .insert(Ccd::enabled());
             })
             .with_children(|c| {
-                c.spawn({
-                    Camera3dBundle {
-                        projection: Projection::Perspective(PerspectiveProjection {
-                            fov: 80.0f32.to_radians(),
-                            ..default()
-                        }),
-                        //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
-                        transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
-                        ..Default::default()
-                    }
-                })
-                .insert(ScreenSpaceAmbientOcclusionBundle::default())
-                .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
-                .insert(TemporalAntiAliasBundle::default())
-                .with_children(|c| {
-                    c.spawn(PlayerFpsModel)
-                        .insert(HookedSceneBundle {
-                            scene: SceneBundle::default(),
-                            reload: Hook::new(|entity, commands, world, root| {
-                                if entity.get::<Handle<Mesh>>().is_some() {
-                                    commands.insert(NoFrustumCulling);
-                                }
-                                if entity.get::<Handle<StandardMaterial>>().is_some() {
-                                    if let Some(material) =
-                                        world.entity(root).get::<PlayerFpsMaterial>()
-                                    {
-                                        commands.insert(material.0.clone());
-                                    }
-                                }
+                let new_camera_id = c
+                    .spawn({
+                        Camera3dBundle {
+                            projection: Projection::Perspective(PerspectiveProjection {
+                                fov: 80.0f32.to_radians(),
+                                ..default()
                             }),
-                        })
-                        .insert(PlayerFpsAnimations::default())
-                        .insert(PlayerFpsMaterial::default());
-                });
+                            //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
+                            transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
+                            ..Default::default()
+                        }
+                    })
+                    .insert(ScreenSpaceAmbientOcclusionBundle::default())
+                    .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
+                    .insert(TemporalAntiAliasBundle::default())
+                    .with_children(|c| {
+                        let new_fps_model = c
+                            .spawn(PlayerFpsModel)
+                            .insert(HookedSceneBundle {
+                                scene: SceneBundle::default(),
+                                reload: Hook::new(|entity, commands, world, root| {
+                                    if entity.get::<Handle<Mesh>>().is_some() {
+                                        commands.insert(NoFrustumCulling);
+                                    }
+                                    if entity.get::<Handle<StandardMaterial>>().is_some() {
+                                        if let Some(material) =
+                                            world.entity(root).get::<PlayerFpsMaterial>()
+                                        {
+                                            commands.insert(material.0.clone());
+                                        }
+                                    }
+                                }),
+                            })
+                            .insert(PlayerFpsAnimations::default())
+                            .insert(PlayerFpsMaterial::default())
+                            .id();
+                        fps_model = Some(new_fps_model);
+                    })
+                    .id();
+
+                camera = Some(new_camera_id);
+            })
+            .insert(Player {
+                children: super::PlayerChildren { camera, fps_model },
+                ..Default::default()
             });
     }
 }
