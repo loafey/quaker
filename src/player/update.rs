@@ -189,20 +189,33 @@ impl Player {
     }
 
     pub fn weapon_animations(
+        mut commands: Commands,
         players: Query<&Player>,
-        q_player_fps_anims: Query<(&PlayerFpsAnimations, &Children)>,
+        q_player_fps_anims: Query<(Entity, &PlayerFpsAnimations, &Children)>,
         q_scenes: Query<&Children>,
-        mut q_anim_players: Query<&mut AnimationPlayer>,
+        mut q_anim_players: Query<(Entity, &mut AnimationPlayer, &Parent)>,
     ) {
         for player in &players {
-            let (anims, children) = option_return!(q_player_fps_anims
+            let (ent, anims, children) = option_return!(q_player_fps_anims
                 .get(option_return!(player.children.fps_model))
                 .ok());
+
+            if children.len() > 1 {
+                let mut to_remove = Vec::new();
+                for child in children.iter().rev().skip(1) {
+                    if let Some(child) = commands.get_entity(*child) {
+                        to_remove.push(child.id());
+                        child.despawn_recursive();
+                    }
+                }
+                commands.entity(ent).remove_children(&to_remove);
+            }
+
             for child in children {
                 if let Ok(children) = q_scenes.get(*child) {
                     // Got GLTF scene
                     for child in children {
-                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
+                        if let Ok((_, mut anim_player, _)) = q_anim_players.get_mut(*child) {
                             // now we have the animation player
                             let clip = &anims.0[&player.current_weapon_anim];
                             if !anim_player.is_playing_clip(clip) {
@@ -217,9 +230,11 @@ impl Player {
 
     #[allow(clippy::type_complexity)]
     pub fn weaponry_switch(
+        mut commands: Commands,
         mut query: Query<&mut Player>,
         mut q_model: Query<
             (
+                Entity,
                 &mut Handle<Scene>,
                 &mut Transform,
                 &mut PlayerFpsAnimations,
@@ -272,10 +287,12 @@ impl Player {
                     player.current_weapon = Some((slot, row));
 
                     // TODO replace these with proper gets.
-                    if let Ok((mut mesh, mut trans, mut anims, mut mat, mut hook)) =
+                    if let Ok((ent, mut mesh, mut trans, mut anims, mut mat, mut hook)) =
                         q_model.get_mut(option_return!(player.children.fps_model))
                         && !player.weapons[slot][row].model_file.is_empty()
                     {
+                        commands.entity(ent).despawn_descendants();
+
                         let data = &player.weapons[slot][row];
                         let new_mesh = asset_server.load(&format!("{}#Scene0", data.model_file));
 
@@ -285,6 +302,7 @@ impl Player {
                             reflectance: 0.0,
                             ..Default::default()
                         };
+                        materials.remove(mat.0.id());
                         mat.0 = materials.add(new_mat);
 
                         anims.0.insert(

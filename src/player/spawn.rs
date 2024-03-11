@@ -48,6 +48,7 @@ impl Player {
                     .insert(ScreenSpaceAmbientOcclusionBundle::default())
                     .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
                     .insert(TemporalAntiAliasBundle::default())
+                    .insert(Name::new("player camera"))
                     .with_children(|c| {
                         let new_fps_model = c
                             .spawn(PlayerFpsModel)
@@ -68,6 +69,7 @@ impl Player {
                             })
                             .insert(PlayerFpsAnimations::default())
                             .insert(PlayerFpsMaterial::default())
+                            .insert(Name::new("fps model holder"))
                             .id();
                         fps_model = Some(new_fps_model);
                     })
