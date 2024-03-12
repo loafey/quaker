@@ -6,7 +6,7 @@
         "model_file": "models/Player/First Person/Bayonet.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation1"
         },
         "rotation": [
             -5.0,
@@ -126,7 +126,7 @@
         "model_file": "models/Player/First Person/SuperShotgun.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation1"
         },
         "rotation": [
             -5.0,
