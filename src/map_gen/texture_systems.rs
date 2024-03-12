@@ -1,5 +1,5 @@
 use crate::{CurrentMap, TextureMap, TexturesLoading};
-use bevy::{prelude::*, utils::HashSet};
+use bevy::prelude::*;
 use macros::error_return;
 use std::collections::HashMap;
 
