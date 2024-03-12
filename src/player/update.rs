@@ -219,7 +219,7 @@ impl Player {
                             // now we have the animation player
                             let clip = &anims.0[&player.current_weapon_anim];
                             if !anim_player.is_playing_clip(clip) {
-                                anim_player.play(clip.clone());
+                                anim_player.play(clip.clone()).repeat();
                             }
                         }
                     }

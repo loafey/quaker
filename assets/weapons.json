@@ -3,7 +3,7 @@
         "id": "weapon_bayonet",
         "slot": 0,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/Bayonet/Bayonet.gltf",
+        "model_file": "models/Player/First Person/Bayonet.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -23,7 +23,7 @@
         "id": "weapon_revolver",
         "slot": 1,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/Revolver/Revolver.gltf",
+        "model_file": "models/Player/First Person/Revolver.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -43,7 +43,7 @@
         "id": "weapon_pumpshotgun",
         "slot": 2,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/PumpShotgun/PumpShotgun.gltf",
+        "model_file": "models/Player/First Person/PumpShotgun.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -63,7 +63,7 @@
         "id": "weapon_smgbelter",
         "slot": 3,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/SMG/SmgBelter.gltf",
+        "model_file": "models/Player/First Person/SmgBelter.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -83,7 +83,7 @@
         "id": "weapon_rpg",
         "slot": 4,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/RPG/RPG.gltf",
+        "model_file": "models/Player/First Person/RPG.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -103,7 +103,7 @@
         "id": "weapon_dynamite",
         "slot": 5,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/Dynamite/Dynamite.gltf",
+        "model_file": "models/Player/First Person/Dynamite.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -123,7 +123,7 @@
         "id": "weapon_supershotgun",
         "slot": 6,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/SuperShotgun/SuperShotgun.gltf",
+        "model_file": "models/Player/First Person/SuperShotgun.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -143,7 +143,7 @@
         "id": "weapon_flamethrower",
         "slot": 7,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/Flamethrower/Flamethrower.gltf",
+        "model_file": "models/Player/First Person/Flamethrower.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -163,7 +163,7 @@
         "id": "weapon_supercoolgun",
         "slot": 8,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/SuperCoolGun/SuperCoolGun.gltf",
+        "model_file": "models/Player/First Person/SuperCoolGun.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
@@ -183,7 +183,7 @@
         "id": "weapon_nukegun",
         "slot": 9,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "model_file": "models/Player/First Person/NukeGun/NukeGun.gltf",
+        "model_file": "models/Player/First Person/NukeGun.glb",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0"
