@@ -6,7 +6,10 @@
         "model_file": "models/Player/First Person/Bayonet.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation1"
+            "idle": "Animation1",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7",
+            "shoot2": "Animation6"
         },
         "rotation": [
             -5.0,
@@ -26,7 +29,9 @@
         "model_file": "models/Player/First Person/Revolver.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -46,7 +51,9 @@
         "model_file": "models/Player/First Person/PumpShotgun.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -66,7 +73,9 @@
         "model_file": "models/Player/First Person/SmgBelter.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -86,7 +95,9 @@
         "model_file": "models/Player/First Person/RPG.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -106,7 +117,9 @@
         "model_file": "models/Player/First Person/Dynamite.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -126,7 +139,9 @@
         "model_file": "models/Player/First Person/SuperShotgun.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation1"
+            "idle": "Animation1",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -146,7 +161,9 @@
         "model_file": "models/Player/First Person/Flamethrower.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -166,7 +183,9 @@
         "model_file": "models/Player/First Person/SuperCoolGun.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
@@ -186,7 +205,9 @@
         "model_file": "models/Player/First Person/NukeGun.glb",
         "scale": 0.01,
         "animations": {
-            "idle": "Animation0"
+            "idle": "Animation0",
+            "shoot1": "Animation6",
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,

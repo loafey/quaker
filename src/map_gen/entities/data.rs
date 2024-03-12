@@ -71,4 +71,6 @@ pub fn load_weapons(mut map: ResMut<WeaponMap>) {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct WeaponAnimations {
     pub idle: String,
+    pub shoot1: String,
+    pub shoot2: String,
 }
