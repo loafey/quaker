@@ -8,8 +8,7 @@
         "animations": {
             "idle": "Animation1",
             "shoot1": "Animation6",
-            "shoot2": "Animation7",
-            "shoot2": "Animation6"
+            "shoot2": "Animation7"
         },
         "rotation": [
             -5.0,
