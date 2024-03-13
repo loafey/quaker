@@ -283,17 +283,17 @@ impl Player {
                         }
                     }
 
-                    info!("Currently using: {}", player.weapons[slot][row].id);
+                    info!("Currently using: {}", player.weapons[slot][row].data.id);
                     player.current_weapon = Some((slot, row));
 
                     // TODO replace these with proper gets.
                     if let Ok((ent, mut mesh, mut trans, mut anims, mut mat, mut hook)) =
                         q_model.get_mut(option_return!(player.children.fps_model))
-                        && !player.weapons[slot][row].model_file.is_empty()
+                        && !player.weapons[slot][row].data.model_file.is_empty()
                     {
                         commands.entity(ent).despawn_descendants();
 
-                        let data = &player.weapons[slot][row];
+                        let data = &player.weapons[slot][row].data;
                         let new_mesh = asset_server.load(&format!("{}#Scene0", data.model_file));
 
                         let new_mat = StandardMaterial {

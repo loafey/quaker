@@ -13,25 +13,30 @@ pub struct PlayerFpsModel;
 
 #[derive(Debug)]
 pub struct CameraMovement {
-    pub backdrift: f32,
-    pub backdrift_goal: f32,
-    pub backdrift_max: f32,
-    pub original_trans: Vec3,
+    backdrift: f32,
+    backdrift_goal: f32,
+    backdrift_max: f32,
+    original_trans: Vec3,
 
-    pub bob_goal: f32,
-    pub bob_current: f32,
+    bob_goal: f32,
+    bob_current: f32,
 
-    pub cam_rot_max_goal: f32,
-    pub cam_rot_goal: f32,
-    pub cam_rot_current: f32,
+    cam_rot_max_goal: f32,
+    cam_rot_goal: f32,
+    cam_rot_current: f32,
 
-    pub switch_offset: f32,
+    switch_offset: f32,
+}
+
+#[derive(Debug)]
+pub struct WeaponState {
+    data: WeaponData,
 }
 
 #[derive(Debug, Default)]
 pub struct PlayerChildren {
-    pub camera: Option<Entity>,
-    pub fps_model: Option<Entity>,
+    camera: Option<Entity>,
+    fps_model: Option<Entity>,
 }
 
 #[derive(Component, Debug, Default)]
@@ -41,27 +46,27 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
 pub struct Player {
-    pub self_rot: f32,
-    pub velocity: Vec3,
-    pub hort_speed: f32,
-    pub hort_max_speed: f32,
-    pub hort_friction: f32,
-    pub jump_height: f32,
-    pub jump_timer: f32,
-    pub gravity: f32,
-    pub on_ground: bool,
+    self_rot: f32,
+    velocity: Vec3,
+    hort_speed: f32,
+    hort_max_speed: f32,
+    hort_friction: f32,
+    jump_height: f32,
+    jump_timer: f32,
+    gravity: f32,
+    on_ground: bool,
 
-    pub camera_movement: CameraMovement,
+    camera_movement: CameraMovement,
 
-    pub children: PlayerChildren,
+    children: PlayerChildren,
 
-    pub weapons: [Vec<WeaponData>; 10],
-    pub current_weapon: Option<(usize, usize)>,
-    pub current_weapon_anim: String,
+    weapons: [Vec<WeaponState>; 10],
+    current_weapon: Option<(usize, usize)>,
+    current_weapon_anim: String,
 
-    pub half_height: f32,
-    pub radius: f32,
-    pub air_time: Option<std::time::Instant>,
+    half_height: f32,
+    radius: f32,
+    air_time: Option<std::time::Instant>,
 }
 impl Default for Player {
     fn default() -> Self {
@@ -97,5 +102,28 @@ impl Default for Player {
                 switch_offset: 0.0,
             },
         }
+    }
+}
+impl Player {
+    pub fn add_weapon(&mut self, data: WeaponData, slot: usize) {
+        self.weapons[slot].push(WeaponState { data });
+        if self.current_weapon.is_none() {
+            self.current_weapon = Some((slot, 0))
+        }
+
+        println!(
+            "Player inventory: [\n    {}\n]",
+            self.weapons
+                .iter()
+                .map(|v| format!(
+                    "[{}]",
+                    v.iter()
+                        .map(|w| w.data.id.clone())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ))
+                .collect::<Vec<_>>()
+                .join(",\n    ")
+        );
     }
 }
