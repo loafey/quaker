@@ -3295,6 +3295,7 @@ dependencies = [
  "bevy_rapier3d",
  "macros",
  "map_parser",
+ "rand",
  "serde",
  "serde_json",
 ]

@@ -1,17 +1,19 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
-use crate::Paused;
+use crate::{map_gen::entities::data::SoundEffect, Paused};
 use bevy::{
     ecs::schedule::SystemConfigs,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
+use bevy_kira_audio::{Audio, AudioControl};
 use bevy_rapier3d::{
     control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
     plugin::RapierContext,
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use macros::{error_return, option_return};
+use rand::seq::SliceRandom;
 
 enum SwitchDirection {
     Back,
@@ -36,6 +38,8 @@ impl Player {
         mut q_players: Query<&mut Player>,
         keys: Res<ButtonInput<MouseButton>>,
         time: Res<Time>,
+        asset_server: Res<AssetServer>,
+        audio: Res<Audio>,
     ) {
         for mut player in &mut q_players {
             let (slot, row) = option_return!(player.current_weapon);
@@ -55,6 +59,8 @@ impl Player {
             }
             weapon.need_to_reload = false;
 
+            let mut shot = false;
+
             if keys.pressed(MouseButton::Right) && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
@@ -68,7 +74,7 @@ impl Player {
                 }
 
                 player.current_weapon_anim = "shoot2".to_string();
-                player.restart_anim = true;
+                shot = true;
             } else if keys.pressed(MouseButton::Left) && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
@@ -82,9 +88,23 @@ impl Player {
                 }
 
                 player.current_weapon_anim = "shoot1".to_string();
-                player.restart_anim = true;
+                shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
+            }
+
+            if shot {
+                player.restart_anim = true;
+                match &player.weapons[slot][row].data.shoot_sfx {
+                    SoundEffect::Single(path) => {
+                        audio.play(asset_server.load(path));
+                    }
+                    SoundEffect::Random(list) => {
+                        audio
+                            .play(asset_server.load(list.choose(&mut rand::thread_rng()).unwrap()));
+                    }
+                    _ => {}
+                }
             }
         }
     }

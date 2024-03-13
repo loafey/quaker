@@ -38,8 +38,19 @@ pub fn load_pickups(mut map: ResMut<PickupMap>) {
     warn!("Done loading pickups...");
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(untagged)]
+pub enum SoundEffect {
+    #[default]
+    Silent,
+    Single(String),
+    Random(Vec<String>),
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WeaponData {
+    #[serde(default)]
+    pub shoot_sfx: SoundEffect,
     pub id: String,
     #[serde(default)]
     pub slot: usize,

@@ -5,6 +5,21 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/Bayonet.glb",
         "scale": 0.01,
+        "shoot_sfx": [
+            "sounds/Player/Guns/Bayonet/swish-1.ogg",
+            "sounds/Player/Guns/Bayonet/swish-10.ogg",
+            "sounds/Player/Guns/Bayonet/swish-11.ogg",
+            "sounds/Player/Guns/Bayonet/swish-12.ogg",
+            "sounds/Player/Guns/Bayonet/swish-13.ogg",
+            "sounds/Player/Guns/Bayonet/swish-2.ogg",
+            "sounds/Player/Guns/Bayonet/swish-3.ogg",
+            "sounds/Player/Guns/Bayonet/swish-4.ogg",
+            "sounds/Player/Guns/Bayonet/swish-5.ogg",
+            "sounds/Player/Guns/Bayonet/swish-6.ogg",
+            "sounds/Player/Guns/Bayonet/swish-7.ogg",
+            "sounds/Player/Guns/Bayonet/swish-8.ogg",
+            "sounds/Player/Guns/Bayonet/swish-9.ogg"
+        ],
         "animations": {
             "idle": "Animation1",
             "shoot1": "Animation5",
@@ -31,6 +46,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/Revolver.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/Revolver/Shoot.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
@@ -57,6 +73,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/PumpShotgun.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/PumpShotgun/Shoot.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
@@ -82,6 +99,7 @@
         "slot": 3,
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/SmgBelter.glb",
+        "shoot_sfx": "sounds/Player/Guns/SmgBelter/Shoot.ogg",
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
@@ -109,6 +127,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/RPG.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/Rpg/rocket_launch.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation6",
@@ -135,6 +154,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/Dynamite.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/Dynamite/Throw.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
@@ -161,6 +181,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/SuperShotgun.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/SuperShotgun/shotgunShot.ogg",
         "animations": {
             "idle": "Animation1",
             "shoot1": "Animation5",
@@ -190,6 +211,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/Flamethrower.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/Flamethrower/fire.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation0",
@@ -216,6 +238,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/SuperCoolGun.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/Scg/Shoot.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
@@ -242,6 +265,7 @@
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
         "model_file": "models/Player/First Person/NukeGun.glb",
         "scale": 0.01,
+        "shoot_sfx": "sounds/Player/Guns/NukeGun/Launch.ogg",
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
