@@ -25,19 +25,32 @@ impl Player {
             Player::update_cam_hort,
             Player::ground_detection,
             Player::weaponry_switch,
-            Player::weapon_animations,
+            Player::weapon_idle_animations,
             Player::camera_movement,
             Player::shoot,
         )
             .into_configs()
     }
 
-    pub fn shoot(mut q_players: Query<&mut Player>, keys: Res<ButtonInput<MouseButton>>) {
-        for player in &mut q_players {
+    pub fn shoot(
+        mut q_players: Query<&mut Player>,
+        keys: Res<ButtonInput<MouseButton>>,
+        time: Res<Time>,
+    ) {
+        let delta = time.delta_seconds();
+        for mut player in &mut q_players {
+            let (slot, row) = option_return!(player.current_weapon);
+            let weapon = &mut player.weapons[slot][row];
+            weapon.timer -= delta;
+            weapon.timer = weapon.timer.max(-1.0);
+            if weapon.timer > 0.0 {
+                return;
+            }
+
             if keys.pressed(MouseButton::Right) {
-                println!("right")
+                weapon.timer = weapon.data.firetime2 - delta / 2.0;
             } else if keys.pressed(MouseButton::Left) {
-                println!("left")
+                weapon.timer = weapon.data.firetime1 - delta / 2.0;
             }
         }
     }
@@ -213,7 +226,7 @@ impl Player {
         }
     }
 
-    pub fn weapon_animations(
+    pub fn weapon_idle_animations(
         mut commands: Commands,
         players: Query<&Player>,
         q_player_fps_anims: Query<(Entity, &PlayerFpsAnimations, &Children)>,
