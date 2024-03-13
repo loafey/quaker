@@ -54,6 +54,7 @@ pub struct WeaponData {
     pub offset: [f32; 3],
     #[serde(default)]
     pub rotation: [f32; 3],
+    pub pickup_sound: Option<String>,
 }
 
 pub fn load_weapons(mut map: ResMut<WeaponMap>) {

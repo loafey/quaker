@@ -43,8 +43,9 @@ impl PickupEntity {
                         player.add_weapon(weapon_data.clone(), slot);
 
                         audio.play(
-                            // TODO, make this customizable
-                            asset_server.load("sounds/Player/Guns/SuperShotty/shotgunCock.ogg"),
+                            asset_server.load(weapon_data.pickup_sound.clone().unwrap_or(
+                                "sounds/Player/Guns/SuperShotty/shotgunCock.ogg".to_string(),
+                            )),
                         );
                     } else {
                         error!("tried to pickup nonexisting weapon: \"{classname}\"")
