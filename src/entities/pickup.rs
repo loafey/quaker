@@ -40,13 +40,13 @@ impl PickupEntity {
                     let classname = pickup.data.classname();
                     if let Some(weapon_data) = weapon_map.0.get(classname) {
                         let slot = weapon_data.slot;
-                        player.add_weapon(weapon_data.clone(), slot);
-
-                        audio.play(
-                            asset_server.load(weapon_data.pickup_sound.clone().unwrap_or(
-                                "sounds/Player/Guns/SuperShotty/shotgunCock.ogg".to_string(),
-                            )),
-                        );
+                        if player.add_weapon(weapon_data.clone(), slot) {
+                            audio.play(asset_server.load(
+                                weapon_data.pickup_sound.clone().unwrap_or(
+                                    "sounds/Player/Guns/SuperShotty/shotgunCock.ogg".to_string(),
+                                ),
+                            ));
+                        }
                     } else {
                         error!("tried to pickup nonexisting weapon: \"{classname}\"")
                     }

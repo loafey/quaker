@@ -105,7 +105,7 @@ impl Default for Player {
     }
 }
 impl Player {
-    pub fn add_weapon(&mut self, data: WeaponData, slot: usize) {
+    pub fn add_weapon(&mut self, data: WeaponData, slot: usize) -> bool {
         if !self.weapons[slot].iter().any(|c| c.data.id == data.id) {
             self.weapons[slot].push(WeaponState { data });
 
@@ -127,8 +127,10 @@ impl Player {
                     .collect::<Vec<_>>()
                     .join(",\n    ")
             );
+            true
         } else {
             warn!("unhandled: picked up weapon when already had one");
+            false
         }
     }
 }
