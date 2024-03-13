@@ -79,6 +79,7 @@ pub struct WeaponAnimations {
     pub idle: String,
     pub shoot1: String,
     pub shoot2: String,
+    pub reload: Option<String>,
 
     #[serde(default = "WeaponData::default_firetime")]
     pub fire_time1: f32,
@@ -88,4 +89,9 @@ pub struct WeaponAnimations {
     pub fire_time2: f32,
     #[serde(default = "WeaponData::default_firetime")]
     pub anim_time2: f32,
+
+    #[serde(default = "WeaponData::default_firetime")]
+    pub reload_time_skip: f32,
+    #[serde(default = "WeaponData::default_firetime")]
+    pub reload_time: f32,
 }

@@ -44,22 +44,44 @@ impl Player {
             weapon.timer = weapon.timer.max(-1.0);
             weapon.anim_time -= time.delta_seconds();
             weapon.anim_time = weapon.anim_time.max(-1.0);
+            weapon.reload_timer -= time.delta_seconds();
+            weapon.reload_timer = weapon.reload_timer.max(-1.0);
 
             if weapon.timer > 0.0 {
+                if weapon.reload_timer <= 0.0 && weapon.data.animations.reload.is_some() {
+                    player.current_weapon_anim = "reload".to_string();
+                }
                 return;
             }
+            weapon.need_to_reload = false;
 
-            if keys.pressed(MouseButton::Right) {
+            if keys.pressed(MouseButton::Right) && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
+                if weapon.data.animations.reload.is_some() {
+                    weapon.need_to_reload = true;
+                    weapon.timer = weapon.data.animations.fire_time2
+                        + weapon.data.animations.reload_time_skip
+                        + time.delta_seconds();
+                    weapon.reload_timer = weapon.data.animations.anim_time2 + time.delta_seconds();
+                    weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+                }
+
                 player.current_weapon_anim = "shoot2".to_string();
-                println!("shoot2");
                 player.restart_anim = true;
-            } else if keys.pressed(MouseButton::Left) {
+            } else if keys.pressed(MouseButton::Left) && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
+                if weapon.data.animations.reload.is_some() {
+                    weapon.need_to_reload = true;
+                    weapon.timer = weapon.data.animations.fire_time1
+                        + weapon.data.animations.reload_time_skip
+                        + time.delta_seconds();
+                    weapon.reload_timer = weapon.data.animations.anim_time1 + time.delta_seconds();
+                    weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+                }
+
                 player.current_weapon_anim = "shoot1".to_string();
-                println!("shoot1");
                 player.restart_anim = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
@@ -270,10 +292,8 @@ impl Player {
                             let clip = &player.fps_anims[&player.current_weapon_anim];
                             if player.restart_anim {
                                 anim_player.play(clip.clone()).replay();
-                                println!("restart {}", player.current_weapon_anim);
                             } else if !anim_player.is_playing_clip(clip) {
                                 anim_player.play(clip.clone()).repeat();
-                                println!("bonk {}", player.current_weapon_anim);
                             }
                             player.restart_anim = false;
                         }
@@ -397,6 +417,16 @@ impl Player {
                         .into_iter()
                         .map(|(a, b)| (a.to_string(), b))
                         .collect();
+                        if let Some(reload) =
+                            player.weapons[slot][row].data.animations.reload.clone()
+                        {
+                            let asset = asset_server.load(&format!(
+                                "{}#{}",
+                                player.weapons[slot][row].data.model_file, reload
+                            ));
+                            player.fps_anims.insert("reload".to_string(), asset);
+                        }
+
                         player.current_weapon_anim = "idle".to_string();
                         player.camera_movement.original_trans = trans.translation;
                         player.camera_movement.switch_offset = -1.0;

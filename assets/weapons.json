@@ -164,11 +164,14 @@
         "animations": {
             "idle": "Animation1",
             "shoot1": "Animation5",
-            "shoot2": "Animation4",
-            "fire_time1": 0.75,
-            "anim_time1": 1.542,
-            "fire_time2": 0.75,
-            "anim_time2": 1.542
+            "shoot2": "Animation5",
+            "reload": "Animation4",
+            "fire_time1": 0.4,
+            "anim_time1": 0.4,
+            "fire_time2": 0.4,
+            "anim_time2": 0.4,
+            "reload_time_skip": 1.3,
+            "reload_time": 1.542
         },
         "rotation": [
             -5.0,
@@ -242,11 +245,14 @@
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation5",
-            "shoot2": "Animation4",
+            "shoot2": "Animation6",
+            "reload": "Animation4",
             "fire_time1": 0.625,
             "anim_time1": 0.625,
-            "fire_time2": 2.295,
-            "anim_time2": 2.295
+            "fire_time2": 0.625,
+            "anim_time2": 0.625,
+            "reload_time_skip": 2.295,
+            "reload_time": 2.295
         },
         "rotation": [
             -5.0,

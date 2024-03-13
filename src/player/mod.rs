@@ -33,6 +33,8 @@ pub struct WeaponState {
     mesh: Handle<Scene>,
     timer: f32,
     anim_time: f32,
+    need_to_reload: bool,
+    reload_timer: f32,
     data: WeaponData,
 }
 
@@ -114,8 +116,10 @@ impl Player {
     pub fn add_weapon(&mut self, data: WeaponData, slot: usize, mesh: Handle<Scene>) -> bool {
         if !self.weapons[slot].iter().any(|c| c.data.id == data.id) {
             self.weapons[slot].push(WeaponState {
+                need_to_reload: false,
                 data,
                 mesh,
+                reload_timer: 0.0,
                 timer: 0.0,
                 anim_time: 0.0,
             });
