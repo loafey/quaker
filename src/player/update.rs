@@ -322,7 +322,7 @@ impl Player {
         asset_server: Res<AssetServer>,
     ) {
         for mut player in query.iter_mut() {
-            for ev in mouse_wheel.read() {
+            if let Some(ev) = mouse_wheel.read().next() {
                 let inv_len = player.weapons.len() - 1;
                 if let Some((mut slot, mut row)) = player.current_weapon {
                     let dir = if ev.y < 0.0 {
