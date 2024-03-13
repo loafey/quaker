@@ -427,7 +427,14 @@ impl Player {
                             player.fps_anims.insert("reload".to_string(), asset);
                         }
 
-                        player.current_weapon_anim = "idle".to_string();
+                        if player.weapons[slot][row].need_to_reload {
+                            player.weapons[slot][row].anim_time =
+                                player.weapons[slot][row].data.animations.reload_time;
+                            player.weapons[slot][row].timer =
+                                player.weapons[slot][row].data.animations.reload_time_skip;
+                        } else {
+                            player.current_weapon_anim = "idle".to_string();
+                        }
                         player.camera_movement.original_trans = trans.translation;
                         player.camera_movement.switch_offset = -1.0;
                         hook.state = HookState::MustReload;
