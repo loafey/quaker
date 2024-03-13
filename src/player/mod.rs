@@ -42,8 +42,6 @@ pub struct PlayerChildren {
 }
 
 #[derive(Component, Debug, Default)]
-pub struct PlayerFpsAnimations(HashMap<String, Handle<AnimationClip>>);
-#[derive(Component, Debug, Default)]
 pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
@@ -59,6 +57,8 @@ pub struct Player {
     on_ground: bool,
 
     camera_movement: CameraMovement,
+
+    fps_anims: HashMap<String, Handle<AnimationClip>>,
 
     children: PlayerChildren,
 
@@ -89,6 +89,7 @@ impl Default for Player {
             weapons: Default::default(),
             current_weapon_anim: String::new(),
             children: Default::default(),
+            fps_anims: Default::default(),
             camera_movement: CameraMovement {
                 backdrift: 0.0,
                 backdrift_goal: 0.0,

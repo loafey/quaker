@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsAnimations, PlayerFpsMaterial, PlayerFpsModel};
+use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
 use crate::Paused;
 use bevy::{
     ecs::schedule::SystemConfigs,
@@ -229,12 +229,12 @@ impl Player {
     pub fn weapon_idle_animations(
         mut commands: Commands,
         players: Query<&Player>,
-        q_player_fps_anims: Query<(Entity, &PlayerFpsAnimations, &Children)>,
+        q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
         q_scenes: Query<&Children>,
-        mut q_anim_players: Query<(Entity, &mut AnimationPlayer, &Parent)>,
+        mut q_anim_players: Query<&mut AnimationPlayer>,
     ) {
         for player in &players {
-            let (ent, anims, children) = option_return!(q_player_fps_anims
+            let (ent, _, children) = option_return!(q_player_fps_anims
                 .get(option_return!(player.children.fps_model))
                 .ok());
 
@@ -253,9 +253,9 @@ impl Player {
                 if let Ok(children) = q_scenes.get(*child) {
                     // Got GLTF scene
                     for child in children {
-                        if let Ok((_, mut anim_player, _)) = q_anim_players.get_mut(*child) {
+                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
                             // now we have the animation player
-                            let clip = &anims.0[&player.current_weapon_anim];
+                            let clip = &player.fps_anims[&player.current_weapon_anim];
                             if !anim_player.is_playing_clip(clip) {
                                 anim_player.play(clip.clone()).repeat();
                             }
@@ -275,7 +275,6 @@ impl Player {
                 Entity,
                 &mut Handle<Scene>,
                 &mut Transform,
-                &mut PlayerFpsAnimations,
                 &mut PlayerFpsMaterial,
                 &mut Hook,
             ),
@@ -325,7 +324,7 @@ impl Player {
                     player.current_weapon = Some((slot, row));
 
                     // TODO replace these with proper gets.
-                    if let Ok((ent, mut mesh, mut trans, mut anims, mut mat, mut hook)) =
+                    if let Ok((ent, mut mesh, mut trans, mut mat, mut hook)) =
                         q_model.get_mut(option_return!(player.children.fps_model))
                         && !player.weapons[slot][row].data.model_file.is_empty()
                     {
@@ -344,14 +343,6 @@ impl Player {
                         materials.remove(mat.0.id());
                         mat.0 = materials.add(new_mat);
 
-                        anims.0 = [(
-                            "idle",
-                            asset_server
-                                .load(&format!("{}#{}", data.model_file, data.animations.idle)),
-                        )]
-                        .into_iter()
-                        .map(|(a, b)| (a.to_string(), b))
-                        .collect();
                         //anim_player
                         //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
                         //    .repeat();
@@ -364,6 +355,15 @@ impl Player {
                         );
                         trans.translation = Vec3::from(data.offset);
                         *mesh = new_mesh;
+
+                        player.fps_anims = [(
+                            "idle",
+                            asset_server
+                                .load(&format!("{}#{}", data.model_file, data.animations.idle)),
+                        )]
+                        .into_iter()
+                        .map(|(a, b)| (a.to_string(), b))
+                        .collect();
                         player.current_weapon_anim = "idle".to_string();
                         player.camera_movement.original_trans = trans.translation;
                         player.camera_movement.switch_offset = -1.0;

@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsAnimations, PlayerFpsMaterial, PlayerFpsModel};
+use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
 use crate::PlayerSpawnpoint;
 use bevy::{
     core_pipeline::{
@@ -67,7 +67,6 @@ impl Player {
                                     }
                                 }),
                             })
-                            .insert(PlayerFpsAnimations::default())
                             .insert(PlayerFpsMaterial::default())
                             .insert(Name::new("fps model holder"))
                             .id();
