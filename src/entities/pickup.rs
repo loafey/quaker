@@ -40,7 +40,9 @@ impl PickupEntity {
                     let classname = pickup.data.classname();
                     if let Some(weapon_data) = weapon_map.0.get(classname) {
                         let slot = weapon_data.slot;
-                        if player.add_weapon(weapon_data.clone(), slot) {
+                        let handle =
+                            asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                        if player.add_weapon(weapon_data.clone(), slot, handle) {
                             audio.play(asset_server.load(
                                 weapon_data.pickup_sound.clone().unwrap_or(
                                     "sounds/Player/Guns/SuperShotty/shotgunCock.ogg".to_string(),

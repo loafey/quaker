@@ -293,17 +293,7 @@ impl Player {
                     {
                         commands.entity(ent).despawn_descendants();
 
-                        let new_mesh = if let Some(handle) = player.weapons[slot][row].mesh.clone()
-                        {
-                            handle
-                        } else {
-                            let handle = asset_server.load(format!(
-                                "{}#Scene0",
-                                player.weapons[slot][row].data.model_file
-                            ));
-                            player.weapons[slot][row].mesh = Some(handle.clone());
-                            handle
-                        };
+                        let new_mesh = player.weapons[slot][row].mesh.clone();
 
                         let data = &player.weapons[slot][row].data;
 
