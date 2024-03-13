@@ -4,6 +4,7 @@ use bevy::{
     ecs::{
         component::Component,
         event::EventReader,
+        schedule::{IntoSystemConfigs, SystemConfigs},
         system::{Commands, Query, Res},
     },
     log::error,
@@ -19,6 +20,10 @@ pub struct PickupEntity {
     pub data: PickupData,
 }
 impl PickupEntity {
+    pub fn systems() -> SystemConfigs {
+        (PickupEntity::update, PickupEntity::handle_pickups).into_configs()
+    }
+
     pub fn new(data: PickupData) -> Self {
         Self { data }
     }

@@ -76,19 +76,7 @@ fn main() {
         )
         .add_systems(
             Update,
-            (
-                Player::update_input,
-                Player::update_cam_vert,
-                Player::update_cam_hort,
-                Player::ground_detection,
-                Player::weaponry_switch,
-                Player::weapon_animations,
-                Player::camera_movement,
-                Player::shoot,
-                PickupEntity::update,
-                PickupEntity::handle_pickups,
-            )
-                .run_if(if_not_paused),
+            (Player::systems(), PickupEntity::systems()).run_if(if_not_paused),
         )
         .add_systems(Update, (Player::pause_handler, Player::debug))
         .run();

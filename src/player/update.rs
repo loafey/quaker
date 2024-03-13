@@ -1,6 +1,7 @@
 use super::{Player, PlayerFpsAnimations, PlayerFpsMaterial, PlayerFpsModel};
 use crate::Paused;
 use bevy::{
+    ecs::schedule::SystemConfigs,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
@@ -17,6 +18,20 @@ enum SwitchDirection {
     Forward,
 }
 impl Player {
+    pub fn systems() -> SystemConfigs {
+        (
+            Player::update_input,
+            Player::update_cam_vert,
+            Player::update_cam_hort,
+            Player::ground_detection,
+            Player::weaponry_switch,
+            Player::weapon_animations,
+            Player::camera_movement,
+            Player::shoot,
+        )
+            .into_configs()
+    }
+
     pub fn shoot(mut q_players: Query<&mut Player>, keys: Res<ButtonInput<MouseButton>>) {
         for player in &mut q_players {
             if keys.pressed(MouseButton::Right) {
