@@ -293,8 +293,19 @@ impl Player {
                     {
                         commands.entity(ent).despawn_descendants();
 
+                        let new_mesh = if let Some(handle) = player.weapons[slot][row].mesh.clone()
+                        {
+                            handle
+                        } else {
+                            let handle = asset_server.load(format!(
+                                "{}#Scene0",
+                                player.weapons[slot][row].data.model_file
+                            ));
+                            player.weapons[slot][row].mesh = Some(handle.clone());
+                            handle
+                        };
+
                         let data = &player.weapons[slot][row].data;
-                        let new_mesh = asset_server.load(&format!("{}#Scene0", data.model_file));
 
                         let new_mat = StandardMaterial {
                             base_color_texture: Some(asset_server.load(&data.texture_file)),
@@ -305,11 +316,14 @@ impl Player {
                         materials.remove(mat.0.id());
                         mat.0 = materials.add(new_mat);
 
-                        anims.0.insert(
-                            "idle".to_string(),
+                        anims.0 = [(
+                            "idle",
                             asset_server
                                 .load(&format!("{}#{}", data.model_file, data.animations.idle)),
-                        );
+                        )]
+                        .into_iter()
+                        .map(|(a, b)| (a.to_string(), b))
+                        .collect();
                         //anim_player
                         //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
                         //    .repeat();

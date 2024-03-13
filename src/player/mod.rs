@@ -30,6 +30,7 @@ pub struct CameraMovement {
 
 #[derive(Debug)]
 pub struct WeaponState {
+    mesh: Option<Handle<Scene>>,
     data: WeaponData,
 }
 
@@ -107,7 +108,7 @@ impl Default for Player {
 impl Player {
     pub fn add_weapon(&mut self, data: WeaponData, slot: usize) -> bool {
         if !self.weapons[slot].iter().any(|c| c.data.id == data.id) {
-            self.weapons[slot].push(WeaponState { data });
+            self.weapons[slot].push(WeaponState { data, mesh: None });
 
             if self.current_weapon.is_none() {
                 self.current_weapon = Some((slot, 0))
