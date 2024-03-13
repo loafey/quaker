@@ -17,6 +17,16 @@ enum SwitchDirection {
     Forward,
 }
 impl Player {
+    pub fn shoot(mut q_players: Query<&mut Player>, keys: Res<ButtonInput<MouseButton>>) {
+        for player in &mut q_players {
+            if keys.pressed(MouseButton::Right) {
+                println!("right")
+            } else if keys.pressed(MouseButton::Left) {
+                println!("left")
+            }
+        }
+    }
+
     pub fn camera_movement(
         mut q_cam: Query<(&Camera3d, &mut Transform)>,
         mut q_model: Query<(&PlayerFpsModel, &mut Transform), Without<Camera3d>>,

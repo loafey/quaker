@@ -84,6 +84,7 @@ fn main() {
                 Player::weaponry_switch,
                 Player::weapon_animations,
                 Player::camera_movement,
+                Player::shoot,
                 PickupEntity::update,
                 PickupEntity::handle_pickups,
             )
