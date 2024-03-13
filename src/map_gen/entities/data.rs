@@ -55,6 +55,15 @@ pub struct WeaponData {
     #[serde(default)]
     pub rotation: [f32; 3],
     pub pickup_sound: Option<String>,
+    #[serde(default = "WeaponData::default_firetime")]
+    pub firetime1: f32,
+    #[serde(default = "WeaponData::default_firetime")]
+    pub firetime2: f32,
+}
+impl WeaponData {
+    fn default_firetime() -> f32 {
+        1.0
+    }
 }
 
 pub fn load_weapons(mut map: ResMut<WeaponMap>) {
