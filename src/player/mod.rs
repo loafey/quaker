@@ -106,24 +106,29 @@ impl Default for Player {
 }
 impl Player {
     pub fn add_weapon(&mut self, data: WeaponData, slot: usize) {
-        self.weapons[slot].push(WeaponState { data });
-        if self.current_weapon.is_none() {
-            self.current_weapon = Some((slot, 0))
-        }
+        if !self.weapons[slot].iter().any(|c| c.data.id == data.id) {
+            self.weapons[slot].push(WeaponState { data });
 
-        println!(
-            "Player inventory: [\n    {}\n]",
-            self.weapons
-                .iter()
-                .map(|v| format!(
-                    "[{}]",
-                    v.iter()
-                        .map(|w| w.data.id.clone())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                ))
-                .collect::<Vec<_>>()
-                .join(",\n    ")
-        );
+            if self.current_weapon.is_none() {
+                self.current_weapon = Some((slot, 0))
+            }
+
+            println!(
+                "Player inventory: [\n    {}\n]",
+                self.weapons
+                    .iter()
+                    .map(|v| format!(
+                        "[{}]",
+                        v.iter()
+                            .map(|w| w.data.id.clone())
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(",\n    ")
+            );
+        } else {
+            warn!("unhandled: picked up weapon when already had one");
+        }
     }
 }
