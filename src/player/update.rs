@@ -25,7 +25,7 @@ impl Player {
             Player::update_cam_hort,
             Player::ground_detection,
             Player::weaponry_switch,
-            Player::weapon_idle_animations,
+            Player::weapon_animations,
             Player::camera_movement,
             Player::shoot,
         )
@@ -37,23 +37,31 @@ impl Player {
         keys: Res<ButtonInput<MouseButton>>,
         time: Res<Time>,
     ) {
-        let delta = time.delta_seconds();
         for mut player in &mut q_players {
             let (slot, row) = option_return!(player.current_weapon);
             let weapon = &mut player.weapons[slot][row];
-            weapon.timer -= delta;
+            weapon.timer -= time.delta_seconds();
             weapon.timer = weapon.timer.max(-1.0);
+            weapon.anim_time -= time.delta_seconds();
+            weapon.anim_time = weapon.anim_time.max(-1.0);
+
             if weapon.timer > 0.0 {
                 return;
             }
 
             if keys.pressed(MouseButton::Right) {
-                weapon.timer = weapon.data.firetime2 - delta / 2.0;
+                weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
+                weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
                 player.current_weapon_anim = "shoot2".to_string();
+                println!("shoot2");
+                player.restart_anim = true;
             } else if keys.pressed(MouseButton::Left) {
-                weapon.timer = weapon.data.firetime1 - delta / 2.0;
+                weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
+                weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
                 player.current_weapon_anim = "shoot1".to_string();
-            } else {
+                println!("shoot1");
+                player.restart_anim = true;
+            } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
             }
         }
@@ -230,14 +238,14 @@ impl Player {
         }
     }
 
-    pub fn weapon_idle_animations(
+    pub fn weapon_animations(
         mut commands: Commands,
-        players: Query<&Player>,
+        mut players: Query<&mut Player>,
         q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
         q_scenes: Query<&Children>,
         mut q_anim_players: Query<&mut AnimationPlayer>,
     ) {
-        for player in &players {
+        for mut player in &mut players {
             let (ent, _, children) = option_return!(q_player_fps_anims
                 .get(option_return!(player.children.fps_model))
                 .ok());
@@ -260,9 +268,14 @@ impl Player {
                         if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
                             // now we have the animation player
                             let clip = &player.fps_anims[&player.current_weapon_anim];
-                            if !anim_player.is_playing_clip(clip) {
+                            if player.restart_anim {
+                                anim_player.play(clip.clone()).replay();
+                                println!("restart {}", player.current_weapon_anim);
+                            } else if !anim_player.is_playing_clip(clip) {
                                 anim_player.play(clip.clone()).repeat();
+                                println!("bonk {}", player.current_weapon_anim);
                             }
+                            player.restart_anim = false;
                         }
                     }
                 }

@@ -7,8 +7,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation1",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation6",
+            "fire_time1": 0.4,
+            "anim_time1": 0.625,
+            "fire_time2": 0.4,
+            "anim_time2": 0.625
         },
         "rotation": [
             -5.0,
@@ -29,8 +33,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation5",
+            "fire_time1": 0.625,
+            "anim_time1": 0.625,
+            "fire_time2": 0.625,
+            "anim_time2": 0.625
         },
         "rotation": [
             -5.0,
@@ -51,8 +59,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation5",
+            "fire_time1": 1.45,
+            "anim_time1": 1.55,
+            "fire_time2": 1.45,
+            "anim_time2": 1.55
         },
         "rotation": [
             -5.0,
@@ -73,8 +85,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation5",
+            "fire_time1": 0.2,
+            "anim_time1": 0.25,
+            "fire_time2": 0.2,
+            "anim_time2": 0.25
         },
         "rotation": [
             -5.0,
@@ -96,7 +112,11 @@
         "animations": {
             "idle": "Animation0",
             "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot2": "Animation6",
+            "fire_time1": 0.5,
+            "anim_time1": 0.625,
+            "fire_time2": 0.5,
+            "anim_time2": 0.625
         },
         "rotation": [
             -5.0,
@@ -117,8 +137,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation5",
+            "fire_time1": 1.2,
+            "anim_time1": 1.292,
+            "fire_time2": 1.2,
+            "anim_time2": 1.292
         },
         "rotation": [
             -5.0,
@@ -139,8 +163,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation1",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation5",
+            "fire_time1": 0.75,
+            "anim_time1": 1.542,
+            "fire_time2": 0.75,
+            "anim_time2": 1.542
         },
         "rotation": [
             -5.0,
@@ -161,8 +189,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation0",
+            "shoot2": "Animation0",
+            "fire_time1": 0.1,
+            "anim_time1": 2.625,
+            "fire_time2": 0.1,
+            "anim_time2": 2.625
         },
         "rotation": [
             -5.0,
@@ -183,8 +215,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation6",
+            "fire_time1": 0.8,
+            "anim_time1": 0.985,
+            "fire_time2": 0.458,
+            "anim_time2": 0.458
         },
         "rotation": [
             -5.0,
@@ -205,8 +241,12 @@
         "scale": 0.01,
         "animations": {
             "idle": "Animation0",
-            "shoot1": "Animation6",
-            "shoot2": "Animation7"
+            "shoot1": "Animation5",
+            "shoot2": "Animation4",
+            "fire_time1": 0.625,
+            "anim_time1": 0.625,
+            "fire_time2": 2.295,
+            "anim_time2": 2.295
         },
         "rotation": [
             -5.0,

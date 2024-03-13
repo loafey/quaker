@@ -32,6 +32,7 @@ pub struct CameraMovement {
 pub struct WeaponState {
     mesh: Handle<Scene>,
     timer: f32,
+    anim_time: f32,
     data: WeaponData,
 }
 
@@ -65,6 +66,7 @@ pub struct Player {
     weapons: [Vec<WeaponState>; 10],
     current_weapon: Option<(usize, usize)>,
     current_weapon_anim: String,
+    restart_anim: bool,
 
     half_height: f32,
     radius: f32,
@@ -88,6 +90,7 @@ impl Default for Player {
             current_weapon: None,
             weapons: Default::default(),
             current_weapon_anim: String::new(),
+            restart_anim: false,
             children: Default::default(),
             fps_anims: Default::default(),
             camera_movement: CameraMovement {
@@ -114,6 +117,7 @@ impl Player {
                 data,
                 mesh,
                 timer: 0.0,
+                anim_time: 0.0,
             });
 
             if self.current_weapon.is_none() {
