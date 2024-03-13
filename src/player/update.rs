@@ -49,8 +49,12 @@ impl Player {
 
             if keys.pressed(MouseButton::Right) {
                 weapon.timer = weapon.data.firetime2 - delta / 2.0;
+                player.current_weapon_anim = "shoot2".to_string();
             } else if keys.pressed(MouseButton::Left) {
                 weapon.timer = weapon.data.firetime1 - delta / 2.0;
+                player.current_weapon_anim = "shoot1".to_string();
+            } else {
+                player.current_weapon_anim = "idle".to_string();
             }
         }
     }
@@ -356,11 +360,27 @@ impl Player {
                         trans.translation = Vec3::from(data.offset);
                         *mesh = new_mesh;
 
-                        player.fps_anims = [(
-                            "idle",
-                            asset_server
-                                .load(&format!("{}#{}", data.model_file, data.animations.idle)),
-                        )]
+                        player.fps_anims = [
+                            (
+                                "idle",
+                                asset_server
+                                    .load(&format!("{}#{}", data.model_file, data.animations.idle)),
+                            ),
+                            (
+                                "shoot1",
+                                asset_server.load(&format!(
+                                    "{}#{}",
+                                    data.model_file, data.animations.shoot1
+                                )),
+                            ),
+                            (
+                                "shoot2",
+                                asset_server.load(&format!(
+                                    "{}#{}",
+                                    data.model_file, data.animations.shoot2
+                                )),
+                            ),
+                        ]
                         .into_iter()
                         .map(|(a, b)| (a.to_string(), b))
                         .collect();
