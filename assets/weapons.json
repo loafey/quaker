@@ -164,7 +164,7 @@
         "animations": {
             "idle": "Animation1",
             "shoot1": "Animation5",
-            "shoot2": "Animation5",
+            "shoot2": "Animation4",
             "fire_time1": 0.75,
             "anim_time1": 1.542,
             "fire_time2": 0.75,
