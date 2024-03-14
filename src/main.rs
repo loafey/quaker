@@ -1,7 +1,7 @@
 #![feature(let_chains)]
 extern crate macros;
 use bevy::{
-    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, prelude::*,
+    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -51,13 +51,21 @@ fn main() {
         .insert_resource(PlayerInput::new())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
-        .add_plugins(DefaultPlugins.set({
-            let mut plug = ImagePlugin::default_nearest();
-            plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
-            plug.default_sampler.address_mode_v = ImageAddressMode::Repeat;
-            plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
-            plug
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set({
+                    let mut plug = ImagePlugin::default_nearest();
+                    plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
+                    plug.default_sampler.address_mode_v = ImageAddressMode::Repeat;
+                    plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
+                    plug
+                })
+                .set(LogPlugin {
+                    filter: "info,bevy_ecs=error".into(),
+                    level: bevy::log::Level::DEBUG,
+                    ..Default::default()
+                }),
+        )
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(TemporalAntiAliasPlugin)
         .add_plugins(ObjPlugin)
