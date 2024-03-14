@@ -1,4 +1,4 @@
-workspace = { members = [ "crates/macros","crates/map_parser"] }
+workspace = { members = [ "crates/input_derive", "crates/macros","crates/map_parser"] }
 [package]
 name = "quaker"
 version = "0.1.0"
@@ -12,6 +12,7 @@ edition = "2021"
 bevy = { version = "0.13.*", features = ["bevy_gltf"] }#, features = ["dynamic_linking"]
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
+input_derive = { path = "crates/input_derive" }
 bevy_rapier3d = { version = "0.25.0", features = ["parallel","debug-render-3d","simd-stable"] }
 serde = "1.0.197"
 serde_json = "1.0.114"

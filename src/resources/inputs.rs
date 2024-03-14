@@ -1,28 +1,28 @@
-use bevy::{ecs::system::Resource, input::keyboard::KeyCode as StankCode};
-use serde::{Deserialize, Serialize};
+use bevy::ecs::system::Resource;
+use input_derive::derive_input;
+use serde::Deserialize;
 
+#[derive_input]
 #[derive(Debug, Deserialize, Resource)]
+#[allow(dead_code)]
 pub struct PlayerInput {
-    pub weapon_shoot1: Key,
-    pub weapon_shoot2: Key,
-    pub weapon_next: Key,
-    pub weapon_previous: Key,
-    pub walk_forward: Key,
-    pub walk_backward: Key,
-    pub walk_left: Key,
-    pub walk_right: Key,
-    pub jump: Key,
+    weapon_shoot1: Key,
+    weapon_shoot2: Key,
+    weapon_next: Key,
+    weapon_previous: Key,
+    walk_forward: Key,
+    walk_backward: Key,
+    walk_left: Key,
+    walk_right: Key,
+    jump: Key,
 }
 impl PlayerInput {
     pub fn new() -> Self {
-        let a =
-            serde_json::from_str(&std::fs::read_to_string("assets/inputs.json").unwrap()).unwrap();
-        println!("{a:#?}");
-        a
+        serde_json::from_str(&std::fs::read_to_string("assets/inputs.json").unwrap()).unwrap()
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(untagged)]
 pub enum Key {
     Mouse(MouseKey),
@@ -30,21 +30,34 @@ pub enum Key {
     Keyboard(KeyCode),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 pub enum MouseWheel {
     Wheel1,
     Wheel2,
 }
-
-#[derive(Debug, Deserialize)]
+impl MouseWheel {
+    #[allow(dead_code)]
+    fn check(self, dir: f32) -> bool {
+        match self {
+            MouseWheel::Wheel1 => dir > 0.0,
+            MouseWheel::Wheel2 => dir < 0.0,
+        }
+    }
+}
+#[derive(Debug, Deserialize, Copy, Clone)]
 pub enum MouseKey {
-    Mouse1,
-    Mouse2,
+    Left,
+    Right,
+    Middle,
+    Back,
+    Forward,
+    Other(u16),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Copy, Clone)]
 #[repr(u32)]
 pub enum KeyCode {
+    Unidentified((u16, u32)),
     Backquote,
     Backslash,
     BracketLeft,

@@ -1,0 +1,13 @@
+[package]
+name = "input_derive"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+proc-macro2 = "1.0.79"
+quote = "1.0.35"
+syn = "2.0.52"
+
+[lib]
+proc-macro = true
+
