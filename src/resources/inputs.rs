@@ -15,6 +15,10 @@ pub struct PlayerInput {
     walk_left: Key,
     walk_right: Key,
     jump: Key,
+    debug_fly_up: Key,
+    debug_fly_down: Key,
+    pause_game: Key,
+    pause_game_alt: Key,
 }
 impl PlayerInput {
     pub fn new() -> Self {
@@ -45,13 +49,14 @@ impl MouseWheel {
     }
 }
 #[derive(Debug, Deserialize, Copy, Clone)]
+#[allow(clippy::enum_variant_names)]
 pub enum MouseKey {
-    Left,
-    Right,
-    Middle,
-    Back,
-    Forward,
-    Other(u16),
+    MouseLeft,
+    MouseRight,
+    MouseMiddle,
+    MouseBack,
+    MouseForward,
+    MouseOther(u16),
 }
 
 #[derive(Debug, Deserialize, Copy, Clone)]

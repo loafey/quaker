@@ -1,11 +1,15 @@
 {
-    "weapon_shoot1": "Mouse1",
-    "weapon_shoot2": "Mouse2",
+    "weapon_shoot1": "MouseLeft",
+    "weapon_shoot2": "MouseRight",
     "weapon_next": "Wheel1",
     "weapon_previous": "Wheel2",
     "walk_forward": "KeyW",
     "walk_backward": "KeyS",
     "walk_left": "KeyA",
     "walk_right": "KeyD",
-    "jump": "Space"
+    "jump": "Space",
+    "debug_fly_up": "ShiftLeft",
+    "debug_fly_down": "ControlLeft",
+    "pause_game": "Escape",
+    "pause_game_alt": "CapsLock"
 }

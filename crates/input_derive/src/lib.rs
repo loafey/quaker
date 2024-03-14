@@ -89,7 +89,7 @@ pub fn derive_input(_attr: TokenStream, input: TokenStream) -> TokenStream {
                     input.#just_released = keys.just_released(std::mem::transmute(key));
                 }
                 Key::Wheel(wheel) => {
-                    if let Some(ev) = mouse_wheel.read().next() {
+                    if let Some(ev) = mouse_wheel {
                         input.#pressed = wheel.check(ev.y);
                     } else {
                         input.#pressed = false;
@@ -133,6 +133,7 @@ pub fn derive_input(_attr: TokenStream, input: TokenStream) -> TokenStream {
                 mut mouse_wheel: bevy::ecs::prelude::EventReader<bevy::input::mouse::MouseWheel>,
                 keys: bevy::ecs::prelude::Res<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>,
             ) {
+                let mouse_wheel = mouse_wheel.read().next();
                 unsafe {
                     #input_action
                 }

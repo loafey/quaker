@@ -1,5 +1,5 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
-use crate::{map_gen::entities::data::SoundEffect, Paused};
+use crate::{inputs::PlayerInput, map_gen::entities::data::SoundEffect, Paused};
 use bevy::{
     ecs::schedule::SystemConfigs,
     input::mouse::{MouseMotion, MouseWheel},
@@ -36,7 +36,7 @@ impl Player {
 
     pub fn shoot(
         mut q_players: Query<&mut Player>,
-        keys: Res<ButtonInput<MouseButton>>,
+        keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
@@ -61,7 +61,7 @@ impl Player {
 
             let mut shot = false;
 
-            if keys.pressed(MouseButton::Right) && !weapon.need_to_reload {
+            if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
                 if weapon.data.animations.reload.is_some() {
@@ -75,7 +75,7 @@ impl Player {
 
                 player.current_weapon_anim = "shoot2".to_string();
                 shot = true;
-            } else if keys.pressed(MouseButton::Left) && !weapon.need_to_reload {
+            } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
                 weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
                 weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
                 if weapon.data.animations.reload.is_some() {
@@ -191,7 +191,7 @@ impl Player {
     }
 
     pub fn update_input(
-        keys: Res<ButtonInput<KeyCode>>,
+        keys: Res<PlayerInput>,
         time: Res<Time>,
         mut query: Query<(
             &mut KinematicCharacterController,
@@ -206,20 +206,20 @@ impl Player {
             let right = Vec3::new(local_z.z, 0., -local_z.x);
 
             let hort_speed = player.hort_speed;
-            if keys.pressed(KeyCode::KeyW) {
+            if keys.walk_forward_pressed {
                 player.velocity += forward * hort_speed * time.delta_seconds();
                 player.camera_movement.backdrift_goal = player.camera_movement.backdrift_max;
-            } else if keys.pressed(KeyCode::KeyS) {
+            } else if keys.walk_backward_pressed {
                 player.velocity -= forward * hort_speed * time.delta_seconds();
                 player.camera_movement.backdrift_goal = -player.camera_movement.backdrift_max;
             } else {
                 player.camera_movement.backdrift_goal = 0.0;
             }
 
-            if keys.pressed(KeyCode::KeyA) {
+            if keys.walk_left_pressed {
                 player.velocity -= right * hort_speed * time.delta_seconds();
                 player.camera_movement.cam_rot_goal = player.camera_movement.cam_rot_max_goal;
-            } else if keys.pressed(KeyCode::KeyD) {
+            } else if keys.walk_right_pressed {
                 player.velocity += right * hort_speed * time.delta_seconds();
                 player.camera_movement.cam_rot_goal = -player.camera_movement.cam_rot_max_goal;
             } else {
@@ -249,7 +249,7 @@ impl Player {
             if player.on_ground && player.jump_timer <= 0.0 {
                 player.velocity.y = 0.0;
                 player.jump_timer = 0.0;
-                if keys.just_pressed(KeyCode::Space) {
+                if keys.jump_just_pressed {
                     player.jump_timer = 0.1;
                     player.velocity.y = player.jump_height;
                     player.air_time = Some(std::time::Instant::now())
@@ -272,9 +272,9 @@ impl Player {
                     .clamp(-player.hort_max_speed, player.hort_max_speed),
             );
 
-            if keys.pressed(KeyCode::ShiftLeft) {
+            if keys.debug_fly_up_pressed {
                 gt.translation.y += 0.1;
-            } else if keys.pressed(KeyCode::ControlLeft) {
+            } else if keys.debug_fly_down_pressed {
                 gt.translation.y -= 0.1;
             }
         }
@@ -337,128 +337,124 @@ impl Player {
             ),
             With<PlayerFpsModel>,
         >,
-        mut mouse_wheel: EventReader<MouseWheel>,
+        keys: Res<PlayerInput>,
         mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,
     ) {
+        //println!("{:#?}", keys);
         for mut player in query.iter_mut() {
-            if let Some(ev) = mouse_wheel.read().next() {
-                let inv_len = player.weapons.len() - 1;
-                if let Some((mut slot, mut row)) = player.current_weapon {
-                    let dir = if ev.y < 0.0 {
-                        SwitchDirection::Back
-                    } else {
-                        SwitchDirection::Forward
+            let dir = if keys.weapon_next_pressed {
+                SwitchDirection::Forward
+            } else if keys.weapon_previous_pressed {
+                SwitchDirection::Back
+            } else {
+                return;
+            };
+
+            let inv_len = player.weapons.len() - 1;
+            if let Some((mut slot, mut row)) = player.current_weapon {
+                loop {
+                    match dir {
+                        SwitchDirection::Back => {
+                            if slot == 0 {
+                                slot = inv_len;
+                            } else {
+                                slot -= 1;
+                            }
+                            if !player.weapons[slot].is_empty() {
+                                row = player.weapons[slot].len() - 1;
+                                break;
+                            }
+                        }
+                        SwitchDirection::Forward => {
+                            if slot == inv_len {
+                                slot = 0;
+                            } else {
+                                slot += 1;
+                            }
+                            if !player.weapons[slot].is_empty() {
+                                row = 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                info!("Currently using: {}", player.weapons[slot][row].data.id);
+                player.current_weapon = Some((slot, row));
+
+                // TODO replace these with proper gets.
+                if let Ok((ent, mut mesh, mut trans, mut mat, mut hook)) =
+                    q_model.get_mut(option_return!(player.children.fps_model))
+                    && !player.weapons[slot][row].data.model_file.is_empty()
+                {
+                    commands.entity(ent).despawn_descendants();
+
+                    let new_mesh = player.weapons[slot][row].mesh.clone();
+
+                    let data = &player.weapons[slot][row].data;
+
+                    let new_mat = StandardMaterial {
+                        base_color_texture: Some(asset_server.load(&data.texture_file)),
+                        perceptual_roughness: 1.0,
+                        reflectance: 0.0,
+                        ..Default::default()
                     };
-                    loop {
-                        match dir {
-                            SwitchDirection::Back => {
-                                if slot == 0 {
-                                    slot = inv_len;
-                                } else {
-                                    slot -= 1;
-                                }
-                                if !player.weapons[slot].is_empty() {
-                                    row = player.weapons[slot].len() - 1;
-                                    break;
-                                }
-                            }
-                            SwitchDirection::Forward => {
-                                if slot == inv_len {
-                                    slot = 0;
-                                } else {
-                                    slot += 1;
-                                }
-                                if !player.weapons[slot].is_empty() {
-                                    row = 0;
-                                    break;
-                                }
-                            }
-                        }
+                    materials.remove(mat.0.id());
+                    mat.0 = materials.add(new_mat);
+
+                    //anim_player
+                    //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
+                    //    .repeat();
+                    trans.scale = Vec3::splat(data.scale);
+                    trans.rotation = Quat::from_euler(
+                        EulerRot::XYZ,
+                        data.rotation[0].to_radians(),
+                        data.rotation[1].to_radians(),
+                        data.rotation[2].to_radians(),
+                    );
+                    trans.translation = Vec3::from(data.offset);
+                    *mesh = new_mesh;
+
+                    player.fps_anims = [
+                        (
+                            "idle",
+                            asset_server
+                                .load(&format!("{}#{}", data.model_file, data.animations.idle)),
+                        ),
+                        (
+                            "shoot1",
+                            asset_server
+                                .load(&format!("{}#{}", data.model_file, data.animations.shoot1)),
+                        ),
+                        (
+                            "shoot2",
+                            asset_server
+                                .load(&format!("{}#{}", data.model_file, data.animations.shoot2)),
+                        ),
+                    ]
+                    .into_iter()
+                    .map(|(a, b)| (a.to_string(), b))
+                    .collect();
+                    if let Some(reload) = player.weapons[slot][row].data.animations.reload.clone() {
+                        let asset = asset_server.load(&format!(
+                            "{}#{}",
+                            player.weapons[slot][row].data.model_file, reload
+                        ));
+                        player.fps_anims.insert("reload".to_string(), asset);
                     }
 
-                    info!("Currently using: {}", player.weapons[slot][row].data.id);
-                    player.current_weapon = Some((slot, row));
-
-                    // TODO replace these with proper gets.
-                    if let Ok((ent, mut mesh, mut trans, mut mat, mut hook)) =
-                        q_model.get_mut(option_return!(player.children.fps_model))
-                        && !player.weapons[slot][row].data.model_file.is_empty()
-                    {
-                        commands.entity(ent).despawn_descendants();
-
-                        let new_mesh = player.weapons[slot][row].mesh.clone();
-
-                        let data = &player.weapons[slot][row].data;
-
-                        let new_mat = StandardMaterial {
-                            base_color_texture: Some(asset_server.load(&data.texture_file)),
-                            perceptual_roughness: 1.0,
-                            reflectance: 0.0,
-                            ..Default::default()
-                        };
-                        materials.remove(mat.0.id());
-                        mat.0 = materials.add(new_mat);
-
-                        //anim_player
-                        //    .play(asset_server.load(&format!("{}#Animation0", data.model_file)))
-                        //    .repeat();
-                        trans.scale = Vec3::splat(data.scale);
-                        trans.rotation = Quat::from_euler(
-                            EulerRot::XYZ,
-                            data.rotation[0].to_radians(),
-                            data.rotation[1].to_radians(),
-                            data.rotation[2].to_radians(),
-                        );
-                        trans.translation = Vec3::from(data.offset);
-                        *mesh = new_mesh;
-
-                        player.fps_anims = [
-                            (
-                                "idle",
-                                asset_server
-                                    .load(&format!("{}#{}", data.model_file, data.animations.idle)),
-                            ),
-                            (
-                                "shoot1",
-                                asset_server.load(&format!(
-                                    "{}#{}",
-                                    data.model_file, data.animations.shoot1
-                                )),
-                            ),
-                            (
-                                "shoot2",
-                                asset_server.load(&format!(
-                                    "{}#{}",
-                                    data.model_file, data.animations.shoot2
-                                )),
-                            ),
-                        ]
-                        .into_iter()
-                        .map(|(a, b)| (a.to_string(), b))
-                        .collect();
-                        if let Some(reload) =
-                            player.weapons[slot][row].data.animations.reload.clone()
-                        {
-                            let asset = asset_server.load(&format!(
-                                "{}#{}",
-                                player.weapons[slot][row].data.model_file, reload
-                            ));
-                            player.fps_anims.insert("reload".to_string(), asset);
-                        }
-
-                        if player.weapons[slot][row].need_to_reload {
-                            player.weapons[slot][row].anim_time =
-                                player.weapons[slot][row].data.animations.reload_time;
-                            player.weapons[slot][row].timer =
-                                player.weapons[slot][row].data.animations.reload_time_skip;
-                        } else {
-                            player.current_weapon_anim = "idle".to_string();
-                        }
-                        player.camera_movement.original_trans = trans.translation;
-                        player.camera_movement.switch_offset = -1.0;
-                        hook.state = HookState::MustReload;
+                    if player.weapons[slot][row].need_to_reload {
+                        player.weapons[slot][row].anim_time =
+                            player.weapons[slot][row].data.animations.reload_time;
+                        player.weapons[slot][row].timer =
+                            player.weapons[slot][row].data.animations.reload_time_skip;
+                    } else {
+                        player.current_weapon_anim = "idle".to_string();
                     }
+                    player.camera_movement.original_trans = trans.translation;
+                    player.camera_movement.switch_offset = -1.0;
+                    hook.state = HookState::MustReload;
                 }
             }
         }
@@ -469,12 +465,12 @@ impl Player {
     }
 
     pub fn pause_handler(
-        keys: Res<ButtonInput<KeyCode>>,
+        keys: Res<PlayerInput>,
         mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
         mut paused: ResMut<Paused>,
         mut time: ResMut<Time<Virtual>>,
     ) {
-        if keys.just_pressed(KeyCode::Escape) || keys.just_pressed(KeyCode::CapsLock) {
+        if keys.pause_game_just_pressed || keys.pause_game_alt_just_pressed {
             paused.0 = !paused.0;
             match paused.0 {
                 true => warn!("Pausing game"),

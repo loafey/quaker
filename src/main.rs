@@ -66,6 +66,7 @@ fn main() {
         .add_systems(PreStartup, load_pickups)
         .add_systems(PreStartup, load_weapons)
         .add_systems(Startup, load_textures)
+        .add_systems(PreUpdate, PlayerInput::update)
         .add_systems(
             Update,
             load_map.run_if(if_texture_done_loading.and_then(run_once())),
@@ -79,6 +80,6 @@ fn main() {
             Update,
             (Player::systems(), PickupEntity::systems()).run_if(if_not_paused),
         )
-        .add_systems(Update, (Player::pause_handler, Player::debug));
-    //.run();
+        .add_systems(Update, (Player::pause_handler, Player::debug))
+        .run();
 }
