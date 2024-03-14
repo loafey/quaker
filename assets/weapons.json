@@ -105,9 +105,9 @@
             "idle": "Animation0",
             "shoot1": "Animation5",
             "shoot2": "Animation5",
-            "fire_time1": 0.2,
+            "fire_time1": 0.1,
             "anim_time1": 0.25,
-            "fire_time2": 0.2,
+            "fire_time2": 0.1,
             "anim_time2": 0.25
         },
         "rotation": [
