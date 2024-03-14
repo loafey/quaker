@@ -19,6 +19,16 @@ pub struct PlayerInput {
     debug_fly_down: Key,
     pause_game: Key,
     pause_game_alt: Key,
+    weapon_slot1: Key,
+    weapon_slot2: Key,
+    weapon_slot3: Key,
+    weapon_slot4: Key,
+    weapon_slot5: Key,
+    weapon_slot6: Key,
+    weapon_slot7: Key,
+    weapon_slot8: Key,
+    weapon_slot9: Key,
+    weapon_slot10: Key,
 }
 impl PlayerInput {
     pub fn new() -> Self {

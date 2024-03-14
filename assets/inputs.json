@@ -11,5 +11,15 @@
     "debug_fly_up": "ShiftLeft",
     "debug_fly_down": "ControlLeft",
     "pause_game": "Escape",
-    "pause_game_alt": "CapsLock"
+    "pause_game_alt": "CapsLock",
+    "weapon_slot1": "Digit1",
+    "weapon_slot2": "Digit2",
+    "weapon_slot3": "Digit3",
+    "weapon_slot4": "Digit4",
+    "weapon_slot5": "Digit5",
+    "weapon_slot6": "Digit6",
+    "weapon_slot7": "Digit7",
+    "weapon_slot8": "Digit8",
+    "weapon_slot9": "Digit9",
+    "weapon_slot10": "Digit10"
 }
