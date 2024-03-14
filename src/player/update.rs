@@ -27,6 +27,7 @@ impl Player {
             Player::update_cam_hort,
             Player::ground_detection,
             Player::weaponry_switch,
+            Player::weaponry_switch_wheel,
             Player::weapon_animations,
             Player::camera_movement,
             Player::shoot,
@@ -323,35 +324,17 @@ impl Player {
         }
     }
 
-    #[allow(clippy::type_complexity)]
-    pub fn weaponry_switch(
-        mut commands: Commands,
-        mut query: Query<&mut Player>,
-        mut q_model: Query<
-            (
-                Entity,
-                &mut Handle<Scene>,
-                &mut Transform,
-                &mut PlayerFpsMaterial,
-                &mut Hook,
-            ),
-            With<PlayerFpsModel>,
-        >,
-        keys: Res<PlayerInput>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-        asset_server: Res<AssetServer>,
-    ) {
-        //println!("{:#?}", keys);
+    pub fn weaponry_switch_wheel(keys: Res<PlayerInput>, mut query: Query<&mut Player>) {
         for mut player in query.iter_mut() {
             let dir = if keys.weapon_next_pressed {
                 SwitchDirection::Forward
             } else if keys.weapon_previous_pressed {
                 SwitchDirection::Back
             } else {
-                return;
+                continue;
             };
-
             let inv_len = player.weapons.len() - 1;
+
             if let Some((mut slot, mut row)) = player.current_weapon {
                 loop {
                     match dir {
@@ -382,7 +365,34 @@ impl Player {
 
                 info!("Currently using: {}", player.weapons[slot][row].data.id);
                 player.current_weapon = Some((slot, row));
+            }
+        }
+    }
 
+    #[allow(clippy::type_complexity)]
+    pub fn weaponry_switch(
+        mut commands: Commands,
+        mut query: Query<&mut Player>,
+        mut q_model: Query<
+            (
+                Entity,
+                &mut Handle<Scene>,
+                &mut Transform,
+                &mut PlayerFpsMaterial,
+                &mut Hook,
+            ),
+            With<PlayerFpsModel>,
+        >,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+        asset_server: Res<AssetServer>,
+    ) {
+        //println!("{:#?}", keys);
+        for mut player in query.iter_mut() {
+            if player.current_weapon == player.current_weapon_old {
+                continue;
+            }
+            player.current_weapon_old = player.current_weapon;
+            if let Some((slot, row)) = player.current_weapon {
                 // TODO replace these with proper gets.
                 if let Ok((ent, mut mesh, mut trans, mut mat, mut hook)) =
                     q_model.get_mut(option_return!(player.children.fps_model))

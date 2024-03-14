@@ -67,6 +67,7 @@ pub struct Player {
 
     weapons: [Vec<WeaponState>; 10],
     current_weapon: Option<(usize, usize)>,
+    current_weapon_old: Option<(usize, usize)>,
     current_weapon_anim: String,
     restart_anim: bool,
 
@@ -90,6 +91,7 @@ impl Default for Player {
             radius: 0.15,
             air_time: None,
             current_weapon: None,
+            current_weapon_old: None,
             weapons: Default::default(),
             current_weapon_anim: String::new(),
             restart_anim: false,
