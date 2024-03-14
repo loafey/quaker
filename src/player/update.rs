@@ -2,7 +2,7 @@ use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
 use crate::{inputs::PlayerInput, map_gen::entities::data::SoundEffect, Paused};
 use bevy::{
     ecs::schedule::SystemConfigs,
-    input::mouse::{MouseMotion, MouseWheel},
+    input::mouse::MouseMotion,
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
