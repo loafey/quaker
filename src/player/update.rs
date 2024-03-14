@@ -369,8 +369,6 @@ impl Player {
                     };
                 }
             }
-
-            info!("Currently using: {}", self.weapons[slot][row].data.id);
             self.current_weapon = Some((slot, row));
         }
     }
@@ -412,8 +410,7 @@ impl Player {
             let (old_slot, row) = option_return!(player.current_weapon);
             if slot == old_slot && player.weapons[slot].len() != row + 1 {
                 player.switch_weapon(SwitchDirection::Forward);
-            }
-            if slot == old_slot && player.weapons[slot].len() == row + 1 {
+            } else if slot == old_slot && player.weapons[slot].len() == row + 1 {
                 player.current_weapon = Some((old_slot, 0))
             } else {
                 player.current_weapon = Some((slot, 0));
