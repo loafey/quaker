@@ -28,6 +28,7 @@ impl Player {
             Player::ground_detection,
             Player::weaponry_switch,
             Player::weaponry_switch_wheel,
+            Player::weaponry_switch_keys,
             Player::weapon_animations,
             Player::camera_movement,
             Player::shoot,
@@ -324,6 +325,56 @@ impl Player {
         }
     }
 
+    fn switch_weapon(&mut self, dir: SwitchDirection) {
+        let inv_len = self.weapons.len() - 1;
+
+        if let Some((mut slot, mut row)) = self.current_weapon {
+            match dir {
+                SwitchDirection::Back => {
+                    if row == 0 {
+                        match slot == 0 {
+                            true => slot = inv_len,
+                            false => slot -= 1,
+                        }
+                        while self.weapons[slot].is_empty() {
+                            match slot == 0 {
+                                true => slot = inv_len,
+                                false => slot -= 1,
+                            }
+                            if !self.weapons[slot].is_empty() {
+                                row = self.weapons[slot].len() - 1;
+                            }
+                        }
+                    } else {
+                        row -= 1;
+                    };
+                }
+                SwitchDirection::Forward => {
+                    if row + 1 == self.weapons[slot].len() {
+                        match slot == inv_len {
+                            true => slot = 0,
+                            false => slot += 1,
+                        }
+                        while self.weapons[slot].is_empty() {
+                            match slot == inv_len {
+                                true => slot = 0,
+                                false => slot += 1,
+                            }
+                            if !self.weapons[slot].is_empty() {
+                                row = 0;
+                            }
+                        }
+                    } else {
+                        row += 1;
+                    };
+                }
+            }
+
+            info!("Currently using: {}", self.weapons[slot][row].data.id);
+            self.current_weapon = Some((slot, row));
+        }
+    }
+
     pub fn weaponry_switch_wheel(keys: Res<PlayerInput>, mut query: Query<&mut Player>) {
         for mut player in query.iter_mut() {
             let dir = if keys.weapon_next_pressed {
@@ -333,38 +384,39 @@ impl Player {
             } else {
                 continue;
             };
-            let inv_len = player.weapons.len() - 1;
+            player.switch_weapon(dir);
+        }
+    }
 
-            if let Some((mut slot, mut row)) = player.current_weapon {
-                loop {
-                    match dir {
-                        SwitchDirection::Back => {
-                            if slot == 0 {
-                                slot = inv_len;
-                            } else {
-                                slot -= 1;
-                            }
-                            if !player.weapons[slot].is_empty() {
-                                row = player.weapons[slot].len() - 1;
-                                break;
-                            }
-                        }
-                        SwitchDirection::Forward => {
-                            if slot == inv_len {
-                                slot = 0;
-                            } else {
-                                slot += 1;
-                            }
-                            if !player.weapons[slot].is_empty() {
-                                row = 0;
-                                break;
-                            }
-                        }
-                    }
-                }
+    pub fn weaponry_switch_keys(keys: Res<PlayerInput>, mut query: Query<&mut Player>) {
+        for mut player in &mut query {
+            // 🤫
+            let slot = match () {
+                _ if keys.weapon_slot1_just_pressed => 0,
+                _ if keys.weapon_slot2_just_pressed => 1,
+                _ if keys.weapon_slot3_just_pressed => 2,
+                _ if keys.weapon_slot4_just_pressed => 3,
+                _ if keys.weapon_slot5_just_pressed => 4,
+                _ if keys.weapon_slot6_just_pressed => 5,
+                _ if keys.weapon_slot7_just_pressed => 6,
+                _ if keys.weapon_slot8_just_pressed => 7,
+                _ if keys.weapon_slot9_just_pressed => 8,
+                _ if keys.weapon_slot10_just_pressed => 9,
+                _ => continue,
+            };
 
-                info!("Currently using: {}", player.weapons[slot][row].data.id);
-                player.current_weapon = Some((slot, row));
+            if player.weapons[slot].is_empty() {
+                continue;
+            }
+
+            let (old_slot, row) = option_return!(player.current_weapon);
+            if slot == old_slot && player.weapons[slot].len() != row + 1 {
+                player.switch_weapon(SwitchDirection::Forward);
+            }
+            if slot == old_slot && player.weapons[slot].len() == row + 1 {
+                player.current_weapon = Some((old_slot, 0))
+            } else {
+                player.current_weapon = Some((slot, 0));
             }
         }
     }
