@@ -1,13 +1,13 @@
-use std::collections::HashMap;
-
+use crate::map_gen::entities::data::{PickupData, WeaponData};
 use bevy::{
     asset::{Handle, UntypedHandle},
     ecs::system::{Res, Resource},
     math::Vec3,
     render::texture::Image,
 };
+use std::collections::HashMap;
 
-use crate::map_gen::entities::data::{PickupData, WeaponData};
+pub mod inputs;
 
 /// String to the current map
 #[derive(Debug, Resource)]

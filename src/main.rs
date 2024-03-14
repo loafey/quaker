@@ -19,7 +19,7 @@ use map_gen::{
     texture_systems::*,
 };
 use player::Player;
-use resources::*;
+use resources::{inputs::PlayerInput, *};
 
 mod entities;
 mod map_gen;
@@ -48,6 +48,7 @@ fn main() {
         .insert_resource(Paused(true))
         .insert_resource(PickupMap::default())
         .insert_resource(WeaponMap::default())
+        .insert_resource(PlayerInput::new())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(DefaultPlugins.set({
@@ -78,6 +79,6 @@ fn main() {
             Update,
             (Player::systems(), PickupEntity::systems()).run_if(if_not_paused),
         )
-        .add_systems(Update, (Player::pause_handler, Player::debug))
-        .run();
+        .add_systems(Update, (Player::pause_handler, Player::debug));
+    //.run();
 }
