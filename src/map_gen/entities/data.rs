@@ -66,6 +66,10 @@ pub struct WeaponData {
     #[serde(default)]
     pub rotation: [f32; 3],
     pub pickup_sound: Option<String>,
+    #[serde(default)]
+    pub attack1: Attack,
+    #[serde(default)]
+    pub attack2: Attack,
 }
 impl WeaponData {
     fn default_firetime() -> f32 {
@@ -83,6 +87,23 @@ pub fn load_weapons(mut map: ResMut<WeaponMap>) {
     }
 
     warn!("Done loading weapons...");
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(tag = "type")]
+pub enum Attack {
+    #[default]
+    None,
+    RayCast {
+        amount: usize,
+        angle_mod: usize,
+        damage: f32,
+        damage_mod: f32,
+        range: f32,
+    },
+    Projectile {
+        projectile: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

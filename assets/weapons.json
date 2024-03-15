@@ -38,7 +38,23 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 0,
+            "damage": 10.0,
+            "damage_mod": 1.0,
+            "range": 0.5
+        },
+        "attack2": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 0,
+            "damage": 10.0,
+            "damage_mod": 1.0,
+            "range": 0.5
+        }
     },
     {
         "id": "weapon_revolver",
