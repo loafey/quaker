@@ -108,7 +108,23 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "RayCast",
+            "amount": 6,
+            "angle_mod": 0,
+            "damage": 13.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        },
+        "attack2": {
+            "type": "RayCast",
+            "amount": 6,
+            "angle_mod": 0,
+            "damage": 13.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        }
     },
     {
         "id": "weapon_smgbelter",
