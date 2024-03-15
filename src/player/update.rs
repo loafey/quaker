@@ -1,5 +1,9 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
-use crate::{inputs::PlayerInput, map_gen::entities::data::SoundEffect, Paused};
+use crate::{
+    inputs::PlayerInput,
+    map_gen::entities::data::{Attack, SoundEffect},
+    Paused,
+};
 use bevy::{
     ecs::schedule::SystemConfigs,
     input::mouse::MouseMotion,
@@ -48,41 +52,23 @@ impl Player {
         }
     }
 
-    fn attack1(&mut self, time: &Time) {
-        let (slot, row) = option_return!(self.current_weapon);
-        let weapon = &mut self.weapons[slot][row];
-        Self::set_anim(
-            weapon,
-            weapon.data.animations.fire_time1,
-            weapon.data.animations.anim_time1,
-            time,
-        );
-
-        self.current_weapon_anim = "shoot1".to_string();
-    }
-
-    fn attack2(&mut self, time: &Time) {
-        let (slot, row) = option_return!(self.current_weapon);
-        let weapon = &mut self.weapons[slot][row];
-        Self::set_anim(
-            weapon,
-            weapon.data.animations.fire_time2,
-            weapon.data.animations.anim_time2,
-            time,
-        );
-
-        self.current_weapon_anim = "shoot2".to_string();
-    }
-
+    #[allow(clippy::too_many_arguments)]
     pub fn shoot(
-        mut q_players: Query<&mut Player>,
+        mut commands: Commands,
+        rapier_context: Res<RapierContext>,
+        mut q_players: Query<(Entity, &mut Player)>,
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+        q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
     ) {
-        for mut player in &mut q_players {
+        for (player_entity, mut player) in &mut q_players {
             let (slot, row) = option_return!(player.current_weapon);
+            let camera = option_return!(player.children.camera);
+            let (_, cam_trans, glob_cam_trans) = error_return!(q_cameras.get(camera));
             let weapon = &mut player.weapons[slot][row];
             weapon.timer -= time.delta_seconds();
             weapon.timer = weapon.timer.max(-1.0);
@@ -102,10 +88,28 @@ impl Player {
             let mut shot = false;
 
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
-                player.attack2(&time);
+                player.attack2(
+                    &mut meshes,
+                    &mut materials,
+                    player_entity,
+                    &mut commands,
+                    &time,
+                    glob_cam_trans.translation(),
+                    &rapier_context,
+                    cam_trans.rotation,
+                );
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
-                player.attack1(&time);
+                player.attack1(
+                    &mut meshes,
+                    &mut materials,
+                    player_entity,
+                    &mut commands,
+                    &time,
+                    glob_cam_trans.translation(),
+                    &rapier_context,
+                    cam_trans.rotation,
+                );
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
@@ -602,5 +606,131 @@ impl Player {
                 }
             }
         }
+    }
+}
+
+impl Player {
+    #[allow(clippy::too_many_arguments)]
+    fn attack(
+        &mut self,
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<StandardMaterial>,
+        player_entity: Entity,
+        commands: &mut Commands,
+        attack: usize,
+        origin: Vec3,
+        rapier_context: &RapierContext,
+        cam_rot: Quat,
+    ) {
+        let (slot, row) = option_return!(self.current_weapon);
+        let attack = match attack {
+            1 => &self.weapons[slot][row].data.attack1,
+            2 => &self.weapons[slot][row].data.attack2,
+            x => {
+                error!("unsupported attack: {x}");
+                return;
+            }
+        };
+        match attack {
+            Attack::RayCast {
+                amount,
+                angle_mod,
+                damage,
+                damage_mod,
+                range,
+            } => {
+                let rot = self.self_rot - std::f32::consts::PI;
+                let dir = Vec3::new(rot.sin(), ((cam_rot.x + 0.5) / 0.6) - 1.0, rot.cos());
+
+                let filter = QueryFilter {
+                    exclude_collider: Some(player_entity),
+                    ..Default::default()
+                };
+                let res = rapier_context.cast_ray(origin, dir, *range, false, filter);
+                if let Some((_ent, distance)) = res {
+                    let pos = origin + dir * distance;
+                    println!("{pos}");
+
+                    commands.spawn(PbrBundle {
+                        transform: Transform::from_translation(pos),
+                        mesh: meshes.add(Cuboid::new(0.2, 0.2, 0.2)),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::rgb(1.0, 0.0, 0.0),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    });
+                }
+            }
+            Attack::Projectile { projectile } => println!("unhandled projectile"),
+            Attack::None => {}
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn attack1(
+        &mut self,
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<StandardMaterial>,
+        player_entity: Entity,
+        commands: &mut Commands,
+        time: &Time,
+        origin: Vec3,
+        rapier_context: &RapierContext,
+        cam_rot: Quat,
+    ) {
+        let (slot, row) = option_return!(self.current_weapon);
+        let weapon = &mut self.weapons[slot][row];
+        self.current_weapon_anim = "shoot1".to_string();
+        Self::set_anim(
+            weapon,
+            weapon.data.animations.fire_time1,
+            weapon.data.animations.anim_time1,
+            time,
+        );
+        let _ = weapon;
+        self.attack(
+            meshes,
+            materials,
+            player_entity,
+            commands,
+            1,
+            origin,
+            rapier_context,
+            cam_rot,
+        );
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn attack2(
+        &mut self,
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<StandardMaterial>,
+        player_entity: Entity,
+        commands: &mut Commands,
+        time: &Time,
+        origin: Vec3,
+        rapier_context: &RapierContext,
+        cam_rot: Quat,
+    ) {
+        let (slot, row) = option_return!(self.current_weapon);
+        let weapon = &mut self.weapons[slot][row];
+        self.current_weapon_anim = "shoot2".to_string();
+        Self::set_anim(
+            weapon,
+            weapon.data.animations.fire_time2,
+            weapon.data.animations.anim_time2,
+            time,
+        );
+        self.attack(
+            meshes,
+            materials,
+            player_entity,
+            commands,
+            2,
+            origin,
+            rapier_context,
+            cam_rot,
+        );
     }
 }
