@@ -36,6 +36,40 @@ impl Player {
             .into_configs()
     }
 
+    fn attack1(&mut self, time: &Time) {
+        let (slot, row) = option_return!(self.current_weapon);
+        let weapon = &mut self.weapons[slot][row];
+        weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
+        weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
+        if weapon.data.animations.reload.is_some() {
+            weapon.need_to_reload = true;
+            weapon.timer = weapon.data.animations.fire_time1
+                + weapon.data.animations.reload_time_skip
+                + time.delta_seconds();
+            weapon.reload_timer = weapon.data.animations.anim_time1 + time.delta_seconds();
+            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+        }
+
+        self.current_weapon_anim = "shoot1".to_string();
+    }
+
+    fn attack2(&mut self, time: &Time) {
+        let (slot, row) = option_return!(self.current_weapon);
+        let weapon = &mut self.weapons[slot][row];
+        weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
+        weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
+        if weapon.data.animations.reload.is_some() {
+            weapon.need_to_reload = true;
+            weapon.timer = weapon.data.animations.fire_time2
+                + weapon.data.animations.reload_time_skip
+                + time.delta_seconds();
+            weapon.reload_timer = weapon.data.animations.anim_time2 + time.delta_seconds();
+            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+        }
+
+        self.current_weapon_anim = "shoot2".to_string();
+    }
+
     pub fn shoot(
         mut q_players: Query<&mut Player>,
         keys: Res<PlayerInput>,
@@ -64,32 +98,10 @@ impl Player {
             let mut shot = false;
 
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
-                weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
-                weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
-                if weapon.data.animations.reload.is_some() {
-                    weapon.need_to_reload = true;
-                    weapon.timer = weapon.data.animations.fire_time2
-                        + weapon.data.animations.reload_time_skip
-                        + time.delta_seconds();
-                    weapon.reload_timer = weapon.data.animations.anim_time2 + time.delta_seconds();
-                    weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
-                }
-
-                player.current_weapon_anim = "shoot2".to_string();
+                player.attack2(&time);
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
-                weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
-                weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
-                if weapon.data.animations.reload.is_some() {
-                    weapon.need_to_reload = true;
-                    weapon.timer = weapon.data.animations.fire_time1
-                        + weapon.data.animations.reload_time_skip
-                        + time.delta_seconds();
-                    weapon.reload_timer = weapon.data.animations.anim_time1 + time.delta_seconds();
-                    weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
-                }
-
-                player.current_weapon_anim = "shoot1".to_string();
+                player.attack1(&time);
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
