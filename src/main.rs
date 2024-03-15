@@ -61,8 +61,8 @@ fn main() {
                     plug
                 })
                 .set(LogPlugin {
-                    filter: "info,bevy_ecs=error".into(),
-                    level: bevy::log::Level::DEBUG,
+                    filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
+                    level: bevy::log::Level::INFO,
                     ..Default::default()
                 }),
         )
