@@ -640,7 +640,13 @@ impl Player {
                 range,
             } => {
                 let rot = self.self_rot - std::f32::consts::PI;
-                let dir = Vec3::new(rot.sin(), ((cam_rot.x + 0.5) / 0.6) - 1.0, rot.cos());
+                // top     0.7
+                // middle  0.1
+                // bottom -0.5
+                let y = (cam_rot.x - 0.1) / 0.6;
+                let m = 1.0 - y.abs();
+                let dir = Vec3::new(rot.sin() * m, y, rot.cos() * m);
+                println!("{dir}");
 
                 let filter = QueryFilter {
                     exclude_collider: Some(player_entity),
@@ -649,7 +655,6 @@ impl Player {
                 let res = rapier_context.cast_ray(origin, dir, *range, false, filter);
                 if let Some((_ent, distance)) = res {
                     let pos = origin + dir * distance;
-                    println!("{pos}");
 
                     commands.spawn(PbrBundle {
                         transform: Transform::from_translation(pos),
