@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
+use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{inputs::PlayerInput, map_gen::entities::data::SoundEffect, Paused};
 use bevy::{
     ecs::schedule::SystemConfigs,
@@ -36,19 +36,27 @@ impl Player {
             .into_configs()
     }
 
+    fn set_anim(weapon: &mut WeaponState, fire_time: f32, anim_time: f32, time: &Time) {
+        weapon.timer = fire_time + time.delta_seconds();
+        weapon.anim_time = anim_time + time.delta_seconds();
+        if weapon.data.animations.reload.is_some() {
+            weapon.need_to_reload = true;
+            weapon.timer =
+                fire_time + weapon.data.animations.reload_time_skip + time.delta_seconds();
+            weapon.reload_timer = anim_time + time.delta_seconds();
+            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+        }
+    }
+
     fn attack1(&mut self, time: &Time) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
-        weapon.timer = weapon.data.animations.fire_time1 + time.delta_seconds();
-        weapon.anim_time = weapon.data.animations.anim_time1 + time.delta_seconds();
-        if weapon.data.animations.reload.is_some() {
-            weapon.need_to_reload = true;
-            weapon.timer = weapon.data.animations.fire_time1
-                + weapon.data.animations.reload_time_skip
-                + time.delta_seconds();
-            weapon.reload_timer = weapon.data.animations.anim_time1 + time.delta_seconds();
-            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
-        }
+        Self::set_anim(
+            weapon,
+            weapon.data.animations.fire_time1,
+            weapon.data.animations.anim_time1,
+            time,
+        );
 
         self.current_weapon_anim = "shoot1".to_string();
     }
@@ -56,16 +64,12 @@ impl Player {
     fn attack2(&mut self, time: &Time) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
-        weapon.timer = weapon.data.animations.fire_time2 + time.delta_seconds();
-        weapon.anim_time = weapon.data.animations.anim_time2 + time.delta_seconds();
-        if weapon.data.animations.reload.is_some() {
-            weapon.need_to_reload = true;
-            weapon.timer = weapon.data.animations.fire_time2
-                + weapon.data.animations.reload_time_skip
-                + time.delta_seconds();
-            weapon.reload_timer = weapon.data.animations.anim_time2 + time.delta_seconds();
-            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
-        }
+        Self::set_anim(
+            weapon,
+            weapon.data.animations.fire_time2,
+            weapon.data.animations.anim_time2,
+            time,
+        );
 
         self.current_weapon_anim = "shoot2".to_string();
     }
