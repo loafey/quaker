@@ -151,7 +151,23 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 10,
+            "damage": 7.0,
+            "damage_mod": 2.0,
+            "range": 100.0
+        },
+        "attack2": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 10,
+            "damage": 7.0,
+            "damage_mod": 2.0,
+            "range": 100.0
+        }
     },
     {
         "id": "weapon_rpg",
