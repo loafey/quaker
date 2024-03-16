@@ -642,9 +642,11 @@ impl Player {
                 let Vec3 { x, y, z } = cam_trans.local_z().xyz();
 
                 let dir = {
-                    let sign = player_trans.rotation.xyz().dot(origin);
-                    let sign = (PI - sign.abs() * 5.0) / PI;
-                    let sign = match sign > 0.55 {
+                    let sign = player_trans.rotation.xyz();
+                    let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
+                    let sign = sign.dot(temp_origin).abs();
+                    println!("{sign}");
+                    let sign = match sign < 0.5 {
                         true => 1.0,
                         false => -1.0,
                     };
