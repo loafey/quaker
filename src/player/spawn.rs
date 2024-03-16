@@ -7,13 +7,20 @@ use bevy::{
     },
     pbr::ScreenSpaceAmbientOcclusionBundle,
     prelude::*,
-    render::{camera::TemporalJitter, view::NoFrustumCulling},
+    render::{
+        camera::TemporalJitter,
+        view::{NoFrustumCulling, RenderLayers},
+    },
 };
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 
 impl Player {
-    pub fn spawn(mut commands: Commands, player_spawn: Res<PlayerSpawnpoint>) {
+    pub fn spawn(
+        mut commands: Commands,
+        player_spawn: Res<PlayerSpawnpoint>,
+        asset_server: Res<AssetServer>,
+    ) {
         let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
         let mut camera = None;
         let mut fps_model = None;
@@ -73,6 +80,22 @@ impl Player {
                         fps_model = Some(new_fps_model);
                     })
                     .id();
+
+                c.spawn(Camera2dBundle {
+                    camera: Camera {
+                        order: 1,
+                        clear_color: ClearColorConfig::None,
+
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(IsDefaultUiCamera);
+
+                c.spawn(SpriteBundle {
+                    texture: asset_server.load("crosshair.png"),
+                    ..default()
+                });
 
                 camera = Some(new_camera_id);
             })
