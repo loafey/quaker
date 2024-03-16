@@ -645,7 +645,6 @@ impl Player {
                     let sign = player_trans.rotation.xyz();
                     let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
                     let sign = sign.dot(temp_origin).abs();
-                    println!("{sign}");
                     let sign = match sign < 0.5 {
                         true => 1.0,
                         false => -1.0,
