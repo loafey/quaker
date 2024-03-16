@@ -49,7 +49,6 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
 pub struct Player {
-    self_rot: f32,
     velocity: Vec3,
     hort_speed: f32,
     hort_max_speed: f32,
@@ -78,7 +77,6 @@ pub struct Player {
 impl Default for Player {
     fn default() -> Self {
         Self {
-            self_rot: 0.0,
             velocity: Vec3::ZERO,
             hort_friction: 1.0,
             hort_speed: 450.0,

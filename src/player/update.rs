@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
     inputs::PlayerInput,
@@ -56,7 +58,7 @@ impl Player {
     pub fn shoot(
         mut commands: Commands,
         rapier_context: Res<RapierContext>,
-        mut q_players: Query<(Entity, &mut Player)>,
+        mut q_players: Query<(Entity, &mut Player, &Transform)>,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
         q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
@@ -65,7 +67,7 @@ impl Player {
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
     ) {
-        for (player_entity, mut player) in &mut q_players {
+        for (player_entity, mut player, player_trans) in &mut q_players {
             let (slot, row) = option_return!(player.current_weapon);
             let camera = option_return!(player.children.camera);
             let (_, cam_trans, glob_cam_trans) = error_return!(q_cameras.get(camera));
@@ -96,7 +98,8 @@ impl Player {
                     &time,
                     glob_cam_trans.translation(),
                     &rapier_context,
-                    cam_trans.rotation,
+                    cam_trans,
+                    player_trans,
                 );
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
@@ -108,7 +111,8 @@ impl Player {
                     &time,
                     glob_cam_trans.translation(),
                     &rapier_context,
-                    cam_trans.rotation,
+                    cam_trans,
+                    player_trans,
                 );
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
@@ -184,7 +188,7 @@ impl Player {
                 for ev in motion_evr.read() {
                     let old = trans.rotation;
                     trans.rotate_local_x(ev.delta.y / -1000.0);
-                    if trans.rotation.x < -0.5 || trans.rotation.x > 0.7 {
+                    if trans.rotation.x < -0.7 || trans.rotation.x > 0.7 {
                         trans.rotation = old;
                     }
                 }
@@ -193,19 +197,13 @@ impl Player {
     }
 
     pub fn update_cam_hort(
-        mut query: Query<(&mut Player, &mut Transform)>,
+        mut query: Query<(&Player, &mut Transform)>,
         mut motion_evr: EventReader<MouseMotion>,
     ) {
-        for (mut player, mut gt) in &mut query {
+        for (_, mut gt) in &mut query {
             // handle cursor
             for ev in motion_evr.read() {
                 let x_delta = ev.delta.x / -1000.0;
-                player.self_rot += x_delta;
-                if player.self_rot < 0.0 {
-                    player.self_rot = std::f32::consts::PI * 2.0 - x_delta;
-                } else if player.self_rot > std::f32::consts::PI * 2.0 {
-                    player.self_rot = x_delta;
-                }
                 gt.rotate_y(x_delta);
                 //gt.rotate_local_x(ev.delta.y / -1000.0);
             }
@@ -620,7 +618,8 @@ impl Player {
         attack: usize,
         origin: Vec3,
         rapier_context: &RapierContext,
-        cam_rot: Quat,
+        cam_trans: &Transform,
+        player_trans: &Transform,
     ) {
         let (slot, row) = option_return!(self.current_weapon);
         let attack = match attack {
@@ -639,14 +638,35 @@ impl Player {
                 damage_mod,
                 range,
             } => {
-                let rot = self.self_rot - std::f32::consts::PI;
-                // top     0.7
-                // middle  0.1
-                // bottom -0.5
-                let y = (cam_rot.x - 0.1) / 0.6;
-                let m = 1.0 - y.abs();
-                let dir = Vec3::new(rot.sin() * m, y, rot.cos() * m);
-                println!("{dir}");
+                let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
+                let Vec3 { x, y, z } = cam_trans.local_z().xyz();
+
+                let dir = {
+                    let sign = player_trans.rotation.xyz().dot(origin);
+                    let sign = (PI - sign.abs() * 5.0) / PI;
+                    let sign = match sign > 0.55 {
+                        true => 1.0,
+                        false => -1.0,
+                    };
+                    -Vec3::new(
+                        sign * x * rot.cos() + z * rot.sin(),
+                        y,
+                        -x * rot.sin() + sign * z * rot.cos(),
+                    )
+                };
+
+                // f(x) = -0.5 * sin(π * (x + 0.5)) + 0.5
+                // let m = 1.0 - (-0.5 * (PI * (local_x.y + 0.5)).sin() + 0.5);
+                //let m = 1.0 - (local_x.y.powf(2.0) + local_x.y) / 2.0;
+                commands.spawn(PbrBundle {
+                    transform: Transform::from_translation(origin + dir),
+                    mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
+                    material: materials.add(StandardMaterial {
+                        base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                });
 
                 let filter = QueryFilter {
                     exclude_collider: Some(player_entity),
@@ -658,7 +678,7 @@ impl Player {
 
                     commands.spawn(PbrBundle {
                         transform: Transform::from_translation(pos),
-                        mesh: meshes.add(Cuboid::new(0.2, 0.2, 0.2)),
+                        mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
                         material: materials.add(StandardMaterial {
                             base_color: Color::rgb(1.0, 0.0, 0.0),
                             ..Default::default()
@@ -682,7 +702,8 @@ impl Player {
         time: &Time,
         origin: Vec3,
         rapier_context: &RapierContext,
-        cam_rot: Quat,
+        cam_trans: &Transform,
+        player_trans: &Transform,
     ) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
@@ -702,7 +723,8 @@ impl Player {
             1,
             origin,
             rapier_context,
-            cam_rot,
+            cam_trans,
+            player_trans,
         );
     }
 
@@ -716,7 +738,8 @@ impl Player {
         time: &Time,
         origin: Vec3,
         rapier_context: &RapierContext,
-        cam_rot: Quat,
+        cam_trans: &Transform,
+        player_trans: &Transform,
     ) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
@@ -735,7 +758,8 @@ impl Player {
             2,
             origin,
             rapier_context,
-            cam_rot,
+            cam_trans,
+            player_trans,
         );
     }
 }
