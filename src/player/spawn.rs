@@ -7,10 +7,7 @@ use bevy::{
     },
     pbr::ScreenSpaceAmbientOcclusionBundle,
     prelude::*,
-    render::{
-        camera::TemporalJitter,
-        view::{NoFrustumCulling, RenderLayers},
-    },
+    render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
@@ -28,8 +25,7 @@ impl Player {
             .spawn(Collider::cylinder(0.5, 0.15))
             .insert(ActiveEvents::COLLISION_EVENTS)
             .add(move |mut c: EntityWorldMut| {
-                let mut trans = Transform::from_translation(player_spawn);
-                trans.rotate_x(std::f32::consts::PI / -8.0);
+                let trans = Transform::from_translation(player_spawn);
 
                 c.insert(KinematicCharacterController::default())
                     .insert(Restitution::coefficient(0.0))
