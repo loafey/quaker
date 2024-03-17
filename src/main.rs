@@ -22,6 +22,7 @@ use player::Player;
 use resources::{
     entropy::{entropy_game, entropy_misc},
     inputs::PlayerInput,
+    projectiles::Projectiles,
     *,
 };
 
@@ -55,6 +56,7 @@ fn main() {
         .insert_resource(PlayerInput::new())
         .insert_resource(entropy_game())
         .insert_resource(entropy_misc())
+        .insert_resource(Projectiles::new())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(

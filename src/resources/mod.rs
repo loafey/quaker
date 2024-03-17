@@ -9,6 +9,7 @@ use std::collections::HashMap;
 
 pub mod entropy;
 pub mod inputs;
+pub mod projectiles;
 
 /// String to the current map
 #[derive(Debug, Resource)]

@@ -210,7 +210,15 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "Projectile",
+            "projectile": "Rocket"
+        },
+        "attack2": {
+            "type": "Projectile",
+            "projectile": "Rocket"
+        }
     },
     {
         "id": "weapon_dynamite",

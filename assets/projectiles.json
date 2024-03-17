@@ -1,0 +1,13 @@
+[
+    {
+        "id": "rocket",
+        "model_file": "models/Projectile/Rocket.obj",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": 0.01,
+        "rotation": [
+            0,
+            0,
+            0
+        ]
+    }
+]
