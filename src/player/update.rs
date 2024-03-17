@@ -1,5 +1,6 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
+    entities::ProjectileEntity,
     entropy::{EGame, EMisc, Entropy},
     inputs::PlayerInput,
     map_gen::entities::data::{Attack, SoundEffect},
@@ -715,22 +716,31 @@ impl Player {
                     let mut trans = Transform::from_translation(origin);
                     trans.scale = Vec3::splat(proj.scale);
                     trans.rotation = player_trans.rotation;
-                    let rot = (cam_trans.rotation.x / 0.7) * (std::f32::consts::PI / 2.0);
-                    trans.rotate_x(rot + proj.rotation[0].to_radians());
+
+                    let look_dir = origin + dir;
+
+                    trans.rotation = player_trans.rotation;
+                    trans.look_at(look_dir, Vec3::Y);
+                    trans.rotate_x(proj.rotation[0].to_radians());
                     trans.rotate_y(proj.rotation[1].to_radians());
                     trans.rotate_z(proj.rotation[2].to_radians());
 
-                    commands.spawn(PbrBundle {
-                        mesh: asset_server.load(&proj.model_file),
-                        material: materials.add(StandardMaterial {
-                            base_color_texture: Some(asset_server.load(&proj.texture_file)),
-                            perceptual_roughness: 1.0,
-                            reflectance: 0.0,
+                    commands
+                        .spawn(PbrBundle {
+                            mesh: asset_server.load(&proj.model_file),
+                            material: materials.add(StandardMaterial {
+                                base_color_texture: Some(asset_server.load(&proj.texture_file)),
+                                perceptual_roughness: 1.0,
+                                reflectance: 0.0,
+                                ..Default::default()
+                            }),
+                            transform: trans,
                             ..Default::default()
-                        }),
-                        transform: trans,
-                        ..Default::default()
-                    });
+                        })
+                        .insert(ProjectileEntity {
+                            data: proj.clone(),
+                            dir,
+                        });
                 } else {
                     error!("Unknown projectile: {projectile}")
                 }

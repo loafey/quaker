@@ -3,11 +3,24 @@
         "id": "rocket",
         "model_file": "models/Projectile/Rocket.obj",
         "texture_file": "textures/weapons/WeaponMegaTexture.png",
-        "scale": 0.01,
+        "scale": -0.01,
+        "speed": 0.1,
         "rotation": [
-            0,
             180,
-            0
+            -180,
+            180
+        ]
+    },
+    {
+        "id": "nuke",
+        "model_file": "models/Projectile/Nuke.obj",
+        "texture_file": "textures/weapons/WeaponMegaTexture.png",
+        "scale": -0.01,
+        "speed": 0.01,
+        "rotation": [
+            180,
+            -180,
+            180
         ]
     }
 ]

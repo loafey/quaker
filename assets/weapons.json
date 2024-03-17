@@ -375,6 +375,14 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "Projectile",
+            "projectile": "nuke"
+        },
+        "attack2": {
+            "type": "Projectile",
+            "projectile": "nuke"
+        }
     }
 ]

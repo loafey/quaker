@@ -12,7 +12,7 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
-use entities::pickup::PickupEntity;
+use entities::{pickup::PickupEntity, ProjectileEntity};
 use map_gen::{
     entities::data::{load_pickups, load_weapons},
     load_map,
@@ -94,7 +94,12 @@ fn main() {
         )
         .add_systems(
             Update,
-            (Player::systems(), PickupEntity::systems()).run_if(if_not_paused),
+            (
+                Player::systems(),
+                PickupEntity::systems(),
+                ProjectileEntity::systems(),
+            )
+                .run_if(if_not_paused),
         )
         .add_systems(Update, (Player::pause_handler, Player::debug))
         .run();

@@ -3,13 +3,14 @@ use std::fs::read_to_string;
 use bevy::{ecs::system::Resource, utils::HashMap};
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Projectile {
     pub id: String,
     pub model_file: String,
     pub texture_file: String,
     pub scale: f32,
     pub rotation: [f32; 3],
+    pub speed: f32,
 }
 
 #[derive(Debug, Resource)]
