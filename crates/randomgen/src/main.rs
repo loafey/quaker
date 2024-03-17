@@ -32,7 +32,12 @@ fn main() -> io::Result<()> {
 
         let mut rng = thread_rng();
         for _ in 0..amount {
-            let rand = rng.gen::<u8>();
+            let rand = loop {
+                let val = rng.gen::<u8>();
+                if val != u8::MAX {
+                    break val;
+                }
+            };
             bytes.push(rand);
             if let Some(current) = distribution.get_mut(&rand) {
                 *current += 1;
