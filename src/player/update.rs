@@ -710,7 +710,7 @@ impl Player {
                 }
             }
             Attack::Projectile { projectile } => println!("unhandled projectile"),
-            Attack::None => {}
+            Attack::None => warn!("just attacked using None, might be an error?"),
         }
     }
 
