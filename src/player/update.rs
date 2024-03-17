@@ -19,7 +19,6 @@ use bevy_rapier3d::{
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use macros::{error_return, option_return};
-use rand::seq::SliceRandom;
 
 enum SwitchDirection {
     Back,
@@ -126,8 +125,8 @@ impl Player {
                         audio.play(asset_server.load(path));
                     }
                     SoundEffect::Random(list) => {
-                        audio
-                            .play(asset_server.load(list.choose(&mut rand::thread_rng()).unwrap()));
+                        //audio
+                        //    .play(asset_server.load(list.choose(&mut rand::thread_rng()).unwrap()));
                     }
                     _ => {}
                 }
