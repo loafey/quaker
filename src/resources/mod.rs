@@ -7,6 +7,7 @@ use bevy::{
 };
 use std::collections::HashMap;
 
+pub mod entropy;
 pub mod inputs;
 
 /// String to the current map

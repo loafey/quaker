@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
+    entropy::{EMisc, Entropy},
     inputs::PlayerInput,
     map_gen::entities::data::{Attack, SoundEffect},
     Paused,
@@ -60,6 +61,7 @@ impl Player {
         mut q_players: Query<(Entity, &mut Player, &Transform)>,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
+        mut misc_entropy: ResMut<Entropy<EMisc>>,
         q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
@@ -124,9 +126,8 @@ impl Player {
                     SoundEffect::Single(path) => {
                         audio.play(asset_server.load(path));
                     }
-                    SoundEffect::Random(list) => {
-                        //audio
-                        //    .play(asset_server.load(list.choose(&mut rand::thread_rng()).unwrap()));
+                    SoundEffect::Random(list) if !list.is_empty() => {
+                        audio.play(asset_server.load(misc_entropy.choose(list)));
                     }
                     _ => {}
                 }

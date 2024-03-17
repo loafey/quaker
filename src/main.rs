@@ -19,7 +19,11 @@ use map_gen::{
     texture_systems::*,
 };
 use player::Player;
-use resources::{inputs::PlayerInput, *};
+use resources::{
+    entropy::{entropy_game, entropy_misc},
+    inputs::PlayerInput,
+    *,
+};
 
 mod entities;
 mod map_gen;
@@ -49,6 +53,8 @@ fn main() {
         .insert_resource(PickupMap::default())
         .insert_resource(WeaponMap::default())
         .insert_resource(PlayerInput::new())
+        .insert_resource(entropy_game())
+        .insert_resource(entropy_misc())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default().disabled())
         .add_plugins(
