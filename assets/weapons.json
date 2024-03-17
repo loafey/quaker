@@ -81,7 +81,23 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 2,
+            "damage": 27.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        },
+        "attack2": {
+            "type": "RayCast",
+            "amount": 1,
+            "angle_mod": 2,
+            "damage": 27.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        }
     },
     {
         "id": "weapon_pumpshotgun",
@@ -251,7 +267,23 @@
             0.0,
             -1.5,
             0.0
-        ]
+        ],
+        "attack1": {
+            "type": "RayCast",
+            "amount": 12,
+            "angle_mod": 8,
+            "damage": 13.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        },
+        "attack2": {
+            "type": "RayCast",
+            "amount": 12,
+            "angle_mod": 8,
+            "damage": 13.0,
+            "damage_mod": 5.0,
+            "range": 100.0
+        }
     },
     {
         "id": "weapon_flamethrower",
