@@ -3,8 +3,11 @@ use bevy::{
     asset::{AssetServer, Assets},
     ecs::system::{Commands, Res, ResMut},
     log::error,
-    math::Vec3,
-    pbr::{PbrBundle, PointLight, PointLightBundle, StandardMaterial},
+    math::{EulerRot, Quat, Vec3},
+    pbr::{
+        DirectionalLight, DirectionalLightBundle, PbrBundle, PointLight, PointLightBundle,
+        StandardMaterial,
+    },
     render::color::Color,
     transform::{components::Transform, TransformBundle},
 };
@@ -66,6 +69,25 @@ pub fn spawn_entity(
                     shadows_enabled: false,
                     ..Default::default()
                 },
+                ..Default::default()
+            });
+        }
+        Some("directional_light") => {
+            let light_level = attributes
+                .get("light")
+                .and_then(|l| l.parse::<f32>().ok())
+                .unwrap_or(400.0);
+            let trans =
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -45.0, -45.0, -45.0));
+
+            commands.spawn(DirectionalLightBundle {
+                directional_light: DirectionalLight {
+                    color: Color::WHITE,
+                    illuminance: light_level,
+                    shadows_enabled: true,
+                    ..Default::default()
+                },
+                transform: trans,
                 ..Default::default()
             });
         }
