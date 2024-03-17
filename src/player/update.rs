@@ -675,16 +675,16 @@ impl Player {
                         )
                     };
 
-                    commands.spawn(PbrBundle {
-                        transform: Transform::from_translation(origin + dir),
-                        mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                        material: materials.add(StandardMaterial {
-                            base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
-                            alpha_mode: AlphaMode::Add,
-                            ..Default::default()
-                        }),
-                        ..Default::default()
-                    });
+                    // commands.spawn(PbrBundle {
+                    //     transform: Transform::from_translation(origin + dir),
+                    //     mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
+                    //     material: materials.add(StandardMaterial {
+                    //         base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
+                    //         alpha_mode: AlphaMode::Add,
+                    //         ..Default::default()
+                    //     }),
+                    //     ..Default::default()
+                    // });
 
                     let filter = QueryFilter {
                         exclude_collider: Some(player_entity),
