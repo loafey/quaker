@@ -213,11 +213,11 @@
         ],
         "attack1": {
             "type": "Projectile",
-            "projectile": "Rocket"
+            "projectile": "rocket"
         },
         "attack2": {
             "type": "Projectile",
-            "projectile": "Rocket"
+            "projectile": "rocket"
         }
     },
     {

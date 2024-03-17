@@ -3,6 +3,7 @@ use crate::{
     entropy::{EGame, EMisc, Entropy},
     inputs::PlayerInput,
     map_gen::entities::data::{Attack, SoundEffect},
+    projectiles::Projectiles,
     Paused,
 };
 use bevy::{
@@ -62,6 +63,7 @@ impl Player {
         mut misc_entropy: ResMut<Entropy<EMisc>>,
         mut game_entropy: ResMut<Entropy<EGame>>,
         q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
+        projectile_map: Res<Projectiles>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
@@ -100,6 +102,8 @@ impl Player {
                 player_trans,
                 time: &time,
                 game_entropy: &mut game_entropy,
+                projectile_map: &projectile_map,
+                asset_server: &asset_server,
             };
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
                 player.attack2(args);
@@ -239,8 +243,8 @@ impl Player {
 
             player.camera_movement.backdrift_goal += (player.velocity.y.abs() / 5.0).min(0.03);
 
-            player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
-            player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
+            //player.velocity.x = player.velocity.x.clamp(-5.0, 5.0);
+            //player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
 
             if player.velocity != Vec3::ZERO {
                 player.camera_movement.bob_goal += time.delta_seconds()
@@ -609,6 +613,8 @@ struct AttackArgs<'a, 'b, 'c> {
     player_trans: &'a Transform,
     time: &'a Time,
     game_entropy: &'a mut Entropy<EGame>,
+    projectile_map: &'a Projectiles,
+    asset_server: &'a AssetServer,
 }
 
 impl Player {
@@ -626,6 +632,8 @@ impl Player {
             player_trans,
             time: _,
             game_entropy,
+            projectile_map,
+            asset_server,
         }: AttackArgs,
     ) {
         let (slot, row) = option_return!(self.current_weapon);
@@ -637,6 +645,24 @@ impl Player {
                 return;
             }
         };
+
+        let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
+        let Vec3 { x, y, z } = cam_trans.local_z().xyz();
+
+        let sign = player_trans.rotation.xyz();
+        let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
+        let sign = sign.dot(temp_origin).abs();
+        let sign = match sign < 0.5 {
+            true => 1.0,
+            false => -1.0,
+        };
+
+        let dir = -Vec3::new(
+            sign * x * rot.cos() + z * rot.sin(),
+            y,
+            -x * rot.sin() + sign * z * rot.cos(),
+        );
+
         match attack {
             Attack::RayCast {
                 amount,
@@ -651,40 +677,14 @@ impl Player {
 
                 for _ in 0..*amount {
                     let dir = {
-                        let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
-                        let Vec3 { x, y, z } = cam_trans.local_z().xyz();
-
-                        let sign = player_trans.rotation.xyz();
-                        let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
-                        let sign = sign.dot(temp_origin).abs();
-                        let sign = match sign < 0.5 {
-                            true => 1.0,
-                            false => -1.0,
-                        };
-
                         // https://www.desmos.com/3d/7fc69315ec
                         let angle_offsets = Vec3::new(
                             game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
                             game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
                             game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
                         );
-                        -Vec3::new(
-                            (sign * x * rot.cos() + z * rot.sin()) + angle_offsets.x,
-                            y + angle_offsets.y,
-                            (-x * rot.sin() + sign * z * rot.cos()) + angle_offsets.z,
-                        )
+                        dir + angle_offsets
                     };
-
-                    // commands.spawn(PbrBundle {
-                    //     transform: Transform::from_translation(origin + dir),
-                    //     mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                    //     material: materials.add(StandardMaterial {
-                    //         base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
-                    //         alpha_mode: AlphaMode::Add,
-                    //         ..Default::default()
-                    //     }),
-                    //     ..Default::default()
-                    // });
 
                     let filter = QueryFilter {
                         exclude_collider: Some(player_entity),
@@ -709,7 +709,32 @@ impl Player {
                     });
                 }
             }
-            Attack::Projectile { projectile } => println!("unhandled projectile"),
+            Attack::Projectile { projectile } => {
+                if let Some(proj) = projectile_map.0.get(projectile) {
+                    // Fix mesh rotation
+                    let mut trans = Transform::from_translation(origin);
+                    trans.scale = Vec3::splat(proj.scale);
+                    trans.rotation = player_trans.rotation;
+                    let rot = (cam_trans.rotation.x / 0.7) * (std::f32::consts::PI / 2.0);
+                    trans.rotate_x(rot + proj.rotation[0].to_radians());
+                    trans.rotate_y(proj.rotation[1].to_radians());
+                    trans.rotate_z(proj.rotation[2].to_radians());
+
+                    commands.spawn(PbrBundle {
+                        mesh: asset_server.load(&proj.model_file),
+                        material: materials.add(StandardMaterial {
+                            base_color_texture: Some(asset_server.load(&proj.texture_file)),
+                            perceptual_roughness: 1.0,
+                            reflectance: 0.0,
+                            ..Default::default()
+                        }),
+                        transform: trans,
+                        ..Default::default()
+                    });
+                } else {
+                    error!("Unknown projectile: {projectile}")
+                }
+            }
             Attack::None => warn!("just attacked using None, might be an error?"),
         }
     }

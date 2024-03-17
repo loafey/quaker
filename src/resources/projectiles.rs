@@ -5,11 +5,11 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Projectile {
-    id: String,
-    model_file: String,
-    texture_file: String,
-    scale: f32,
-    rotation: [f32; 3],
+    pub id: String,
+    pub model_file: String,
+    pub texture_file: String,
+    pub scale: f32,
+    pub rotation: [f32; 3],
 }
 
 #[derive(Debug, Resource)]
