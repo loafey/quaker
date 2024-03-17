@@ -96,7 +96,7 @@ pub enum Attack {
     None,
     RayCast {
         amount: usize,
-        angle_mod: usize,
+        angle_mod: f32,
         damage: f32,
         damage_mod: f32,
         range: f32,

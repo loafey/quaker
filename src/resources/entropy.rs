@@ -31,7 +31,7 @@ pub fn entropy_misc() -> Entropy<EMisc> {
 impl<Type> Entropy<Type> {
     /// Returns a "random" float between 0.0 and 1.0
     #[must_use]
-    pub fn read_f32(&mut self) -> f32 {
+    pub fn get_f32(&mut self) -> f32 {
         let value = self.values[self.index];
         self.index += 1;
         if self.index >= self.values.len() {
@@ -44,7 +44,7 @@ impl<Type> Entropy<Type> {
     #[must_use]
     #[allow(dead_code)]
     pub fn choose_copy<T: Copy>(&mut self, slice: &[T]) -> T {
-        let entropy = self.read_f32();
+        let entropy = self.get_f32();
         let len = slice.len() as f32;
         let index = (entropy * len).floor() as usize;
         slice[index]
@@ -54,7 +54,7 @@ impl<Type> Entropy<Type> {
     #[must_use]
     #[allow(dead_code)]
     pub fn choose<'a, T>(&mut self, slice: &'a [T]) -> &'a T {
-        let entropy = self.read_f32();
+        let entropy = self.get_f32();
         let len = slice.len() as f32;
         let index = (entropy * len).floor() as usize;
         &slice[index]

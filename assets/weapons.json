@@ -112,7 +112,7 @@
         "attack1": {
             "type": "RayCast",
             "amount": 6,
-            "angle_mod": 0,
+            "angle_mod": 5,
             "damage": 13.0,
             "damage_mod": 5.0,
             "range": 100.0
@@ -120,7 +120,7 @@
         "attack2": {
             "type": "RayCast",
             "amount": 6,
-            "angle_mod": 0,
+            "angle_mod": 5,
             "damage": 13.0,
             "damage_mod": 5.0,
             "range": 100.0
@@ -155,7 +155,7 @@
         "attack1": {
             "type": "RayCast",
             "amount": 1,
-            "angle_mod": 10,
+            "angle_mod": 7,
             "damage": 7.0,
             "damage_mod": 2.0,
             "range": 100.0
@@ -163,7 +163,7 @@
         "attack2": {
             "type": "RayCast",
             "amount": 1,
-            "angle_mod": 10,
+            "angle_mod": 7,
             "damage": 7.0,
             "damage_mod": 2.0,
             "range": 100.0

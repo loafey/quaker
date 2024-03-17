@@ -1,6 +1,6 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
-    entropy::{EMisc, Entropy},
+    entropy::{EGame, EMisc, Entropy},
     inputs::PlayerInput,
     map_gen::entities::data::{Attack, SoundEffect},
     Paused,
@@ -60,6 +60,7 @@ impl Player {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
         mut misc_entropy: ResMut<Entropy<EMisc>>,
+        mut game_entropy: ResMut<Entropy<EGame>>,
         q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
@@ -88,31 +89,23 @@ impl Player {
 
             let mut shot = false;
 
+            let args = AttackArgs {
+                meshes: &mut meshes,
+                materials: &mut materials,
+                player_entity,
+                commands: &mut commands,
+                origin: glob_cam_trans.translation(),
+                rapier_context: &rapier_context,
+                cam_trans,
+                player_trans,
+                time: &time,
+                game_entropy: &mut game_entropy,
+            };
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
-                player.attack2(
-                    &mut meshes,
-                    &mut materials,
-                    player_entity,
-                    &mut commands,
-                    &time,
-                    glob_cam_trans.translation(),
-                    &rapier_context,
-                    cam_trans,
-                    player_trans,
-                );
+                player.attack2(args);
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
-                player.attack1(
-                    &mut meshes,
-                    &mut materials,
-                    player_entity,
-                    &mut commands,
-                    &time,
-                    glob_cam_trans.translation(),
-                    &rapier_context,
-                    cam_trans,
-                    player_trans,
-                );
+                player.attack1(args);
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
@@ -605,19 +598,35 @@ impl Player {
     }
 }
 
+struct AttackArgs<'a, 'b, 'c> {
+    meshes: &'a mut Assets<Mesh>,
+    materials: &'a mut Assets<StandardMaterial>,
+    player_entity: Entity,
+    commands: &'a mut Commands<'b, 'c>,
+    origin: Vec3,
+    rapier_context: &'a RapierContext,
+    cam_trans: &'a Transform,
+    player_trans: &'a Transform,
+    time: &'a Time,
+    game_entropy: &'a mut Entropy<EGame>,
+}
+
 impl Player {
-    #[allow(clippy::too_many_arguments)]
     fn attack(
         &mut self,
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<StandardMaterial>,
-        player_entity: Entity,
-        commands: &mut Commands,
         attack: usize,
-        origin: Vec3,
-        rapier_context: &RapierContext,
-        cam_trans: &Transform,
-        player_trans: &Transform,
+        AttackArgs {
+            meshes,
+            materials,
+            player_entity,
+            commands,
+            origin,
+            rapier_context,
+            cam_trans,
+            player_trans,
+            time: _,
+            game_entropy,
+        }: AttackArgs,
     ) {
         let (slot, row) = option_return!(self.current_weapon);
         let attack = match attack {
@@ -636,45 +645,59 @@ impl Player {
                 damage_mod,
                 range,
             } => {
-                let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
-                let Vec3 { x, y, z } = cam_trans.local_z().xyz();
+                let angle_mod = angle_mod.to_radians();
 
-                let dir = {
-                    let sign = player_trans.rotation.xyz();
-                    let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
-                    let sign = sign.dot(temp_origin).abs();
-                    let sign = match sign < 0.5 {
-                        true => 1.0,
-                        false => -1.0,
+                let mut hits = Vec::new();
+
+                for _ in 0..*amount {
+                    let dir = {
+                        let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
+                        let Vec3 { x, y, z } = cam_trans.local_z().xyz();
+
+                        let sign = player_trans.rotation.xyz();
+                        let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
+                        let sign = sign.dot(temp_origin).abs();
+                        let sign = match sign < 0.5 {
+                            true => 1.0,
+                            false => -1.0,
+                        };
+
+                        // https://www.desmos.com/3d/7fc69315ec
+                        let angle_offsets = Vec3::new(
+                            game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
+                            game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
+                            game_entropy.get_f32() * angle_mod * 2.0 - angle_mod,
+                        );
+                        -Vec3::new(
+                            (sign * x * rot.cos() + z * rot.sin()) + angle_offsets.x,
+                            y + angle_offsets.y,
+                            (-x * rot.sin() + sign * z * rot.cos()) + angle_offsets.z,
+                        )
                     };
-                    -Vec3::new(
-                        sign * x * rot.cos() + z * rot.sin(),
-                        y,
-                        -x * rot.sin() + sign * z * rot.cos(),
-                    )
-                };
 
-                // f(x) = -0.5 * sin(π * (x + 0.5)) + 0.5
-                // let m = 1.0 - (-0.5 * (PI * (local_x.y + 0.5)).sin() + 0.5);
-                //let m = 1.0 - (local_x.y.powf(2.0) + local_x.y) / 2.0;
-                commands.spawn(PbrBundle {
-                    transform: Transform::from_translation(origin + dir),
-                    mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                    material: materials.add(StandardMaterial {
-                        base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
+                    commands.spawn(PbrBundle {
+                        transform: Transform::from_translation(origin + dir),
+                        mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::rgba(0.0, 0.0, 1.0, 0.5),
+                            alpha_mode: AlphaMode::Add,
+                            ..Default::default()
+                        }),
                         ..Default::default()
-                    }),
-                    ..Default::default()
-                });
+                    });
 
-                let filter = QueryFilter {
-                    exclude_collider: Some(player_entity),
-                    ..Default::default()
-                };
-                let res = rapier_context.cast_ray(origin, dir, *range, false, filter);
-                if let Some((_ent, distance)) = res {
-                    let pos = origin + dir * distance;
+                    let filter = QueryFilter {
+                        exclude_collider: Some(player_entity),
+                        ..Default::default()
+                    };
+                    let res = rapier_context.cast_ray(origin, dir, *range, false, filter);
+                    if let Some((ent, distance)) = res {
+                        let pos = origin + dir * distance;
+                        hits.push((ent, pos));
+                    }
+                }
 
+                for (_ent, pos) in hits {
                     commands.spawn(PbrBundle {
                         transform: Transform::from_translation(pos),
                         mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
@@ -691,19 +714,7 @@ impl Player {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn attack1(
-        &mut self,
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<StandardMaterial>,
-        player_entity: Entity,
-        commands: &mut Commands,
-        time: &Time,
-        origin: Vec3,
-        rapier_context: &RapierContext,
-        cam_trans: &Transform,
-        player_trans: &Transform,
-    ) {
+    fn attack1(&mut self, attack_args: AttackArgs) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot1".to_string();
@@ -711,35 +722,13 @@ impl Player {
             weapon,
             weapon.data.animations.fire_time1,
             weapon.data.animations.anim_time1,
-            time,
+            attack_args.time,
         );
         let _ = weapon;
-        self.attack(
-            meshes,
-            materials,
-            player_entity,
-            commands,
-            1,
-            origin,
-            rapier_context,
-            cam_trans,
-            player_trans,
-        );
+        self.attack(1, attack_args);
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn attack2(
-        &mut self,
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<StandardMaterial>,
-        player_entity: Entity,
-        commands: &mut Commands,
-        time: &Time,
-        origin: Vec3,
-        rapier_context: &RapierContext,
-        cam_trans: &Transform,
-        player_trans: &Transform,
-    ) {
+    fn attack2(&mut self, attack_args: AttackArgs) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot2".to_string();
@@ -747,18 +736,8 @@ impl Player {
             weapon,
             weapon.data.animations.fire_time2,
             weapon.data.animations.anim_time2,
-            time,
+            attack_args.time,
         );
-        self.attack(
-            meshes,
-            materials,
-            player_entity,
-            commands,
-            2,
-            origin,
-            rapier_context,
-            cam_trans,
-            player_trans,
-        );
+        self.attack(2, attack_args);
     }
 }
