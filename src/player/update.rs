@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
     entropy::{EMisc, Entropy},
