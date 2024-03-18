@@ -2,10 +2,12 @@ use crate::map_gen::entities::data::{PickupData, WeaponData};
 use bevy::{
     asset::{Handle, UntypedHandle},
     ecs::system::{Res, Resource},
+    log::warn,
     math::Vec3,
     render::texture::Image,
 };
-use std::collections::HashMap;
+use macros::error_return;
+use std::{collections::HashMap, fs};
 
 pub mod entropy;
 pub mod inputs;
@@ -56,7 +58,37 @@ pub struct TextureMap(pub HashMap<String, Handle<Image>>);
 /// A map with pickup data
 #[derive(Debug, Resource, Default)]
 pub struct PickupMap(pub HashMap<String, PickupData>);
+impl PickupMap {
+    pub fn new() -> Self {
+        warn!("Loading pickups...");
+        let data = error_return!(fs::read_to_string("assets/pickups.json"));
+        let parsed = error_return!(serde_json::from_str::<Vec<PickupData>>(&data));
+
+        let mut map = HashMap::new();
+        for item in parsed {
+            map.insert(item.classname().to_string(), item);
+        }
+
+        warn!("Done loading pickups...");
+        Self(map)
+    }
+}
 
 /// A map with weapon data
 #[derive(Debug, Resource, Default)]
 pub struct WeaponMap(pub HashMap<String, WeaponData>);
+impl WeaponMap {
+    pub fn new() -> Self {
+        warn!("Loading pickups...");
+        let data = error_return!(fs::read_to_string("assets/weapons.json"));
+        let parsed = error_return!(serde_json::from_str::<Vec<WeaponData>>(&data));
+
+        let mut map = HashMap::new();
+        for item in parsed {
+            map.insert(item.id.clone(), item);
+        }
+
+        warn!("Done loading weapons...");
+        Self(map)
+    }
+}

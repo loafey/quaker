@@ -1,11 +1,13 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
     entities::ProjectileEntity,
-    entropy::{EGame, EMisc, Entropy},
-    inputs::PlayerInput,
     map_gen::entities::data::{Attack, SoundEffect},
-    projectiles::Projectiles,
-    Paused,
+    resources::{
+        entropy::{EGame, EMisc, Entropy},
+        inputs::PlayerInput,
+        projectiles::Projectiles,
+        Paused,
+    },
 };
 use bevy::{
     ecs::schedule::SystemConfigs,
@@ -668,8 +670,8 @@ impl Player {
             Attack::RayCast {
                 amount,
                 angle_mod,
-                damage,
-                damage_mod,
+                damage: _,
+                damage_mod: _,
                 range,
             } => {
                 let angle_mod = angle_mod.to_radians();

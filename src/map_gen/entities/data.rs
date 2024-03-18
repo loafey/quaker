@@ -1,10 +1,4 @@
-use std::fs;
-
-use bevy::{ecs::system::ResMut, log::warn};
-use macros::error_return;
 use serde::{Deserialize, Serialize};
-
-use crate::{PickupMap, WeaponMap};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "pickup_type")]
@@ -24,18 +18,6 @@ impl PickupData {
             PickupData::Weapon { classname, .. } => classname,
         }
     }
-}
-
-pub fn load_pickups(mut map: ResMut<PickupMap>) {
-    warn!("Loading pickups...");
-    let data = error_return!(fs::read_to_string("assets/pickups.json"));
-    let parsed = error_return!(serde_json::from_str::<Vec<PickupData>>(&data));
-
-    for item in parsed {
-        map.0.insert(item.classname().to_string(), item);
-    }
-
-    warn!("Done loading pickups...");
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -75,18 +57,6 @@ impl WeaponData {
     fn default_firetime() -> f32 {
         1.0
     }
-}
-
-pub fn load_weapons(mut map: ResMut<WeaponMap>) {
-    warn!("Loading pickups...");
-    let data = error_return!(fs::read_to_string("assets/weapons.json"));
-    let parsed = error_return!(serde_json::from_str::<Vec<WeaponData>>(&data));
-
-    for item in parsed {
-        map.0.insert(item.id.clone(), item);
-    }
-
-    warn!("Done loading weapons...");
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

@@ -3,7 +3,7 @@ use self::{
     poly::Poly,
     vertex::Vertex,
 };
-use crate::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
+use crate::resources::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
 use bevy::{
     prelude::*,
     render::{

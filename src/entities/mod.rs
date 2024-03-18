@@ -8,7 +8,7 @@ use bevy::{
     transform::components::Transform,
 };
 
-use crate::projectiles::Projectile;
+use crate::resources::projectiles::Projectile;
 
 pub mod pickup;
 pub mod projectiles;
@@ -29,5 +29,5 @@ impl ProjectileEntity {
         }
     }
 
-    pub fn collision(query: Query<&ProjectileEntity>) {}
+    pub fn collision(_query: Query<&ProjectileEntity>) {}
 }

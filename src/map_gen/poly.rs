@@ -1,5 +1,5 @@
-use std::{hint::unreachable_unchecked, ops::Div};
-
+use super::{plane::Plane, vertex::Vertex, SCALE_FIX};
+use crate::resources::TextureMap;
 use bevy::{
     asset::Assets,
     ecs::system::Res,
@@ -8,10 +8,7 @@ use bevy::{
 };
 use macros::error_return;
 use map_parser::parser::TextureOffset;
-
-use crate::TextureMap;
-
-use super::{plane::Plane, vertex::Vertex, SCALE_FIX};
+use std::{hint::unreachable_unchecked, ops::Div};
 
 const UP_VECTOR: Vec3 = Vec3::Z;
 const FORWARD_VECTOR: Vec3 = Vec3::X;

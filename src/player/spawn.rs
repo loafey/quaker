@@ -1,5 +1,5 @@
 use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
-use crate::PlayerSpawnpoint;
+use crate::resources::PlayerSpawnpoint;
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,

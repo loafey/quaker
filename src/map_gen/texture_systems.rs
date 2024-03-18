@@ -1,7 +1,8 @@
-use crate::{CurrentMap, TextureMap, TexturesLoading};
 use bevy::prelude::*;
 use macros::error_return;
 use std::collections::HashMap;
+
+use crate::resources::{CurrentMap, TextureMap, TexturesLoading};
 
 pub fn load_textures(
     asset_server: Res<AssetServer>,

@@ -1,4 +1,8 @@
-use crate::{entities::pickup::PickupEntity, map_gen::SCALE_FIX, PickupMap, PlayerSpawnpoint};
+use crate::{
+    entities::pickup::PickupEntity,
+    map_gen::SCALE_FIX,
+    resources::{PickupMap, PlayerSpawnpoint},
+};
 use bevy::{
     asset::{AssetServer, Assets},
     ecs::system::{Commands, Res, ResMut},

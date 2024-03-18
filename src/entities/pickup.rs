@@ -1,4 +1,4 @@
-use crate::{map_gen::entities::data::PickupData, player::Player, WeaponMap};
+use crate::{map_gen::entities::data::PickupData, player::Player, resources::WeaponMap};
 use bevy::{
     asset::AssetServer,
     ecs::{
