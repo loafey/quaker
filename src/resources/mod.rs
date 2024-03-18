@@ -13,6 +13,25 @@ pub mod entropy;
 pub mod inputs;
 pub mod projectiles;
 
+/// Represents the current game stage
+#[derive(Debug, Resource, PartialEq, Eq)]
+pub enum CurrentStage {
+    Startup,
+    MainMenu,
+    InGame,
+}
+impl CurrentStage {
+    pub fn on_startup(val: Res<Self>) -> bool {
+        *val == CurrentStage::Startup
+    }
+    pub fn in_game(val: Res<Self>) -> bool {
+        *val == CurrentStage::InGame
+    }
+    pub fn on_mainmenu(val: Res<Self>) -> bool {
+        *val == CurrentStage::MainMenu
+    }
+}
+
 /// String to the current map
 #[derive(Debug, Resource)]
 pub struct CurrentMap(pub String);

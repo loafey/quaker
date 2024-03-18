@@ -7,6 +7,7 @@ use crate::resources::{
     projectiles::Projectiles,
     *,
 };
+use crate::startup;
 use bevy::prelude::*;
 
 pub struct Resources;
@@ -36,23 +37,47 @@ impl Plugin for Resources {
             .insert_resource(PlayerInput::new())
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
-            .insert_resource(Projectiles::new());
+            .insert_resource(Projectiles::new())
+            .insert_resource(CurrentStage::Startup);
     }
 }
 
-pub struct Game;
-impl Plugin for Game {
+pub struct StartupStage;
+impl Plugin for StartupStage {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Startup,
+            startup::startup_setup.run_if(CurrentStage::on_startup),
+        )
+        .add_systems(
+            Update,
+            startup::startup_update.run_if(CurrentStage::on_startup),
+        );
+    }
+}
+
+pub struct GameStage;
+impl Plugin for GameStage {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(Startup, load_textures)
-            .add_systems(PreUpdate, PlayerInput::update)
+            .add_systems(PreUpdate, PlayerInput::update.run_if(CurrentStage::in_game))
             .add_systems(
                 Update,
-                load_map.run_if(if_texture_done_loading.and_then(run_once())),
+                load_map
+                    .run_if(CurrentStage::in_game)
+                    .run_if(if_texture_done_loading.and_then(run_once())),
             )
-            .add_systems(Update, texture_checker.run_if(if_texture_loading))
             .add_systems(
                 Update,
-                Player::spawn.run_if(if_map_done_loading.and_then(run_once())),
+                texture_checker
+                    .run_if(CurrentStage::in_game)
+                    .run_if(if_texture_loading),
+            )
+            .add_systems(
+                Update,
+                Player::spawn
+                    .run_if(CurrentStage::in_game)
+                    .run_if(if_map_done_loading.and_then(run_once())),
             )
             .add_systems(
                 Update,
@@ -61,8 +86,12 @@ impl Plugin for Game {
                     PickupEntity::systems(),
                     ProjectileEntity::systems(),
                 )
+                    .run_if(CurrentStage::in_game)
                     .run_if(if_not_paused),
             )
-            .add_systems(Update, (Player::pause_handler, Player::debug));
+            .add_systems(
+                Update,
+                (Player::pause_handler, Player::debug).run_if(CurrentStage::in_game),
+            );
     }
 }
