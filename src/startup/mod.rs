@@ -1,3 +1,6 @@
+use bevy::ecs::prelude::Res;
+use bevy::input::keyboard::KeyCode;
+use bevy::input::ButtonInput;
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 use bevy_kira_audio::AudioControl;
@@ -34,8 +37,11 @@ pub fn startup_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(StartUpState::default())
         .insert(StartupEnt);
 }
+
+#[allow(clippy::too_many_arguments)]
 pub fn startup_update(
     mut commands: Commands,
+    keys: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Sprite, &mut StartUpState)>,
     time: Res<Time>,
     audio: Res<Audio>,
@@ -44,6 +50,14 @@ pub fn startup_update(
     ents: Query<(Entity, &StartupEnt)>,
 ) {
     let mut kill_all = false;
+    if keys.any_pressed([
+        KeyCode::Space,
+        KeyCode::Enter,
+        KeyCode::CapsLock,
+        KeyCode::Escape,
+    ]) {
+        kill_all = true;
+    }
     for (mut sprite, mut state) in &mut query {
         state.time += time.delta_seconds();
         if state.time > 1.0 && !state.played_sound {
