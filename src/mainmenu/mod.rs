@@ -4,7 +4,6 @@ use bevy::prelude::*;
 pub struct MainMenuEnt;
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    println!("uhu");
     // Camera
     commands
         .spawn(Camera2dBundle::default())

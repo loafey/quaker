@@ -61,7 +61,7 @@ pub struct MainMenuStage;
 impl Plugin for MainMenuStage {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Startup,
+            OnEnter(CurrentStage::MainMenu),
             mainmenu::setup.run_if(in_state(CurrentStage::MainMenu)),
         );
     }

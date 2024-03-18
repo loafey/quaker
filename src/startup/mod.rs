@@ -62,7 +62,7 @@ pub fn startup_update(
         }
     }
     if kill_all {
-        game_stage.set(CurrentStage::InGame);
+        game_stage.set(CurrentStage::MainMenu);
         for (ent, _) in &ents {
             commands.entity(ent).despawn_recursive()
         }
