@@ -54,8 +54,6 @@ pub fn texture_waiter(
     for (i, tex) in textures_loading.0.iter().enumerate() {
         if let Some(Loaded | Failed) = asset_server.get_load_state(tex.id()) {
             to_remove.push(i)
-        } else {
-            println!("{:?}", asset_server.get_load_state(tex.id()));
         }
     }
     for (offset, i) in to_remove.into_iter().enumerate() {
