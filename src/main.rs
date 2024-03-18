@@ -11,7 +11,7 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
-use plugins::{GameStage, Resources, StartupStage};
+use plugins::{GameStage, MainMenuStage, Resources, StartupStage};
 
 mod entities;
 mod mainmenu;
@@ -46,6 +46,7 @@ fn main() {
             AudioPlugin,
             HookPlugin,
             StartupStage,
+            MainMenuStage,
             GameStage,
         ))
         .run();

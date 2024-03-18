@@ -40,7 +40,7 @@ pub fn startup_update(
     time: Res<Time>,
     audio: Res<Audio>,
     asset_server: Res<AssetServer>,
-    mut game_stage: ResMut<CurrentStage>,
+    mut game_stage: ResMut<NextState<CurrentStage>>,
     ents: Query<(Entity, &StartupEnt)>,
 ) {
     let mut kill_all = false;
@@ -58,11 +58,11 @@ pub fn startup_update(
         }
 
         if state.time > 5.0 {
-            *game_stage = CurrentStage::InGame;
             kill_all = true;
         }
     }
     if kill_all {
+        game_stage.set(CurrentStage::InGame);
         for (ent, _) in &ents {
             commands.entity(ent).despawn_recursive()
         }

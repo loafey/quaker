@@ -7,7 +7,7 @@ use crate::resources::{
     projectiles::Projectiles,
     *,
 };
-use crate::startup;
+use crate::{mainmenu, startup};
 use bevy::prelude::*;
 
 pub struct Resources;
@@ -26,7 +26,9 @@ impl Resources {
 }
 impl Plugin for Resources {
     fn build(&self, app: &mut App) {
-        app.insert_resource(CurrentMap(Self::get_map()))
+        app.init_state::<CurrentStage>()
+            .insert_resource(CurrentMap(Self::get_map()))
+            .insert_resource(TextureLoadingState::NotLoaded)
             .insert_resource(TexturesLoading::default())
             .insert_resource(TextureMap::default())
             .insert_resource(PlayerSpawnpoint(Vec3::ZERO))
@@ -37,8 +39,7 @@ impl Plugin for Resources {
             .insert_resource(PlayerInput::new())
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
-            .insert_resource(Projectiles::new())
-            .insert_resource(CurrentStage::Startup);
+            .insert_resource(Projectiles::new());
     }
 }
 
@@ -47,11 +48,21 @@ impl Plugin for StartupStage {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
-            startup::startup_setup.run_if(CurrentStage::on_startup),
+            startup::startup_setup.run_if(in_state(CurrentStage::Startup)),
         )
         .add_systems(
             Update,
-            startup::startup_update.run_if(CurrentStage::on_startup),
+            startup::startup_update.run_if(in_state(CurrentStage::Startup)),
+        );
+    }
+}
+
+pub struct MainMenuStage;
+impl Plugin for MainMenuStage {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Startup,
+            mainmenu::setup.run_if(in_state(CurrentStage::MainMenu)),
         );
     }
 }
@@ -59,24 +70,27 @@ impl Plugin for StartupStage {
 pub struct GameStage;
 impl Plugin for GameStage {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(Startup, load_textures)
-            .add_systems(PreUpdate, PlayerInput::update.run_if(CurrentStage::in_game))
+        app.add_systems(OnEnter(CurrentStage::InGame), register_textures)
             .add_systems(
                 Update,
-                load_map
-                    .run_if(CurrentStage::in_game)
-                    .run_if(if_texture_done_loading.and_then(run_once())),
-            )
-            .add_systems(
-                Update,
-                texture_checker
-                    .run_if(CurrentStage::in_game)
+                texture_waiter
+                    .run_if(in_state(CurrentStage::InGame))
                     .run_if(if_texture_loading),
             )
             .add_systems(
                 Update,
+                load_map
+                    .run_if(in_state(CurrentStage::InGame))
+                    .run_if(if_texture_done_loading.and_then(run_once())),
+            )
+            .add_systems(
+                PreUpdate,
+                PlayerInput::update.run_if(in_state(CurrentStage::InGame)),
+            )
+            .add_systems(
+                Update,
                 Player::spawn
-                    .run_if(CurrentStage::in_game)
+                    .run_if(in_state(CurrentStage::InGame))
                     .run_if(if_map_done_loading.and_then(run_once())),
             )
             .add_systems(
@@ -86,12 +100,12 @@ impl Plugin for GameStage {
                     PickupEntity::systems(),
                     ProjectileEntity::systems(),
                 )
-                    .run_if(CurrentStage::in_game)
+                    .run_if(in_state(CurrentStage::InGame))
                     .run_if(if_not_paused),
             )
             .add_systems(
                 Update,
-                (Player::pause_handler, Player::debug).run_if(CurrentStage::in_game),
+                (Player::pause_handler, Player::debug).run_if(in_state(CurrentStage::InGame)),
             );
     }
 }

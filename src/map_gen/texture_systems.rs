@@ -2,12 +2,13 @@ use bevy::prelude::*;
 use macros::error_return;
 use std::collections::HashMap;
 
-use crate::resources::{CurrentMap, TextureMap, TexturesLoading};
+use crate::resources::{CurrentMap, TextureLoadingState, TextureMap, TexturesLoading};
 
-pub fn load_textures(
+pub fn register_textures(
     asset_server: Res<AssetServer>,
     current_map: Res<CurrentMap>,
     mut textures_loading: ResMut<TexturesLoading>,
+    mut loading_state: ResMut<TextureLoadingState>,
     mut texture_map: ResMut<TextureMap>,
 ) {
     warn!("Registering textures...");
@@ -40,11 +41,13 @@ pub fn load_textures(
         "Done registering textures, took {}s",
         time.elapsed().as_secs_f32()
     );
+    *loading_state = TextureLoadingState::Loading;
 }
 
-pub fn texture_checker(
+pub fn texture_waiter(
     mut textures_loading: ResMut<TexturesLoading>,
     asset_server: Res<AssetServer>,
+    mut loading_state: ResMut<TextureLoadingState>,
 ) {
     use bevy::asset::LoadState::*;
     let mut to_remove = Vec::new();
@@ -61,6 +64,6 @@ pub fn texture_checker(
 
     if textures_loading.0.is_empty() {
         warn!("Texture loading done...");
+        *loading_state = TextureLoadingState::Done;
     }
-    textures_loading.1 = false;
 }

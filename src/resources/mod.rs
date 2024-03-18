@@ -1,7 +1,10 @@
 use crate::map_gen::entities::data::{PickupData, WeaponData};
 use bevy::{
     asset::{Handle, UntypedHandle},
-    ecs::system::{Res, Resource},
+    ecs::{
+        schedule::States,
+        system::{Res, Resource},
+    },
     log::warn,
     math::Vec3,
     render::texture::Image,
@@ -14,22 +17,12 @@ pub mod inputs;
 pub mod projectiles;
 
 /// Represents the current game stage
-#[derive(Debug, Resource, PartialEq, Eq)]
+#[derive(Debug, Resource, PartialEq, Eq, States, Default, Hash, Clone, Copy)]
 pub enum CurrentStage {
+    #[default]
     Startup,
     MainMenu,
     InGame,
-}
-impl CurrentStage {
-    pub fn on_startup(val: Res<Self>) -> bool {
-        *val == CurrentStage::Startup
-    }
-    pub fn in_game(val: Res<Self>) -> bool {
-        *val == CurrentStage::InGame
-    }
-    pub fn on_mainmenu(val: Res<Self>) -> bool {
-        *val == CurrentStage::MainMenu
-    }
 }
 
 /// String to the current map
@@ -56,18 +49,25 @@ pub fn if_map_done_loading(val: Res<MapDoneLoading>) -> bool {
 pub struct PlayerSpawnpoint(pub Vec3);
 
 /// A list of which textures are currently being loaded
+#[derive(Debug, Resource, Default)]
+pub struct TexturesLoading(pub Vec<UntypedHandle>);
+
 #[derive(Debug, Resource)]
-pub struct TexturesLoading(pub Vec<UntypedHandle>, pub bool);
-impl Default for TexturesLoading {
-    fn default() -> Self {
-        Self(Default::default(), true)
-    }
+pub enum TextureLoadingState {
+    NotLoaded,
+    Loading,
+    Done,
 }
-pub fn if_texture_loading(text: Res<TexturesLoading>) -> bool {
-    text.1 || !text.0.is_empty()
+
+#[allow(dead_code)]
+pub fn if_textures_not_loaded(text: Res<TextureLoadingState>) -> bool {
+    matches!(*text, TextureLoadingState::NotLoaded)
 }
-pub fn if_texture_done_loading(text: Res<TexturesLoading>) -> bool {
-    !text.1 && text.0.is_empty()
+pub fn if_texture_loading(text: Res<TextureLoadingState>) -> bool {
+    matches!(*text, TextureLoadingState::Loading)
+}
+pub fn if_texture_done_loading(text: Res<TextureLoadingState>) -> bool {
+    matches!(*text, TextureLoadingState::Done)
 }
 
 /// A map which provides Path -> Handle for textures
