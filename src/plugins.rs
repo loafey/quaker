@@ -63,6 +63,10 @@ impl Plugin for MainMenuStage {
         app.add_systems(
             OnEnter(CurrentStage::MainMenu),
             mainmenu::setup.run_if(in_state(CurrentStage::MainMenu)),
+        )
+        .add_systems(
+            Update,
+            mainmenu::update_level_buttons.run_if(in_state(CurrentStage::MainMenu)),
         );
     }
 }

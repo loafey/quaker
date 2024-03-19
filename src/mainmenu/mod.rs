@@ -1,9 +1,46 @@
 use bevy::prelude::*;
+use macros::error_return;
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
 #[derive(Debug, Component)]
 pub struct MainMenuEnt;
+#[derive(Debug, Component)]
+pub struct LevelButton(String);
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+
+    let dir = fs::read_dir(dir)?;
+    for f in dir {
+        let f = f?.path();
+
+        if f.is_dir() {
+            files.append(&mut get_mapfiles(f)?);
+        } else {
+            files.push(f);
+        }
+    }
+
+    Ok(files)
+}
+
+#[allow(clippy::type_complexity)]
+pub fn update_level_buttons(
+    query: Query<(&Interaction, &LevelButton), (Changed<Interaction>, With<Button>)>,
+) {
+    for (interaction, button) in &query {
+        if matches!(interaction, Interaction::Pressed) {
+            println!("{button:?}");
+        }
+    }
+}
+
+pub fn setup(mut commands: Commands) {
+    let map_files = error_return!(get_mapfiles("assets/maps"));
+
     commands
         .spawn(Camera2dBundle::default())
         .insert(MainMenuEnt);
@@ -44,10 +81,31 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     border: UiRect::all(Val::Px(2.0)),
                     height: Val::Vh(100.0),
                     right: Val::Px(0.0),
+                    flex_direction: FlexDirection::Column,
                     ..default()
                 },
                 background_color: Color::rgb(0.65, 0.65, 0.65).into(),
                 ..default()
+            })
+            .with_children(|c| {
+                for map in map_files {
+                    c.spawn(ButtonBundle {
+                        style: Style {
+                            border: UiRect::all(Val::Px(5.0)),
+                            ..Default::default()
+                        },
+                        border_color: BorderColor(Color::BLACK),
+                        ..Default::default()
+                    })
+                    .insert(TextBundle::from_section(
+                        format!("{map:?}"),
+                        TextStyle {
+                            font_size: 16.0,
+                            ..Default::default()
+                        },
+                    ))
+                    .insert(LevelButton(format!("{map:?}")));
+                }
             });
         })
         .insert(MainMenuEnt);
