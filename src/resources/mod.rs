@@ -10,7 +10,7 @@ use bevy::{
     render::texture::Image,
 };
 use macros::error_return;
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 pub mod entropy;
 pub mod inputs;
@@ -27,7 +27,7 @@ pub enum CurrentStage {
 
 /// String to the current map
 #[derive(Debug, Resource)]
-pub struct CurrentMap(pub String);
+pub struct CurrentMap(pub PathBuf);
 
 /// Represents the pause state of the game
 #[derive(Debug, Resource)]

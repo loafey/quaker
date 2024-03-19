@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::entities::{pickup::PickupEntity, ProjectileEntity};
 use crate::map_gen::{load_map, texture_systems::*};
 use crate::player::Player;
@@ -12,16 +14,16 @@ use bevy::prelude::*;
 
 pub struct Resources;
 impl Resources {
-    fn get_map() -> String {
+    fn get_map() -> PathBuf {
         if let Some(map) = std::env::args().nth(1) {
             if std::fs::File::open(&map).is_ok() {
-                return map;
+                return map.into();
             } else {
                 error!("Can't find map: \"{map}\"")
             }
         }
 
-        "assets/maps/Test.map".to_string()
+        "assets/maps/Test.map".into()
     }
 }
 impl Plugin for Resources {

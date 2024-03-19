@@ -1,3 +1,4 @@
+use crate::resources::CurrentMap;
 use bevy::prelude::*;
 use macros::error_return;
 use std::{
@@ -8,7 +9,7 @@ use std::{
 #[derive(Debug, Component)]
 pub struct MainMenuEnt;
 #[derive(Debug, Component)]
-pub struct LevelButton(String);
+pub struct LevelButton(PathBuf);
 
 fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
@@ -30,10 +31,11 @@ fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
 #[allow(clippy::type_complexity)]
 pub fn update_level_buttons(
     query: Query<(&Interaction, &LevelButton), (Changed<Interaction>, With<Button>)>,
+    mut curlevel: ResMut<CurrentMap>,
 ) {
     for (interaction, button) in &query {
         if matches!(interaction, Interaction::Pressed) {
-            println!("{button:?}");
+            curlevel.0 = button.0.clone();
         }
     }
 }
@@ -104,7 +106,7 @@ pub fn setup(mut commands: Commands) {
                             ..Default::default()
                         },
                     ))
-                    .insert(LevelButton(format!("{map:?}")));
+                    .insert(LevelButton(map.clone()));
                 }
             });
         })
