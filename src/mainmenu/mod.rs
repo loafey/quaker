@@ -1,4 +1,7 @@
-use crate::resources::{CurrentMap, CurrentStage};
+use crate::{
+    net::{self, NetState},
+    resources::{CurrentMap, CurrentStage},
+};
 use bevy::prelude::*;
 use bevy_simple_text_input::{TextInputBundle, TextInputSettings, TextInputValue};
 use macros::error_return;
@@ -44,6 +47,8 @@ pub fn start_level(
     query: Query<(&Interaction, &ButtonEvent), (Changed<Interaction>, With<Button>)>,
     text_inputs: Query<&TextInputValue>,
     mut next_state: ResMut<NextState<CurrentStage>>,
+    mut next_net_state: ResMut<NextState<NetState>>,
+    mut commands: Commands,
 ) {
     let input = &error_return!(text_inputs.get_single()).0;
     for (interaction, event) in &query {
@@ -58,12 +63,14 @@ pub fn start_level(
             }
             ButtonEvent::StartMp => {
                 warn!("starting multiplayer game");
+                net::server::init_server(&mut commands, &mut next_net_state);
             }
             ButtonEvent::StartSteam => {
                 warn!("starting steam game");
             }
             ButtonEvent::JoinMp => {
                 warn!("joining ip: {input}");
+                net::client::init_client(&mut commands, &mut next_net_state);
             }
             ButtonEvent::JoinSteam => {
                 warn!("joining steamid: {input}");

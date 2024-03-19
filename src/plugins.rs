@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::entities::{pickup::PickupEntity, ProjectileEntity};
 use crate::map_gen::{load_map, texture_systems::*};
+use crate::net::{self, NetState};
 use crate::player::Player;
 use crate::resources::{
     entropy::{entropy_game, entropy_misc},
@@ -29,6 +30,7 @@ impl Resources {
 impl Plugin for Resources {
     fn build(&self, app: &mut App) {
         app.init_state::<CurrentStage>()
+            .init_state::<NetState>()
             .insert_resource(CurrentMap(Self::get_map()))
             .insert_resource(TextureLoadingState::NotLoaded)
             .insert_resource(TexturesLoading::default())
@@ -42,6 +44,26 @@ impl Plugin for Resources {
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
             .insert_resource(Projectiles::new());
+    }
+}
+
+pub struct ServerPlugin;
+impl Plugin for ServerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PreUpdate,
+            net::server::systems().run_if(in_state(NetState::Server)),
+        );
+    }
+}
+
+pub struct ClientPlugin;
+impl Plugin for ClientPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PreUpdate,
+            net::client::systems().run_if(in_state(NetState::Client)),
+        );
     }
 }
 
