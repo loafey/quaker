@@ -1,6 +1,6 @@
 use crate::resources::{CurrentMap, CurrentStage};
 use bevy::prelude::*;
-use bevy_simple_text_input::{TextInputBundle, TextInputSettings};
+use bevy_simple_text_input::{TextInputBundle, TextInputSettings, TextInputValue};
 use macros::error_return;
 use std::{
     fs, io,
@@ -9,8 +9,16 @@ use std::{
 
 #[derive(Debug, Component)]
 pub struct MainMenuEnt;
+
 #[derive(Debug, Component)]
-pub struct StartButton;
+pub enum ButtonEvent {
+    Solo,
+    StartMp,
+    StartSteam,
+    JoinMp,
+    JoinSteam,
+}
+
 #[derive(Debug, Component)]
 pub struct LevelButton(PathBuf);
 
@@ -33,12 +41,33 @@ fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
 
 #[allow(clippy::type_complexity)]
 pub fn start_level(
-    query: Query<(&Interaction, &StartButton), (Changed<Interaction>, With<Button>)>,
+    query: Query<(&Interaction, &ButtonEvent), (Changed<Interaction>, With<Button>)>,
+    text_inputs: Query<&TextInputValue>,
     mut next_state: ResMut<NextState<CurrentStage>>,
 ) {
-    for (interaction, _) in &query {
-        if matches!(interaction, Interaction::Pressed) {
-            next_state.set(CurrentStage::InGame);
+    let input = &error_return!(text_inputs.get_single()).0;
+    for (interaction, event) in &query {
+        if !matches!(interaction, Interaction::Pressed) {
+            continue;
+        }
+
+        match event {
+            ButtonEvent::Solo => {
+                warn!("starting solo game");
+                next_state.set(CurrentStage::InGame);
+            }
+            ButtonEvent::StartMp => {
+                warn!("starting multiplayer game");
+            }
+            ButtonEvent::StartSteam => {
+                warn!("starting steam game");
+            }
+            ButtonEvent::JoinMp => {
+                warn!("joining ip: {input}");
+            }
+            ButtonEvent::JoinSteam => {
+                warn!("joining steamid: {input}");
+            }
         }
     }
 }
@@ -113,7 +142,7 @@ pub fn setup(mut commands: Commands) {
                             ..Default::default()
                         },
                     ))
-                    .insert(StartButton);
+                    .insert(ButtonEvent::Solo);
 
                 c.spawn(ButtonBundle::default())
                     .insert(TextBundle::from_section(
@@ -122,7 +151,8 @@ pub fn setup(mut commands: Commands) {
                             font_size: 32.0,
                             ..Default::default()
                         },
-                    ));
+                    ))
+                    .insert(ButtonEvent::StartMp);
 
                 c.spawn(ButtonBundle::default())
                     .insert(TextBundle::from_section(
@@ -131,13 +161,15 @@ pub fn setup(mut commands: Commands) {
                             font_size: 32.0,
                             ..Default::default()
                         },
-                    ));
+                    ))
+                    .insert(ButtonEvent::StartSteam);
 
                 c.spawn(NodeBundle::default()).insert(
                     TextInputBundle {
                         settings: TextInputSettings {
                             retain_on_submit: true,
                         },
+                        value: TextInputValue("127.0.0.1:8000".to_string()),
                         ..Default::default()
                     }
                     .with_text_style(TextStyle {
@@ -153,7 +185,8 @@ pub fn setup(mut commands: Commands) {
                             font_size: 32.0,
                             ..Default::default()
                         },
-                    ));
+                    ))
+                    .insert(ButtonEvent::JoinMp);
 
                 c.spawn(ButtonBundle::default())
                     .insert(TextBundle::from_section(
@@ -162,7 +195,8 @@ pub fn setup(mut commands: Commands) {
                             font_size: 32.0,
                             ..Default::default()
                         },
-                    ));
+                    ))
+                    .insert(ButtonEvent::JoinSteam);
             });
 
             c.spawn(NodeBundle {
