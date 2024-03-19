@@ -1,4 +1,4 @@
-use crate::resources::CurrentMap;
+use crate::resources::{CurrentMap, CurrentStage};
 use bevy::prelude::*;
 use macros::error_return;
 use std::{
@@ -8,6 +8,8 @@ use std::{
 
 #[derive(Debug, Component)]
 pub struct MainMenuEnt;
+#[derive(Debug, Component)]
+pub struct StartButton;
 #[derive(Debug, Component)]
 pub struct LevelButton(PathBuf);
 
@@ -29,6 +31,24 @@ fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
 }
 
 #[allow(clippy::type_complexity)]
+pub fn start_level(
+    query: Query<(&Interaction, &StartButton), (Changed<Interaction>, With<Button>)>,
+    mut next_state: ResMut<NextState<CurrentStage>>,
+) {
+    for (interaction, _) in &query {
+        if matches!(interaction, Interaction::Pressed) {
+            next_state.set(CurrentStage::InGame);
+        }
+    }
+}
+
+pub fn clear(query: Query<(Entity, &MainMenuEnt)>, mut commands: Commands) {
+    for (ent, _) in &query {
+        commands.entity(ent).despawn_recursive();
+    }
+}
+
+#[allow(clippy::type_complexity)]
 pub fn update_level_buttons(
     query: Query<(&Interaction, &LevelButton), (Changed<Interaction>, With<Button>)>,
     mut curlevel: ResMut<CurrentMap>,
@@ -36,6 +56,7 @@ pub fn update_level_buttons(
     for (interaction, button) in &query {
         if matches!(interaction, Interaction::Pressed) {
             curlevel.0 = button.0.clone();
+            warn!("set level to: {:?}", curlevel.0);
         }
     }
 }
@@ -58,23 +79,41 @@ pub fn setup(mut commands: Commands) {
             ..default()
         })
         .with_children(|c| {
-            c.spawn((
-                TextBundle::from_section(
-                    "Quaker!",
-                    TextStyle {
-                        font_size: 100.0,
-                        ..default()
-                    },
-                )
-                .with_text_justify(JustifyText::Center)
-                .with_style(Style {
+            c.spawn(NodeBundle {
+                style: Style {
                     position_type: PositionType::Absolute,
-                    left: Val::Px(5.0),
-                    top: Val::Px(5.0),
+                    width: Val::Px(400.0),
+                    border: UiRect::all(Val::Px(2.0)),
+                    height: Val::Vh(100.0),
+                    left: Val::Px(0.0),
+                    flex_direction: FlexDirection::Column,
                     ..default()
-                }),
-                Label,
-            ));
+                },
+                ..default()
+            })
+            .with_children(|c| {
+                c.spawn((
+                    TextBundle::from_section(
+                        "Quaker!",
+                        TextStyle {
+                            font_size: 100.0,
+                            ..default()
+                        },
+                    )
+                    .with_text_justify(JustifyText::Center)
+                    .with_style(Style { ..default() }),
+                    Label,
+                ));
+                c.spawn(ButtonBundle::default())
+                    .insert(TextBundle::from_section(
+                        "Start",
+                        TextStyle {
+                            font_size: 32.0,
+                            ..Default::default()
+                        },
+                    ))
+                    .insert(StartButton);
+            });
 
             c.spawn(NodeBundle {
                 style: Style {

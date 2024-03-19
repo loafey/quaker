@@ -68,8 +68,10 @@ impl Plugin for MainMenuStage {
         )
         .add_systems(
             Update,
-            mainmenu::update_level_buttons.run_if(in_state(CurrentStage::MainMenu)),
-        );
+            (mainmenu::update_level_buttons, mainmenu::start_level)
+                .run_if(in_state(CurrentStage::MainMenu)),
+        )
+        .add_systems(OnExit(CurrentStage::MainMenu), mainmenu::clear);
     }
 }
 
