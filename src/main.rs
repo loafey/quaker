@@ -11,6 +11,7 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
+use bevy_simple_text_input::TextInputPlugin;
 use plugins::{GameStage, MainMenuStage, Resources, StartupStage};
 
 mod entities;
@@ -48,6 +49,7 @@ fn main() {
             StartupStage,
             MainMenuStage,
             GameStage,
+            TextInputPlugin,
         ))
         .run();
 }

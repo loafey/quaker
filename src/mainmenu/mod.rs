@@ -1,5 +1,6 @@
 use crate::resources::{CurrentMap, CurrentStage};
 use bevy::prelude::*;
+use bevy_simple_text_input::{TextInputBundle, TextInputSettings};
 use macros::error_return;
 use std::{
     fs, io,
@@ -106,13 +107,62 @@ pub fn setup(mut commands: Commands) {
                 ));
                 c.spawn(ButtonBundle::default())
                     .insert(TextBundle::from_section(
-                        "Start",
+                        "Solo",
                         TextStyle {
                             font_size: 32.0,
                             ..Default::default()
                         },
                     ))
                     .insert(StartButton);
+
+                c.spawn(ButtonBundle::default())
+                    .insert(TextBundle::from_section(
+                        "Start MP",
+                        TextStyle {
+                            font_size: 32.0,
+                            ..Default::default()
+                        },
+                    ));
+
+                c.spawn(ButtonBundle::default())
+                    .insert(TextBundle::from_section(
+                        "Start MP Steam",
+                        TextStyle {
+                            font_size: 32.0,
+                            ..Default::default()
+                        },
+                    ));
+
+                c.spawn(NodeBundle::default()).insert(
+                    TextInputBundle {
+                        settings: TextInputSettings {
+                            retain_on_submit: true,
+                        },
+                        ..Default::default()
+                    }
+                    .with_text_style(TextStyle {
+                        font_size: 32.0,
+                        ..Default::default()
+                    }),
+                );
+
+                c.spawn(ButtonBundle::default())
+                    .insert(TextBundle::from_section(
+                        "Join IP",
+                        TextStyle {
+                            font_size: 32.0,
+                            ..Default::default()
+                        },
+                    ));
+
+                c.spawn(ButtonBundle::default())
+                    .insert(TextBundle::from_section(
+                        "Join Steam",
+                        TextStyle {
+                            font_size: 32.0,
+                            ..Default::default()
+                        },
+                    ));
             });
 
             c.spawn(NodeBundle {
