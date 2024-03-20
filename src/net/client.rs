@@ -1,4 +1,9 @@
-use super::{connection_config, CurrentClientId, IsSteam, NetState, ServerChannel, PROTOCOL_ID};
+use crate::resources::{CurrentMap, CurrentStage};
+
+use super::{
+    connection_config, CurrentClientId, IsSteam, NetState, ServerChannel, ServerMessage,
+    PROTOCOL_ID,
+};
 use bevy::{
     ecs::{
         event::EventReader,
@@ -14,17 +19,34 @@ use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     RenetClient,
 };
-use macros::error_return;
+use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
+
+pub fn print_messages(
+    mut client: ResMut<RenetClient>,
+    mut current_stage: ResMut<CurrentMap>,
+    mut state: ResMut<NextState<CurrentStage>>,
+) {
+    while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
+        let message = error_continue!(ServerMessage::from_bytes(&message));
+        match message {
+            ServerMessage::SetMap(map) => {
+                info!("setting map to: {map:?}");
+                current_stage.0 = map;
+                state.set(CurrentStage::InGame);
+            }
+        }
+    }
+}
 
 pub fn init_client(
     world: &mut World,
     next_state: &mut NextState<NetState>,
     ip: &String,
     steam_client: &Option<NonSend<steamworks::Client>>,
-) {
+) -> bool {
     info!("joining: {ip}");
     let client = RenetClient::new(connection_config());
 
@@ -64,6 +86,7 @@ pub fn init_client(
     world.insert_resource(client);
     next_state.set(NetState::Client);
     info!("started client");
+    true
 }
 
 pub fn systems() -> SystemConfigs {
@@ -76,12 +99,6 @@ pub fn errors() -> SystemConfigs {
 
 pub fn errors_steam() -> SystemConfigs {
     (panic_on_error_system_steam.run_if(resource_exists::<IsSteam>),).into_configs()
-}
-
-pub fn print_messages(mut client: ResMut<RenetClient>) {
-    while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
-        println!("Message: {message:?}");
-    }
 }
 
 pub fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {

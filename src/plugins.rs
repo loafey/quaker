@@ -104,7 +104,7 @@ impl Plugin for MainMenuStage {
         )
         .add_systems(
             Update,
-            mainmenu::start_level.run_if(in_state(CurrentStage::MainMenu)),
+            mainmenu::buttons.run_if(in_state(CurrentStage::MainMenu)),
         )
         .add_systems(OnExit(CurrentStage::MainMenu), mainmenu::clear);
     }

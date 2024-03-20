@@ -41,7 +41,7 @@ fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn start_level(world: &mut World) {
+pub fn buttons(world: &mut World) {
     let mut state: SystemState<(
         Query<(&Interaction, &ButtonEvent), (Changed<Interaction>, With<Button>)>,
         Query<&TextInputValue>,
@@ -68,7 +68,9 @@ pub fn start_level(world: &mut World) {
             }
             ButtonEvent::StartMp => {
                 info!("starting multiplayer game");
-                net::server::init_server(world_copy, &mut next_net_state, &steam_client);
+                if net::server::init_server(world_copy, &mut next_net_state, &steam_client) {
+                    next_state.set(CurrentStage::InGame);
+                }
             }
             ButtonEvent::JoinMp => {
                 net::client::init_client(world_copy, &mut next_net_state, input, &steam_client);

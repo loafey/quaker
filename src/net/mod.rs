@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
 use bevy_renet::renet::*;
@@ -25,7 +25,15 @@ pub enum ClientMessage {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServerMessage {
-    Pong,
+    SetMap(PathBuf),
+}
+impl ServerMessage {
+    pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
+        bincode::serialize(self)
+    }
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Box<bincode::ErrorKind>> {
+        bincode::deserialize(bytes)
+    }
 }
 
 pub const PROTOCOL_ID: u64 = 7;

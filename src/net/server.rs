@@ -1,12 +1,15 @@
 use super::{connection_config, NetState, PROTOCOL_ID};
-use crate::net::IsSteam;
+use crate::{
+    net::{IsSteam, ServerChannel, ServerMessage},
+    resources::CurrentMap,
+};
 use bevy::{
     ecs::{
         event::EventReader,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::NonSend,
+        system::{NonSend, Res, ResMut},
         world::World,
     },
     log::{error, info},
@@ -23,11 +26,33 @@ use renet_steam::{
 };
 use std::{net::UdpSocket, time::SystemTime};
 
+pub fn server_events(
+    mut events: EventReader<ServerEvent>,
+    mut server: ResMut<RenetServer>,
+    map: Res<CurrentMap>,
+) {
+    for event in events.read() {
+        match event {
+            ServerEvent::ClientConnected { client_id } => {
+                info!("Player: {client_id} joined");
+                server.send_message(
+                    *client_id,
+                    ServerChannel::ServerMessages as u8,
+                    error_return!(ServerMessage::SetMap(map.0.clone()).bytes()),
+                );
+            }
+            ServerEvent::ClientDisconnected { client_id, reason } => {
+                info!("Player: {client_id} left due to {reason}")
+            }
+        }
+    }
+}
+
 pub fn init_server(
     world: &mut World,
     next_state: &mut NextState<NetState>,
     steam_client: &Option<NonSend<steamworks::Client>>,
-) {
+) -> bool {
     let server = RenetServer::new(connection_config());
 
     if let Some(sc) = steam_client {
@@ -60,6 +85,7 @@ pub fn init_server(
     world.insert_resource(server);
     next_state.set(NetState::Server);
     info!("started server...");
+    true
 }
 
 pub fn systems() -> SystemConfigs {
@@ -76,17 +102,6 @@ pub fn errors_steam() -> SystemConfigs {
     (error_on_error_system_steam,)
         .into_configs()
         .run_if(resource_exists::<IsSteam>)
-}
-
-pub fn server_events(mut events: EventReader<ServerEvent>) {
-    for event in events.read() {
-        match event {
-            ServerEvent::ClientConnected { client_id } => info!("Player: {client_id} joined"),
-            ServerEvent::ClientDisconnected { client_id, reason } => {
-                info!("Player: {client_id} left due to {reason}")
-            }
-        }
-    }
 }
 
 pub fn error_on_error_system_steam(mut renet_error: EventReader<SteamTransportError>) {

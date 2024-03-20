@@ -21,6 +21,28 @@ macro_rules! error_return {
 }
 
 #[macro_export]
+macro_rules! error_continue {
+    ($context:literal) => {{
+        match $context {
+            Ok(map) => map,
+            Err(e) => {
+                error!("{e}");
+                continue;
+            }
+        }
+    }};
+    ($context:expr) => {{
+        match $context {
+            Ok(map) => map,
+            Err(e) => {
+                bevy::log::error!("{e}");
+                continue;
+            }
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! option_return {
     ($context:literal) => {{
         match $context {
