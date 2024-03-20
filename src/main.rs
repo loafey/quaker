@@ -17,6 +17,8 @@ use bevy_renet::{
 use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;
 use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
+use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
+use steamworks::SingleClient;
 
 use crate::try_steam::try_steam;
 
@@ -30,43 +32,53 @@ mod resources;
 mod startup;
 mod try_steam;
 
-fn main() {
-    let a = try_steam();
-    println!("{:?}", a.is_some());
+fn steam_callbacks(client: NonSend<SingleClient>) {
+    client.run_callbacks();
+}
 
-    App::new()
-        .add_plugins((
-            Resources,
-            RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default().disabled(),
-            DefaultPlugins
-                .set({
-                    let mut plug = ImagePlugin::default_nearest();
-                    plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
-                    plug.default_sampler.address_mode_v = ImageAddressMode::Repeat;
-                    plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
-                    plug
-                })
-                .set(LogPlugin {
-                    filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
-                    level: bevy::log::Level::INFO,
-                    ..Default::default()
-                }),
-            // bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
-            TemporalAntiAliasPlugin,
-            ObjPlugin,
-            AudioPlugin,
-            HookPlugin,
-            (StartupStage, MainMenuStage, GameStage),
-            TextInputPlugin,
-            (
-                NetcodeServerPlugin,
-                NetcodeClientPlugin,
-                RenetClientPlugin,
-                RenetServerPlugin,
-                ServerPlugin,
-                ClientPlugin,
-            ),
-        ))
-        .run();
+fn main() {
+    let mut app = App::new();
+
+    app.add_plugins((
+        Resources,
+        RapierPhysicsPlugin::<NoUserData>::default(),
+        RapierDebugRenderPlugin::default().disabled(),
+        DefaultPlugins
+            .set({
+                let mut plug = ImagePlugin::default_nearest();
+                plug.default_sampler.address_mode_u = ImageAddressMode::Repeat;
+                plug.default_sampler.address_mode_v = ImageAddressMode::Repeat;
+                plug.default_sampler.address_mode_w = ImageAddressMode::Repeat;
+                plug
+            })
+            .set(LogPlugin {
+                filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
+                level: bevy::log::Level::INFO,
+                ..Default::default()
+            }),
+        // bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
+        TemporalAntiAliasPlugin,
+        ObjPlugin,
+        AudioPlugin,
+        HookPlugin,
+        (StartupStage, MainMenuStage, GameStage),
+        TextInputPlugin,
+        (
+            RenetClientPlugin,
+            RenetServerPlugin,
+            ServerPlugin,
+            ClientPlugin,
+        ),
+    ));
+
+    if let Some((steam, single_client)) = try_steam() {
+        app.insert_non_send_resource(single_client);
+        app.insert_non_send_resource(steam);
+        app.add_plugins((SteamServerPlugin, SteamClientPlugin));
+        app.add_systems(PreUpdate, steam_callbacks);
+    } else {
+        app.add_plugins((NetcodeServerPlugin, NetcodeClientPlugin));
+    }
+
+    app.run();
 }
