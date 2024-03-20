@@ -1,9 +1,9 @@
-use super::{connection_config, CurrentClientId, NetState, PROTOCOL_ID};
+use super::{connection_config, CurrentClientId, NetState, ServerChannel, PROTOCOL_ID};
 use bevy::{
     ecs::{
         event::EventReader,
         schedule::{IntoSystemConfigs, NextState, SystemConfigs},
-        system::Commands,
+        system::{Commands, ResMut},
     },
     log::info,
 };
@@ -19,7 +19,7 @@ pub fn init_client(commands: &mut Commands, next_state: &mut NextState<NetState>
 
     let client = RenetClient::new(connection_config());
 
-    let server_addr = error_return!("127.0.0.1:8000".parse());
+    let server_addr = error_return!("127.0.0.1:5000".parse());
     let socket = error_return!(UdpSocket::bind("127.0.0.1:0"));
 
     let client_id = current_time.as_micros() as u64;
@@ -45,7 +45,13 @@ pub fn init_client(commands: &mut Commands, next_state: &mut NextState<NetState>
 }
 
 pub fn systems() -> SystemConfigs {
-    (panic_on_error_system,).into_configs()
+    (panic_on_error_system, print_messages).into_configs()
+}
+
+pub fn print_messages(mut client: ResMut<RenetClient>) {
+    while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
+        println!("Message: {message:?}");
+    }
 }
 
 pub fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {

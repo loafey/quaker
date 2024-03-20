@@ -25,49 +25,35 @@ pub enum ServerMessage {
     Pong,
 }
 
-pub const PROTOCOL_ID: u64 = 1;
+pub const PROTOCOL_ID: u64 = 7;
 
 #[derive(Debug, Resource)]
 pub struct CurrentClientId(pub u64);
 
+#[repr(u8)]
 pub enum ClientChannel {
     Input,
     Command,
 }
+
+#[repr(u8)]
 pub enum ServerChannel {
     ServerMessages,
     NetworkedEntities,
-}
-
-impl From<ClientChannel> for u8 {
-    fn from(channel_id: ClientChannel) -> Self {
-        match channel_id {
-            ClientChannel::Command => 0,
-            ClientChannel::Input => 1,
-        }
-    }
-}
-impl From<ServerChannel> for u8 {
-    fn from(channel_id: ServerChannel) -> Self {
-        match channel_id {
-            ServerChannel::NetworkedEntities => 0,
-            ServerChannel::ServerMessages => 1,
-        }
-    }
 }
 
 impl ClientChannel {
     pub fn channels_config() -> Vec<ChannelConfig> {
         vec![
             ChannelConfig {
-                channel_id: Self::Input.into(),
+                channel_id: Self::Input as u8,
                 max_memory_usage_bytes: 5 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::ZERO,
                 },
             },
             ChannelConfig {
-                channel_id: Self::Command.into(),
+                channel_id: Self::Command as u8,
                 max_memory_usage_bytes: 5 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::ZERO,
@@ -80,12 +66,12 @@ impl ServerChannel {
     pub fn channels_config() -> Vec<ChannelConfig> {
         vec![
             ChannelConfig {
-                channel_id: Self::NetworkedEntities.into(),
+                channel_id: Self::NetworkedEntities as u8,
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::Unreliable,
             },
             ChannelConfig {
-                channel_id: Self::ServerMessages.into(),
+                channel_id: Self::ServerMessages as u8,
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::from_millis(200),

@@ -10,10 +10,14 @@ use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
-use bevy_renet::{RenetClientPlugin, RenetServerPlugin};
+use bevy_renet::{
+    renet::{RenetClient, RenetServer},
+    transport::{NetcodeClientPlugin, NetcodeServerPlugin},
+    RenetClientPlugin, RenetServerPlugin,
+};
 use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;
-use plugins::{GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
+use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
 
 mod entities;
 mod mainmenu;
@@ -48,13 +52,16 @@ fn main() {
             ObjPlugin,
             AudioPlugin,
             HookPlugin,
-            StartupStage,
-            MainMenuStage,
-            GameStage,
+            (StartupStage, MainMenuStage, GameStage),
             TextInputPlugin,
-            RenetClientPlugin,
-            RenetServerPlugin,
-            ServerPlugin,
+            (
+                NetcodeServerPlugin,
+                NetcodeClientPlugin,
+                RenetClientPlugin,
+                RenetServerPlugin,
+                ServerPlugin,
+                ClientPlugin,
+            ),
         ))
         .run();
 }

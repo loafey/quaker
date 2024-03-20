@@ -4,10 +4,12 @@ use bevy::{
         schedule::{IntoSystemConfigs, NextState, SystemConfigs},
         system::Commands,
     },
-    log::info,
+    log::{error, info},
 };
 use bevy_renet::renet::{
-    transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig},
+    transport::{
+        NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig,
+    },
     RenetServer, ServerEvent,
 };
 use macros::error_return;
@@ -20,8 +22,8 @@ pub fn init_server(commands: &mut Commands, next_state: &mut NextState<NetState>
 
     let server = RenetServer::new(connection_config());
 
-    let public_addr = "127.0.0.1:8000".parse().unwrap();
-    let socket = UdpSocket::bind(public_addr).unwrap();
+    let public_addr = error_return!("127.0.0.1:5000".parse());
+    let socket = error_return!(UdpSocket::bind(public_addr));
 
     let server_config = ServerConfig {
         current_time,
@@ -31,7 +33,7 @@ pub fn init_server(commands: &mut Commands, next_state: &mut NextState<NetState>
         authentication: ServerAuthentication::Unsecure,
     };
 
-    let transport = NetcodeServerTransport::new(server_config, socket).unwrap();
+    let transport = error_return!(NetcodeServerTransport::new(server_config, socket));
 
     commands.insert_resource(server);
     commands.insert_resource(transport);
@@ -40,7 +42,7 @@ pub fn init_server(commands: &mut Commands, next_state: &mut NextState<NetState>
 }
 
 pub fn systems() -> SystemConfigs {
-    (server_events,).into_configs()
+    (server_events, error_on_error_system).into_configs()
 }
 
 pub fn server_events(mut events: EventReader<ServerEvent>) {
@@ -51,5 +53,12 @@ pub fn server_events(mut events: EventReader<ServerEvent>) {
                 info!("Player: {client_id} left due to {reason}")
             }
         }
+    }
+}
+
+pub fn error_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
+    #[allow(clippy::never_loop)]
+    for e in renet_error.read() {
+        error!("{}", e);
     }
 }
