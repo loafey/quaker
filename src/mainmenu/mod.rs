@@ -2,7 +2,7 @@ use crate::{
     net::{self, NetState},
     resources::{CurrentMap, CurrentStage},
 };
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_simple_text_input::{TextInputBundle, TextInputSettings, TextInputValue};
 use macros::error_return;
 use std::{
@@ -41,14 +41,21 @@ fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn start_level(
-    query: Query<(&Interaction, &ButtonEvent), (Changed<Interaction>, With<Button>)>,
-    text_inputs: Query<&TextInputValue>,
-    mut next_state: ResMut<NextState<CurrentStage>>,
-    mut next_net_state: ResMut<NextState<NetState>>,
-    mut commands: Commands,
-) {
+pub fn start_level(world: &mut World) {
+    let mut state: SystemState<(
+        Query<(&Interaction, &ButtonEvent), (Changed<Interaction>, With<Button>)>,
+        Query<&TextInputValue>,
+        ResMut<NextState<CurrentStage>>,
+        ResMut<NextState<NetState>>,
+        Option<NonSend<steamworks::Client>>,
+    )> = SystemState::new(world);
+    // yea this is cursed, but i am lazy, bypassing the borrow checker like a baus
+    let world_copy = unsafe { &mut *(world as *mut World) };
+
+    let (query, text_inputs, mut next_state, mut next_net_state, steam_client) =
+        state.get_mut(world);
     let input = &error_return!(text_inputs.get_single()).0;
+
     for (interaction, event) in &query {
         if !matches!(interaction, Interaction::Pressed) {
             continue;
@@ -61,10 +68,10 @@ pub fn start_level(
             }
             ButtonEvent::StartMp => {
                 info!("starting multiplayer game");
-                net::server::init_server(&mut commands, &mut next_net_state);
+                net::server::init_server(world_copy, &mut next_net_state, &steam_client);
             }
             ButtonEvent::JoinMp => {
-                net::client::init_client(&mut commands, &mut next_net_state, input);
+                net::client::init_client(world_copy, &mut next_net_state, input, &steam_client);
             }
         }
     }

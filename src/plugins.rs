@@ -52,7 +52,12 @@ impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PreUpdate,
-            net::server::systems().run_if(in_state(NetState::Server)),
+            (
+                net::server::systems(),
+                net::server::errors(),
+                net::server::errors_steam(),
+            )
+                .run_if(in_state(NetState::Server)),
         );
     }
 }
@@ -62,7 +67,12 @@ impl Plugin for ClientPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PreUpdate,
-            net::client::systems().run_if(in_state(NetState::Client)),
+            (
+                net::client::systems(),
+                net::client::errors(),
+                net::client::errors_steam(),
+            )
+                .run_if(in_state(NetState::Client)),
         );
     }
 }
@@ -90,8 +100,11 @@ impl Plugin for MainMenuStage {
         )
         .add_systems(
             Update,
-            (mainmenu::update_level_buttons, mainmenu::start_level)
-                .run_if(in_state(CurrentStage::MainMenu)),
+            mainmenu::update_level_buttons.run_if(in_state(CurrentStage::MainMenu)),
+        )
+        .add_systems(
+            Update,
+            mainmenu::start_level.run_if(in_state(CurrentStage::MainMenu)),
         )
         .add_systems(OnExit(CurrentStage::MainMenu), mainmenu::clear);
     }

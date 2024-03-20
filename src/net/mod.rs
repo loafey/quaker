@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 pub mod client;
 pub mod server;
 
+#[derive(Debug, Resource)]
+pub struct IsSteam;
+
 #[derive(Debug, States, PartialEq, Eq, Hash, Clone, Copy, Default)]
 pub enum NetState {
     #[default]
