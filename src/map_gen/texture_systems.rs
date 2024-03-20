@@ -11,7 +11,7 @@ pub fn register_textures(
     mut loading_state: ResMut<TextureLoadingState>,
     mut texture_map: ResMut<TextureMap>,
 ) {
-    warn!("Registering textures...");
+    info!("Registering textures...");
     let time = std::time::Instant::now();
     let map = error_return!(std::fs::read_to_string(&current_map.0));
     let map = error_return!(map_parser::parse(&map));
@@ -37,7 +37,7 @@ pub fn register_textures(
         map.insert(texture, handle);
     }
     texture_map.0 = map;
-    warn!(
+    info!(
         "Done registering textures, took {}s",
         time.elapsed().as_secs_f32()
     );
@@ -61,7 +61,7 @@ pub fn texture_waiter(
     }
 
     if textures_loading.0.is_empty() {
-        warn!("Texture loading done...");
+        info!("Texture loading done...");
         *loading_state = TextureLoadingState::Done;
     }
 }

@@ -50,7 +50,7 @@ pub fn load_map(
     let map = error_return!(map_parser::parse(&map));
 
     let t = std::time::Instant::now();
-    warn!("Loading map...");
+    info!("Loading map...");
 
     for entity in map {
         spawn_entity(
@@ -150,13 +150,13 @@ pub fn load_map(
                 if let Some(col) = Collider::convex_hull(&brush_poly) {
                     commands.spawn(col);
                 } else {
-                    warn!("failed to create collider!!");
+                    error!("failed to create collider!!");
                 }
             }
         }
     }
 
-    warn!("Done loading map, took {}s", t.elapsed().as_secs_f32());
+    info!("Done loading map, took {}s", t.elapsed().as_secs_f32());
     done_loading.0 = true;
 }
 

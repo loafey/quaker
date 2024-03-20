@@ -5,7 +5,7 @@ use bevy::{
         schedule::States,
         system::{Res, Resource},
     },
-    log::warn,
+    log::info,
     math::Vec3,
     render::texture::Image,
 };
@@ -79,7 +79,7 @@ pub struct TextureMap(pub HashMap<String, Handle<Image>>);
 pub struct PickupMap(pub HashMap<String, PickupData>);
 impl PickupMap {
     pub fn new() -> Self {
-        warn!("Loading pickups...");
+        info!("Loading pickups...");
         let data = error_return!(fs::read_to_string("assets/pickups.json"));
         let parsed = error_return!(serde_json::from_str::<Vec<PickupData>>(&data));
 
@@ -88,7 +88,7 @@ impl PickupMap {
             map.insert(item.classname().to_string(), item);
         }
 
-        warn!("Done loading pickups...");
+        info!("Done loading pickups...");
         Self(map)
     }
 }
@@ -98,7 +98,7 @@ impl PickupMap {
 pub struct WeaponMap(pub HashMap<String, WeaponData>);
 impl WeaponMap {
     pub fn new() -> Self {
-        warn!("Loading pickups...");
+        info!("Loading pickups...");
         let data = error_return!(fs::read_to_string("assets/weapons.json"));
         let parsed = error_return!(serde_json::from_str::<Vec<WeaponData>>(&data));
 
@@ -107,7 +107,7 @@ impl WeaponMap {
             map.insert(item.id.clone(), item);
         }
 
-        warn!("Done loading weapons...");
+        info!("Done loading weapons...");
         Self(map)
     }
 }

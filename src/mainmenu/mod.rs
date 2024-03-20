@@ -58,22 +58,22 @@ pub fn start_level(
 
         match event {
             ButtonEvent::Solo => {
-                warn!("starting solo game");
+                info!("starting solo game");
                 next_state.set(CurrentStage::InGame);
             }
             ButtonEvent::StartMp => {
-                warn!("starting multiplayer game");
+                info!("starting multiplayer game");
                 net::server::init_server(&mut commands, &mut next_net_state);
             }
             ButtonEvent::StartSteam => {
-                warn!("starting steam game");
+                info!("starting steam game");
             }
             ButtonEvent::JoinMp => {
-                warn!("joining ip: {input}");
+                info!("joining ip: {input}");
                 net::client::init_client(&mut commands, &mut next_net_state);
             }
             ButtonEvent::JoinSteam => {
-                warn!("joining steamid: {input}");
+                info!("joining steamid: {input}");
             }
         }
     }
@@ -93,7 +93,7 @@ pub fn update_level_buttons(
     for (interaction, button) in &query {
         if matches!(interaction, Interaction::Pressed) {
             curlevel.0 = button.0.clone();
-            warn!("set level to: {:?}", curlevel.0);
+            info!("set level to: {:?}", curlevel.0);
         }
     }
 }

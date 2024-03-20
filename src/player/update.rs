@@ -548,8 +548,8 @@ impl Player {
         if keys.pause_game_just_pressed || keys.pause_game_alt_just_pressed {
             paused.0 = !paused.0;
             match paused.0 {
-                true => warn!("Pausing game"),
-                false => warn!("Resuming game"),
+                true => info!("Pausing game"),
+                false => info!("Resuming game"),
             }
 
             let mut primary_window = q_windows.single_mut();
@@ -747,7 +747,7 @@ impl Player {
                     error!("Unknown projectile: {projectile}")
                 }
             }
-            Attack::None => warn!("just attacked using None, might be an error?"),
+            Attack::None => error!("just attacked using None"),
         }
     }
 

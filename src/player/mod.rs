@@ -144,7 +144,7 @@ impl Player {
             );
             true
         } else {
-            warn!("unhandled: picked up weapon when already had one");
+            error!("unhandled: picked up weapon when already had one");
             false
         }
     }
