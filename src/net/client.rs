@@ -14,12 +14,13 @@ use bevy_renet::renet::{
 use macros::error_return;
 use std::{net::UdpSocket, time::SystemTime};
 
-pub fn init_client(commands: &mut Commands, next_state: &mut NextState<NetState>) {
+pub fn init_client(commands: &mut Commands, next_state: &mut NextState<NetState>, ip: &String) {
+    info!("joining ip: {ip}");
     let current_time = error_return!(SystemTime::now().duration_since(SystemTime::UNIX_EPOCH));
 
     let client = RenetClient::new(connection_config());
 
-    let server_addr = error_return!("127.0.0.1:5000".parse());
+    let server_addr = error_return!(ip.parse());
     let socket = error_return!(UdpSocket::bind("127.0.0.1:0"));
 
     let client_id = current_time.as_micros() as u64;

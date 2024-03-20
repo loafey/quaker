@@ -22,7 +22,7 @@ pub fn init_server(commands: &mut Commands, next_state: &mut NextState<NetState>
 
     let server = RenetServer::new(connection_config());
 
-    let public_addr = error_return!("127.0.0.1:5000".parse());
+    let public_addr = error_return!("127.0.0.1:8000".parse());
     let socket = error_return!(UdpSocket::bind(public_addr));
 
     let server_config = ServerConfig {

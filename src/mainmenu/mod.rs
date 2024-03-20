@@ -17,9 +17,7 @@ pub struct MainMenuEnt;
 pub enum ButtonEvent {
     Solo,
     StartMp,
-    StartSteam,
     JoinMp,
-    JoinSteam,
 }
 
 #[derive(Debug, Component)]
@@ -65,15 +63,8 @@ pub fn start_level(
                 info!("starting multiplayer game");
                 net::server::init_server(&mut commands, &mut next_net_state);
             }
-            ButtonEvent::StartSteam => {
-                info!("starting steam game");
-            }
             ButtonEvent::JoinMp => {
-                info!("joining ip: {input}");
-                net::client::init_client(&mut commands, &mut next_net_state);
-            }
-            ButtonEvent::JoinSteam => {
-                info!("joining steamid: {input}");
+                net::client::init_client(&mut commands, &mut next_net_state, input);
             }
         }
     }
@@ -161,16 +152,6 @@ pub fn setup(mut commands: Commands) {
                     ))
                     .insert(ButtonEvent::StartMp);
 
-                c.spawn(ButtonBundle::default())
-                    .insert(TextBundle::from_section(
-                        "Start MP Steam",
-                        TextStyle {
-                            font_size: 32.0,
-                            ..Default::default()
-                        },
-                    ))
-                    .insert(ButtonEvent::StartSteam);
-
                 c.spawn(NodeBundle::default()).insert(
                     TextInputBundle {
                         settings: TextInputSettings {
@@ -194,16 +175,6 @@ pub fn setup(mut commands: Commands) {
                         },
                     ))
                     .insert(ButtonEvent::JoinMp);
-
-                c.spawn(ButtonBundle::default())
-                    .insert(TextBundle::from_section(
-                        "Join Steam",
-                        TextStyle {
-                            font_size: 32.0,
-                            ..Default::default()
-                        },
-                    ))
-                    .insert(ButtonEvent::JoinSteam);
             });
 
             c.spawn(NodeBundle {

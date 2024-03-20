@@ -18,6 +18,8 @@ use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;
 use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
 
+use crate::try_steam::try_steam;
+
 mod entities;
 mod mainmenu;
 mod map_gen;
@@ -26,8 +28,12 @@ mod player;
 mod plugins;
 mod resources;
 mod startup;
+mod try_steam;
 
 fn main() {
+    let a = try_steam();
+    println!("{:?}", a.is_some());
+
     App::new()
         .add_plugins((
             Resources,

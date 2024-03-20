@@ -23,6 +23,8 @@ bevy-scene-hook = "10.0.0"
 bevy_simple_text_input = "0.5.1"
 bincode = "1.3.3"
 bevy_renet = "0.0.11"
+renet_steam = { version = "0.0.1", features = ["bevy"] }
+steamworks = "0.11.0"
 
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]
