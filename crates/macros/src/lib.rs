@@ -63,6 +63,26 @@ macro_rules! option_return {
 }
 
 #[macro_export]
+macro_rules! option_continue {
+    ($context:literal) => {{
+        match $context {
+            Some(map) => map,
+            None => {
+                continue;
+            }
+        }
+    }};
+    ($context:expr) => {{
+        match $context {
+            Some(map) => map,
+            None => {
+                continue;
+            }
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! npdbg {
     // NOTE: We cannot use `concat!` to make a static string as a format argument
     // of `eprintln!` because `file!` could contain a `{` or

@@ -21,7 +21,7 @@ use bevy_rapier3d::{
     plugin::RapierContext,
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
-use macros::{error_return, option_return};
+use macros::{error_continue, option_continue, option_return};
 
 enum SwitchDirection {
     Back,
@@ -73,9 +73,9 @@ impl Player {
         audio: Res<Audio>,
     ) {
         for (player_entity, mut player, player_trans) in &mut q_players {
-            let (slot, row) = option_return!(player.current_weapon);
-            let camera = option_return!(player.children.camera);
-            let (_, cam_trans, glob_cam_trans) = error_return!(q_cameras.get(camera));
+            let (slot, row) = option_continue!(player.current_weapon);
+            let camera = option_continue!(player.children.camera);
+            let (_, cam_trans, glob_cam_trans) = error_continue!(q_cameras.get(camera));
             let weapon = &mut player.weapons[slot][row];
             weapon.timer -= time.delta_seconds();
             weapon.timer = weapon.timer.max(-1.0);
@@ -161,11 +161,11 @@ impl Player {
                 .lerp(0.0, time.delta_seconds() * 10.0);
 
             let (_, mut cam_trans) =
-                error_return!(q_cam.get_mut(option_return!(player.children.camera)));
+                error_continue!(q_cam.get_mut(option_continue!(player.children.camera)));
             cam_trans.rotation.z = player.camera_movement.cam_rot_current;
 
             let (_, mut trans) =
-                error_return!(q_model.get_mut(option_return!(player.children.fps_model)));
+                error_continue!(q_model.get_mut(option_continue!(player.children.fps_model)));
             let mut new_trans = player.camera_movement.original_trans;
             new_trans.z += player.camera_movement.backdrift;
             new_trans.x += player.camera_movement.cam_rot_current / 2.0;
@@ -182,7 +182,7 @@ impl Player {
         mut motion_evr: EventReader<MouseMotion>,
     ) {
         for player in q_parent.iter() {
-            if let Ok((_, mut trans)) = query.get_mut(option_return!(player.children.camera)) {
+            if let Ok((_, mut trans)) = query.get_mut(option_continue!(player.children.camera)) {
                 for ev in motion_evr.read() {
                     let old = trans.rotation;
                     trans.rotate_local_x(ev.delta.y / -1000.0);
@@ -306,8 +306,8 @@ impl Player {
         mut q_anim_players: Query<&mut AnimationPlayer>,
     ) {
         for mut player in &mut players {
-            let (ent, _, children) = option_return!(q_player_fps_anims
-                .get(option_return!(player.children.fps_model))
+            let (ent, _, children) = option_continue!(q_player_fps_anims
+                .get(option_continue!(player.children.fps_model))
                 .ok());
 
             if children.len() > 1 {
@@ -423,7 +423,7 @@ impl Player {
                 continue;
             }
 
-            let (old_slot, row) = option_return!(player.current_weapon);
+            let (old_slot, row) = option_continue!(player.current_weapon);
             if slot == old_slot && player.weapons[slot].len() != row + 1 {
                 player.switch_weapon(SwitchDirection::Forward);
             } else if slot == old_slot && player.weapons[slot].len() == row + 1 {
@@ -460,7 +460,7 @@ impl Player {
             if let Some((slot, row)) = player.current_weapon {
                 // TODO replace these with proper gets.
                 if let Ok((ent, mut mesh, mut trans, mut mat, mut hook)) =
-                    q_model.get_mut(option_return!(player.children.fps_model))
+                    q_model.get_mut(option_continue!(player.children.fps_model))
                     && !player.weapons[slot][row].data.model_file.is_empty()
                 {
                     commands.entity(ent).despawn_descendants();
