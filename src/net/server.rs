@@ -1,3 +1,5 @@
+use super::{connection_config, NetState, PROTOCOL_ID};
+use crate::net::IsSteam;
 use bevy::{
     ecs::{
         event::EventReader,
@@ -20,10 +22,6 @@ use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
 use std::{net::UdpSocket, time::SystemTime};
-
-use crate::net::IsSteam;
-
-use super::{connection_config, NetState, PROTOCOL_ID};
 
 pub fn init_server(
     world: &mut World,
