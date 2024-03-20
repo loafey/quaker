@@ -11,7 +11,6 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_renet::{
-    renet::{RenetClient, RenetServer},
     transport::{NetcodeClientPlugin, NetcodeServerPlugin},
     RenetClientPlugin, RenetServerPlugin,
 };
