@@ -1,9 +1,14 @@
-use crate::{map_gen::entities::data::PickupData, player::Player, resources::WeaponMap};
+use crate::{
+    map_gen::entities::data::PickupData,
+    player::{Player, PlayerController},
+    resources::WeaponMap,
+};
 use bevy::{
     asset::AssetServer,
     ecs::{
         component::Component,
         event::EventReader,
+        query::With,
         schedule::{IntoSystemConfigs, SystemConfigs},
         system::{Commands, Query, Res},
     },
@@ -30,7 +35,7 @@ impl PickupEntity {
     pub fn handle_pickups(
         mut commands: Commands,
         pickups: Query<&PickupEntity>,
-        mut players: Query<&mut Player>,
+        mut players: Query<&mut Player, With<PlayerController>>,
         mut reader: EventReader<CollisionEvent>,
         weapon_map: Res<WeaponMap>,
         asset_server: Res<AssetServer>,

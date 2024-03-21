@@ -8,7 +8,7 @@ use super::{
     PROTOCOL_ID,
 };
 use bevy::{
-    asset::AssetServer,
+    asset::{AssetServer, Assets},
     ecs::{
         event::EventReader,
         schedule::{
@@ -18,7 +18,7 @@ use bevy::{
         world::World,
     },
     log::info,
-    transform::commands,
+    pbr::StandardMaterial,
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
@@ -36,6 +36,7 @@ pub fn print_messages(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     client_id: Res<CurrentClientId>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -52,7 +53,13 @@ pub fn print_messages(
             } => {
                 if id != client_id.0 {
                     println!("Spawning player: {id}");
-                    Player::spawn(&mut commands, false, translation, &asset_server);
+                    Player::spawn(
+                        &mut commands,
+                        &mut materials,
+                        false,
+                        translation,
+                        &asset_server,
+                    );
                 }
             }
         }

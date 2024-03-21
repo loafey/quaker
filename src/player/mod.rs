@@ -14,6 +14,9 @@ pub struct PlayerFpsModel;
 #[derive(Debug, Component)]
 pub struct PlayerController;
 
+#[derive(Debug, Component)]
+pub struct PlayerMpModel;
+
 #[derive(Debug)]
 pub struct CameraMovement {
     backdrift: f32,

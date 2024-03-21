@@ -1,4 +1,6 @@
-use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
+use super::{
+    Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel, WeaponState,
+};
 use crate::{
     entities::ProjectileEntity,
     map_gen::entities::data::{Attack, SoundEffect},
@@ -455,7 +457,7 @@ impl Player {
                 &mut PlayerFpsMaterial,
                 &mut Hook,
             ),
-            With<PlayerFpsModel>,
+            (With<PlayerFpsModel>, Without<PlayerMpModel>),
         >,
         mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,

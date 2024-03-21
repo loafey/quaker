@@ -56,7 +56,7 @@ fn main() {
                 level: bevy::log::Level::INFO,
                 ..Default::default()
             }),
-        // bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
+        bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
         TemporalAntiAliasPlugin,
         ObjPlugin,
         AudioPlugin,

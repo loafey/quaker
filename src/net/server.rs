@@ -5,7 +5,7 @@ use crate::{
     resources::{CurrentMap, PlayerSpawnpoint},
 };
 use bevy::{
-    asset::AssetServer,
+    asset::{AssetServer, Assets},
     ecs::{
         entity::Entity,
         event::EventReader,
@@ -16,6 +16,7 @@ use bevy::{
         world::World,
     },
     log::{error, info},
+    pbr::StandardMaterial,
     transform::components::Transform,
 };
 use bevy_renet::renet::{
@@ -46,6 +47,7 @@ pub fn server_events(
     asset_server: Res<AssetServer>,
     player_spawn: Res<PlayerSpawnpoint>,
     players: Query<(&Player, &Transform)>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for event in events.read() {
         match event {
@@ -73,7 +75,13 @@ pub fn server_events(
                     );
                 }
 
-                let entity = Player::spawn(&mut commands, false, player_spawn.0, &asset_server);
+                let entity = Player::spawn(
+                    &mut commands,
+                    &mut materials,
+                    false,
+                    player_spawn.0,
+                    &asset_server,
+                );
                 lobby.players.insert(*client_id, entity);
                 println!("Current players: {:?}", lobby.players);
 

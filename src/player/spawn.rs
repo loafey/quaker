@@ -1,4 +1,4 @@
-use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel};
+use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
     net::{server::Lobby, CurrentClientId},
     resources::PlayerSpawnpoint,
@@ -23,8 +23,15 @@ impl Player {
         asset_server: Res<AssetServer>,
         lobby: Option<ResMut<Lobby>>,
         client_id: Res<CurrentClientId>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
-        let id = Self::spawn(&mut commands, true, player_spawn.0, &asset_server);
+        let id = Self::spawn(
+            &mut commands,
+            &mut materials,
+            true,
+            player_spawn.0,
+            &asset_server,
+        );
         if let Some(mut lobby) = lobby {
             lobby.players.insert(ClientId::from_raw(client_id.0), id);
         }
@@ -32,6 +39,7 @@ impl Player {
 
     pub fn spawn(
         commands: &mut Commands,
+        materials: &mut Assets<StandardMaterial>,
         is_own: bool,
         player_spawn: Vec3,
         asset_server: &AssetServer,
@@ -130,8 +138,17 @@ impl Player {
             commands.with_children(|c| {
                 c.spawn(PbrBundle {
                     mesh: asset_server.load("models/Player/MP/Temp.obj"),
+                    material: materials.add(StandardMaterial {
+                        base_color_texture: Some(
+                            asset_server.load("models/Enemies/DeadMan/deadman.png"),
+                        ),
+                        perceptual_roughness: 1.0,
+                        reflectance: 0.0,
+                        ..Default::default()
+                    }),
                     ..Default::default()
-                });
+                })
+                .insert(PlayerMpModel);
             });
         }
 
