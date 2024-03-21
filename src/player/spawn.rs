@@ -136,6 +136,8 @@ impl Player {
             commands.insert(PlayerController);
         } else {
             commands.with_children(|c| {
+                let mut trans = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+                trans.scale = Vec3::splat(0.5);
                 c.spawn(PbrBundle {
                     mesh: asset_server.load("models/Player/MP/Temp.obj"),
                     material: materials.add(StandardMaterial {
@@ -146,6 +148,7 @@ impl Player {
                         reflectance: 0.0,
                         ..Default::default()
                     }),
+                    transform: trans,
                     ..Default::default()
                 })
                 .insert(PlayerMpModel);
