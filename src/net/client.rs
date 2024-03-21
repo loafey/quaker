@@ -10,13 +10,15 @@ use super::{
 use bevy::{
     asset::{AssetServer, Assets},
     ecs::{
+        entity::Entity,
         event::EventReader,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{Commands, NonSend, Res, ResMut},
+        system::{Commands, NonSend, Query, Res, ResMut},
         world::World,
     },
+    hierarchy::DespawnRecursiveExt,
     log::info,
     pbr::StandardMaterial,
 };
@@ -29,7 +31,9 @@ use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
+#[allow(clippy::too_many_arguments)]
 pub fn print_messages(
+    players: Query<(Entity, &Player)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
@@ -59,7 +63,15 @@ pub fn print_messages(
                         false,
                         translation,
                         &asset_server,
+                        client_id.0,
                     );
+                }
+            }
+            ServerMessage::DespawnPlayer { id } => {
+                for (ent, player) in &players {
+                    if player.id == id {
+                        commands.entity(ent).despawn_recursive();
+                    }
                 }
             }
         }

@@ -55,6 +55,8 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
 pub struct Player {
+    pub id: u64,
+
     velocity: Vec3,
     hort_speed: f32,
     hort_max_speed: f32,
@@ -80,9 +82,18 @@ pub struct Player {
     radius: f32,
     air_time: Option<std::time::Instant>,
 }
+impl Player {
+    pub fn new(id: u64) -> Self {
+        Self {
+            id,
+            ..Default::default()
+        }
+    }
+}
 impl Default for Player {
     fn default() -> Self {
         Self {
+            id: 0,
             velocity: Vec3::ZERO,
             hort_friction: 1.0,
             hort_speed: 450.0,

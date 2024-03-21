@@ -15,6 +15,7 @@ use bevy::{
         system::{Commands, NonSend, Query, Res, ResMut, Resource},
         world::World,
     },
+    hierarchy::DespawnRecursiveExt,
     log::{error, info},
     pbr::StandardMaterial,
     transform::components::Transform,
@@ -46,7 +47,7 @@ pub fn server_events(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_spawn: Res<PlayerSpawnpoint>,
-    players: Query<(&Player, &Transform)>,
+    players: Query<(Entity, &Player, &Transform)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for event in events.read() {
@@ -62,7 +63,7 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, ent) in &lobby.players {
-                    let (_pl, trans) = error_continue!(players.get(*ent));
+                    let (_, _pl, trans) = error_continue!(players.get(*ent));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -81,6 +82,7 @@ pub fn server_events(
                     false,
                     player_spawn.0,
                     &asset_server,
+                    client_id.raw(),
                 );
                 lobby.players.insert(*client_id, entity);
                 println!("Current players: {:?}", lobby.players);
@@ -96,7 +98,23 @@ pub fn server_events(
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                info!("Player: {client_id} left due to {reason}")
+                info!("Player: {client_id} left due to {reason}");
+
+                lobby.players.remove(client_id);
+
+                for (e, p, _) in &players {
+                    if p.id == client_id.raw() {
+                        commands.entity(e).despawn_recursive();
+                    }
+                }
+
+                server.broadcast_message(
+                    ServerChannel::ServerMessages as u8,
+                    error_continue!(ServerMessage::DespawnPlayer {
+                        id: client_id.raw(),
+                    }
+                    .bytes()),
+                )
             }
         }
     }

@@ -31,6 +31,7 @@ impl Player {
             true,
             player_spawn.0,
             &asset_server,
+            client_id.0,
         );
         if let Some(mut lobby) = lobby {
             lobby.players.insert(ClientId::from_raw(client_id.0), id);
@@ -43,6 +44,7 @@ impl Player {
         is_own: bool,
         player_spawn: Vec3,
         asset_server: &AssetServer,
+        current_id: u64,
     ) -> Entity {
         let mut camera = None;
         let mut fps_model = None;
@@ -56,7 +58,6 @@ impl Player {
                 c.insert(KinematicCharacterController::default())
                     .insert(Restitution::coefficient(0.0))
                     .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(Player::default())
                     .insert(GlobalTransform::default())
                     .insert(trans)
                     .insert(Ccd::enabled());
@@ -128,6 +129,7 @@ impl Player {
                 camera = Some(new_camera_id);
             })
             .insert(Player {
+                id: current_id,
                 children: super::PlayerChildren { camera, fps_model },
                 ..Default::default()
             });
