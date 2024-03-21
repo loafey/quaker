@@ -63,8 +63,7 @@ pub fn buttons(world: &mut World) {
 
         match event {
             ButtonEvent::Solo => {
-                info!("starting solo game");
-                next_state.set(CurrentStage::InGame);
+                error!("solo games are currently disabled");
             }
             ButtonEvent::StartMp => {
                 info!("starting multiplayer game");
