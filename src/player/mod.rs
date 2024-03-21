@@ -82,14 +82,7 @@ pub struct Player {
     radius: f32,
     air_time: Option<std::time::Instant>,
 }
-impl Player {
-    pub fn new(id: u64) -> Self {
-        Self {
-            id,
-            ..Default::default()
-        }
-    }
-}
+
 impl Default for Player {
     fn default() -> Self {
         Self {
