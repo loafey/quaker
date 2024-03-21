@@ -1,5 +1,8 @@
-use super::{Player, PlayerFpsMaterial, PlayerFpsModel};
-use crate::resources::PlayerSpawnpoint;
+use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel};
+use crate::{
+    net::{server::Lobby, CurrentClientId},
+    resources::PlayerSpawnpoint,
+};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -10,19 +13,34 @@ use bevy::{
     render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
 use bevy_rapier3d::prelude::*;
+use bevy_renet::renet::ClientId;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 
 impl Player {
-    pub fn spawn(
+    pub fn spawn_own_player(
         mut commands: Commands,
         player_spawn: Res<PlayerSpawnpoint>,
         asset_server: Res<AssetServer>,
+        lobby: Option<ResMut<Lobby>>,
+        client_id: Res<CurrentClientId>,
     ) {
-        let player_spawn = player_spawn.0; // Vec3::new(0.0, 10.0, 0.0);
+        let id = Self::spawn(&mut commands, true, player_spawn.0, &asset_server);
+        if let Some(mut lobby) = lobby {
+            lobby.players.insert(ClientId::from_raw(client_id.0), id);
+        }
+    }
+
+    pub fn spawn(
+        commands: &mut Commands,
+        is_own: bool,
+        player_spawn: Vec3,
+        asset_server: &AssetServer,
+    ) -> Entity {
         let mut camera = None;
         let mut fps_model = None;
-        commands
-            .spawn(Collider::cylinder(0.5, 0.15))
+        let mut entity = commands.spawn(Collider::cylinder(0.5, 0.15));
+
+        let commands = entity
             .insert(ActiveEvents::COLLISION_EVENTS)
             .add(move |mut c: EntityWorldMut| {
                 let trans = Transform::from_translation(player_spawn);
@@ -45,6 +63,10 @@ impl Player {
                             }),
                             //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
                             transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
+                            camera: Camera {
+                                is_active: is_own,
+                                ..Default::default()
+                            },
                             ..Default::default()
                         }
                     })
@@ -79,19 +101,21 @@ impl Player {
 
                 c.spawn(Camera2dBundle {
                     camera: Camera {
-                        order: 1,
+                        order: 2,
                         clear_color: ClearColorConfig::None,
-
+                        is_active: is_own,
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .insert(IsDefaultUiCamera);
 
-                c.spawn(SpriteBundle {
-                    texture: asset_server.load("crosshair.png"),
-                    ..default()
-                });
+                if is_own {
+                    c.spawn(SpriteBundle {
+                        texture: asset_server.load("crosshair.png"),
+                        ..default()
+                    });
+                }
 
                 camera = Some(new_camera_id);
             })
@@ -99,5 +123,18 @@ impl Player {
                 children: super::PlayerChildren { camera, fps_model },
                 ..Default::default()
             });
+
+        if is_own {
+            commands.insert(PlayerController);
+        } else {
+            commands.with_children(|c| {
+                c.spawn(PbrBundle {
+                    mesh: asset_server.load("models/Player/MP/Temp.obj"),
+                    ..Default::default()
+                });
+            });
+        }
+
+        commands.id()
     }
 }

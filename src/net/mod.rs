@@ -26,6 +26,11 @@ pub enum ClientMessage {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServerMessage {
     SetMap(PathBuf),
+    SpawnPlayer {
+        id: u64,
+        entity: Entity,
+        translation: Vec3,
+    },
 }
 impl ServerMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {

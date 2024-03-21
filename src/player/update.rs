@@ -1,4 +1,4 @@
-use super::{Player, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
+use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, WeaponState};
 use crate::{
     entities::ProjectileEntity,
     map_gen::entities::data::{Attack, SoundEffect},
@@ -60,7 +60,7 @@ impl Player {
     pub fn shoot(
         mut commands: Commands,
         rapier_context: Res<RapierContext>,
-        mut q_players: Query<(Entity, &mut Player, &Transform)>,
+        mut q_players: Query<(Entity, &mut Player, &Transform), With<PlayerController>>,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
         mut misc_entropy: ResMut<Entropy<EMisc>>,
@@ -136,7 +136,7 @@ impl Player {
     pub fn camera_movement(
         mut q_cam: Query<(&Camera3d, &mut Transform)>,
         mut q_model: Query<(&PlayerFpsModel, &mut Transform), Without<Camera3d>>,
-        mut q_parent: Query<&mut Player>,
+        mut q_parent: Query<&mut Player, With<PlayerController>>,
         time: Res<Time>,
     ) {
         for mut player in q_parent.iter_mut() {
@@ -178,7 +178,7 @@ impl Player {
 
     pub fn update_cam_vert(
         mut query: Query<(&Camera3d, &mut Transform)>,
-        q_parent: Query<&Player>,
+        q_parent: Query<&Player, With<PlayerController>>,
         mut motion_evr: EventReader<MouseMotion>,
     ) {
         for player in q_parent.iter() {
@@ -195,7 +195,7 @@ impl Player {
     }
 
     pub fn update_cam_hort(
-        mut query: Query<(&Player, &mut Transform)>,
+        mut query: Query<(&Player, &mut Transform), With<PlayerController>>,
         mut motion_evr: EventReader<MouseMotion>,
     ) {
         for (_, mut gt) in &mut query {
@@ -211,11 +211,14 @@ impl Player {
     pub fn update_input(
         keys: Res<PlayerInput>,
         time: Res<Time>,
-        mut query: Query<(
-            &mut KinematicCharacterController,
-            &mut Player,
-            &mut Transform,
-        )>,
+        mut query: Query<
+            (
+                &mut KinematicCharacterController,
+                &mut Player,
+                &mut Transform,
+            ),
+            With<PlayerController>,
+        >,
     ) {
         for (mut controller, mut player, mut gt) in &mut query {
             // movement
@@ -300,7 +303,7 @@ impl Player {
 
     pub fn weapon_animations(
         mut commands: Commands,
-        mut players: Query<&mut Player>,
+        mut players: Query<&mut Player, With<PlayerController>>,
         q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
         q_scenes: Query<&Children>,
         mut q_anim_players: Query<&mut AnimationPlayer>,
@@ -389,7 +392,10 @@ impl Player {
         }
     }
 
-    pub fn weaponry_switch_wheel(keys: Res<PlayerInput>, mut query: Query<&mut Player>) {
+    pub fn weaponry_switch_wheel(
+        keys: Res<PlayerInput>,
+        mut query: Query<&mut Player, With<PlayerController>>,
+    ) {
         for mut player in query.iter_mut() {
             let dir = if keys.weapon_next_pressed {
                 SwitchDirection::Forward
@@ -402,7 +408,10 @@ impl Player {
         }
     }
 
-    pub fn weaponry_switch_keys(keys: Res<PlayerInput>, mut query: Query<&mut Player>) {
+    pub fn weaponry_switch_keys(
+        keys: Res<PlayerInput>,
+        mut query: Query<&mut Player, With<PlayerController>>,
+    ) {
         for mut player in &mut query {
             // 🤫
             let slot = match () {
@@ -437,7 +446,7 @@ impl Player {
     #[allow(clippy::type_complexity)]
     pub fn weaponry_switch(
         mut commands: Commands,
-        mut query: Query<&mut Player>,
+        mut query: Query<&mut Player, With<PlayerController>>,
         mut q_model: Query<
             (
                 Entity,
@@ -568,7 +577,7 @@ impl Player {
 
     pub fn ground_detection(
         rapier_context: Res<RapierContext>,
-        mut query: Query<(&mut Player, &Transform)>,
+        mut query: Query<(&mut Player, &Transform), With<PlayerController>>,
     ) {
         for (mut player, trans) in query.iter_mut() {
             let collider_height = 0.01;

@@ -132,7 +132,7 @@ impl Plugin for GameStage {
             )
             .add_systems(
                 Update,
-                Player::spawn
+                Player::spawn_own_player
                     .run_if(in_state(CurrentStage::InGame))
                     .run_if(if_map_done_loading.and_then(run_once())),
             )

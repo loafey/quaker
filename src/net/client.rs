@@ -1,19 +1,24 @@
-use crate::resources::{CurrentMap, CurrentStage};
+use crate::{
+    player::Player,
+    resources::{CurrentMap, CurrentStage},
+};
 
 use super::{
     connection_config, CurrentClientId, IsSteam, NetState, ServerChannel, ServerMessage,
     PROTOCOL_ID,
 };
 use bevy::{
+    asset::AssetServer,
     ecs::{
         event::EventReader,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, ResMut},
+        system::{Commands, NonSend, Res, ResMut},
         world::World,
     },
     log::info,
+    transform::commands,
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
@@ -28,6 +33,9 @@ pub fn print_messages(
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    client_id: Res<CurrentClientId>,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -36,6 +44,16 @@ pub fn print_messages(
                 info!("setting map to: {map:?}");
                 current_stage.0 = map;
                 state.set(CurrentStage::InGame);
+            }
+            ServerMessage::SpawnPlayer {
+                id,
+                entity,
+                translation,
+            } => {
+                if id != client_id.0 {
+                    println!("Spawning player: {id}");
+                    Player::spawn(&mut commands, false, translation, &asset_server);
+                }
             }
         }
     }
