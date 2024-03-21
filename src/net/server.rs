@@ -69,7 +69,6 @@ pub fn server_events(
                         ServerChannel::ServerMessages as u8,
                         error_continue!(ServerMessage::SpawnPlayer {
                             id: other_id.raw(),
-                            entity: *ent,
                             translation: trans.translation,
                         }
                         .bytes()),
@@ -91,7 +90,6 @@ pub fn server_events(
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::SpawnPlayer {
                         id: client_id.raw(),
-                        entity,
                         translation: player_spawn.0,
                     }
                     .bytes()),

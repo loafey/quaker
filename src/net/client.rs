@@ -50,11 +50,7 @@ pub fn print_messages(
                 current_stage.0 = map;
                 state.set(CurrentStage::InGame);
             }
-            ServerMessage::SpawnPlayer {
-                id,
-                entity,
-                translation,
-            } => {
+            ServerMessage::SpawnPlayer { id, translation } => {
                 if id != client_id.0 {
                     println!("Spawning player: {id}");
                     Player::spawn(
