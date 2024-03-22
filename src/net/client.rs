@@ -19,7 +19,7 @@ use bevy::{
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
-    log::info,
+    log::{info, warn},
     pbr::StandardMaterial,
 };
 use bevy_renet::renet::{
@@ -32,7 +32,7 @@ use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 #[allow(clippy::too_many_arguments)]
-pub fn print_messages(
+pub fn handle_messages(
     players: Query<(Entity, &Player)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
@@ -45,6 +45,9 @@ pub fn print_messages(
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
         match message {
+            ServerMessage::PlayerUpdate { id, message } => {
+                warn!("unhandled event {message:?} for {id}")
+            }
             ServerMessage::SetMap(map) => {
                 info!("setting map to: {map:?}");
                 current_stage.0 = map;
@@ -123,7 +126,7 @@ pub fn init_client(
 }
 
 pub fn systems() -> SystemConfigs {
-    (print_messages,).into_configs()
+    (handle_messages,).into_configs()
 }
 
 pub fn errors() -> SystemConfigs {

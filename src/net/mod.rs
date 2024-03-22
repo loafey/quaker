@@ -27,6 +27,7 @@ pub enum ClientMessage {
 pub enum ServerMessage {
     SetMap(PathBuf),
     SpawnPlayer { id: u64, translation: Vec3 },
+    PlayerUpdate { id: u64, message: ClientMessage },
     DespawnPlayer { id: u64 },
 }
 impl ServerMessage {
