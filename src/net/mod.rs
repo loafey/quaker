@@ -20,7 +20,7 @@ pub enum NetState {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ClientMessage {
-    Ping,
+    UpdatePosition { position: Vec3 },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

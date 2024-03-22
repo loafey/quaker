@@ -1,4 +1,4 @@
-use super::{connection_config, NetState, PROTOCOL_ID};
+use super::{connection_config, ClientChannel, ClientMessage, NetState, PROTOCOL_ID};
 use crate::{
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
@@ -50,6 +50,7 @@ pub fn server_events(
     players: Query<(Entity, &Player, &Transform)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    // Handle connection details
     for event in events.read() {
         match event {
             ServerEvent::ClientConnected { client_id } => {
@@ -113,6 +114,17 @@ pub fn server_events(
                     }
                     .bytes()),
                 )
+            }
+        }
+    }
+
+    for client_id in server.clients_id() {
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
+            let message = error_continue!(bincode::deserialize::<ClientMessage>(&message));
+            match message {
+                ClientMessage::UpdatePosition { position } => {
+                    println!("Move {client_id} to {position}")
+                }
             }
         }
     }
