@@ -24,6 +24,7 @@ use steamworks::SingleClient;
 use crate::try_steam::try_steam;
 
 mod entities;
+mod integrity;
 mod mainmenu;
 mod map_gen;
 mod net;
@@ -38,6 +39,8 @@ fn steam_callbacks(client: NonSend<SingleClient>) {
 }
 
 fn main() {
+    println!("Running with asset hash: {}", integrity::get_asset_hash());
+
     let mut app = App::new();
 
     app.add_event::<ClientMessage>();
