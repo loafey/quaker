@@ -47,8 +47,9 @@ pub fn server_events(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_spawn: Res<PlayerSpawnpoint>,
-    players: Query<(Entity, &Player, &Transform)>,
+    mut players: Query<(Entity, &Player, &mut Transform)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    current_id: Res<CurrentClientId>,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -119,13 +120,38 @@ pub fn server_events(
     }
 
     for client_id in server.clients_id() {
-        while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
-            let message = error_continue!(bincode::deserialize::<ClientMessage>(&message));
-            match message {
-                ClientMessage::UpdatePosition { position } => {
-                    println!("Move {client_id} to {position}")
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
+            let message = error_continue!(ClientMessage::from_bytes(&message));
+            handle_client_message(&mut server, client_id, message, &mut players, current_id.0);
+        }
+    }
+}
+
+pub fn handle_client_message(
+    server: &mut RenetServer,
+    client_id: ClientId,
+    message: ClientMessage,
+    players: &mut Query<(Entity, &Player, &mut Transform)>,
+    current_id: u64,
+) {
+    match message {
+        ClientMessage::UpdatePosition { position } => {
+            if current_id != client_id.raw() {
+                for (_, pl, mut tr) in players.iter_mut() {
+                    if pl.id == client_id.raw() {
+                        tr.translation = position;
+                        break;
+                    }
                 }
             }
+            server.broadcast_message(
+                ServerChannel::NetworkedEntities as u8,
+                error_return!(ServerMessage::PlayerUpdate {
+                    id: client_id.raw(),
+                    message,
+                }
+                .bytes()),
+            )
         }
     }
 }

@@ -4,8 +4,8 @@ use crate::{
 };
 
 use super::{
-    connection_config, CurrentClientId, IsSteam, NetState, ServerChannel, ServerMessage,
-    PROTOCOL_ID,
+    connection_config, ClientMessage, CurrentClientId, IsSteam, NetState, ServerChannel,
+    ServerMessage, PROTOCOL_ID,
 };
 use bevy::{
     asset::{AssetServer, Assets},
@@ -21,6 +21,7 @@ use bevy::{
     hierarchy::DespawnRecursiveExt,
     log::{info, warn},
     pbr::StandardMaterial,
+    transform::components::Transform,
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
@@ -33,7 +34,7 @@ use steamworks::SteamId;
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_messages(
-    players: Query<(Entity, &Player)>,
+    mut players: Query<(Entity, &Player, &mut Transform)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
@@ -41,13 +42,11 @@ pub fn handle_messages(
     asset_server: Res<AssetServer>,
     client_id: Res<CurrentClientId>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    current_id: Res<CurrentClientId>,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
         match message {
-            ServerMessage::PlayerUpdate { id, message } => {
-                warn!("unhandled event {message:?} for {id}")
-            }
             ServerMessage::SetMap(map) => {
                 info!("setting map to: {map:?}");
                 current_stage.0 = map;
@@ -62,17 +61,41 @@ pub fn handle_messages(
                         false,
                         translation,
                         &asset_server,
-                        client_id.0,
+                        id,
                     );
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
-                for (ent, player) in &players {
+                for (ent, player, _) in &players {
                     if player.id == id {
                         commands.entity(ent).despawn_recursive();
                     }
                 }
             }
+            _ => {}
+        }
+    }
+
+    while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities as u8) {
+        let message = error_continue!(ServerMessage::from_bytes(&message));
+        #[allow(clippy::single_match)]
+        match message {
+            ServerMessage::PlayerUpdate { id, message } => {
+                if current_id.0 != id {
+                    match message {
+                        ClientMessage::UpdatePosition { position } => {
+                            for (_, pl, mut tr) in players.iter_mut() {
+                                if pl.id == id {
+                                    tr.translation = position;
+                                    break;
+                                }
+                            }
+                            println!()
+                        }
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }

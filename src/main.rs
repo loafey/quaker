@@ -16,6 +16,7 @@ use bevy_renet::{
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;
+use net::ClientMessage;
 use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
 use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
 use steamworks::SingleClient;
@@ -38,6 +39,8 @@ fn steam_callbacks(client: NonSend<SingleClient>) {
 
 fn main() {
     let mut app = App::new();
+
+    app.add_event::<ClientMessage>();
 
     app.add_plugins((
         Resources,

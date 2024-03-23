@@ -4,6 +4,7 @@ use super::{
 use crate::{
     entities::ProjectileEntity,
     map_gen::entities::data::{Attack, SoundEffect},
+    net::ClientMessage,
     resources::{
         entropy::{EGame, EMisc, Entropy},
         inputs::PlayerInput,
@@ -221,6 +222,7 @@ impl Player {
             ),
             With<PlayerController>,
         >,
+        mut events: EventWriter<ClientMessage>,
     ) {
         for (mut controller, mut player, mut gt) in &mut query {
             // movement
@@ -300,6 +302,10 @@ impl Player {
             } else if keys.debug_fly_down_pressed {
                 gt.translation.y -= 0.1;
             }
+
+            events.send(ClientMessage::UpdatePosition {
+                position: gt.translation,
+            });
         }
     }
 
@@ -554,7 +560,7 @@ impl Player {
         keys: Res<PlayerInput>,
         mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
         mut paused: ResMut<Paused>,
-        mut time: ResMut<Time<Virtual>>,
+        //mut time: ResMut<Time<Virtual>>,
     ) {
         if keys.pause_game_just_pressed || keys.pause_game_alt_just_pressed {
             paused.0 = !paused.0;
@@ -568,11 +574,11 @@ impl Player {
                 //rapier_context.
                 primary_window.cursor.grab_mode = CursorGrabMode::None;
                 primary_window.cursor.visible = true;
-                time.pause();
+                //time.pause();
             } else {
                 primary_window.cursor.grab_mode = CursorGrabMode::Locked;
                 primary_window.cursor.visible = false;
-                time.unpause();
+                //time.unpause();
             }
         }
     }

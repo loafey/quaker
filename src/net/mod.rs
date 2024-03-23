@@ -2,10 +2,44 @@ use std::{path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
 use bevy_renet::renet::*;
+use macros::error_return;
 use serde::{Deserialize, Serialize};
+
+use crate::player::Player;
 
 pub mod client;
 pub mod server;
+
+pub fn send_messages(
+    mut events: EventReader<ClientMessage>,
+    client: Option<ResMut<RenetClient>>,
+    server: Option<ResMut<RenetServer>>,
+    current_id: Res<CurrentClientId>,
+    mut players: Query<(Entity, &Player, &mut Transform)>,
+) {
+    let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
+        Box::new(move |message| {
+            client.send_message(ClientChannel::Input as u8, error_return!(message.bytes()));
+        })
+    } else if let Some(mut server) = server {
+        Box::new(move |message| {
+            server::handle_client_message(
+                &mut server,
+                ClientId::from_raw(current_id.0),
+                message,
+                &mut players,
+                current_id.0,
+            )
+        })
+    } else {
+        error!("no way to handle messages");
+        return;
+    };
+
+    for event in events.read() {
+        send(event.clone());
+    }
+}
 
 #[derive(Debug, Resource)]
 pub struct IsSteam;
@@ -18,9 +52,17 @@ pub enum NetState {
     Client,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Event, Clone)]
 pub enum ClientMessage {
     UpdatePosition { position: Vec3 },
+}
+impl ClientMessage {
+    pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
+        bincode::serialize(self)
+    }
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Box<bincode::ErrorKind>> {
+        bincode::deserialize(bytes)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

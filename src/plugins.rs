@@ -73,6 +73,11 @@ impl Plugin for ClientPlugin {
                 net::client::errors_steam(),
             )
                 .run_if(in_state(NetState::Client)),
+        )
+        .add_systems(
+            PreUpdate,
+            net::send_messages
+                .run_if(in_state(NetState::Server).or_else(in_state(NetState::Client))),
         );
     }
 }
