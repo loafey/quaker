@@ -1,5 +1,6 @@
 use super::{connection_config, update_world, ClientChannel, ClientMessage, NetState, PROTOCOL_ID};
 use crate::{
+    entities::pickup::PickupEntity,
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
     resources::{CurrentMap, PlayerSpawnpoint},
@@ -9,6 +10,7 @@ use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
+        query::Without,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
@@ -50,6 +52,7 @@ pub fn server_events(
     mut players: Query<(Entity, &Player, &mut Transform)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     current_id: Res<CurrentClientId>,
+    pickups_query: Query<(&PickupEntity, &Transform), Without<Player>>,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -62,6 +65,19 @@ pub fn server_events(
                     error_return!(ServerMessage::SetMap(map.0.clone()).bytes()),
                 );
                 lobby.cam_count += 2;
+
+                for (pickup, trans) in &pickups_query {
+                    server.send_message(
+                        *client_id,
+                        ServerChannel::ServerMessages as u8,
+                        error_continue!(ServerMessage::SpawnPickup {
+                            id: pickup.id,
+                            translation: trans.translation,
+                            data: pickup.data.clone()
+                        }
+                        .bytes()),
+                    )
+                }
 
                 // Spawn players for newly joined client
                 for (other_id, ent) in &lobby.players {

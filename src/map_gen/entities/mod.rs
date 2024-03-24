@@ -110,7 +110,15 @@ pub fn spawn_entity(
         }
         Some(x) if pickup_map.0.contains_key(x) && !is_client => {
             let data = pickup_map.0.get(x).unwrap();
-            spawn_pickup(id, asset_server, data, attributes, commands, materials);
+            spawn_pickup(
+                id,
+                true,
+                asset_server,
+                data,
+                attributes,
+                commands,
+                materials,
+            );
         }
         _ => error!("unhandled entity: {attributes:?}"),
     }
@@ -118,6 +126,7 @@ pub fn spawn_entity(
 
 fn spawn_pickup(
     id: u64,
+    host: bool,
     asset_server: &Res<AssetServer>,
     data: &PickupData,
     attributes: HashMap<String, String>,
@@ -150,19 +159,30 @@ fn spawn_pickup(
                 ..Default::default()
             });
 
-            commands
-                .spawn(Collider::cylinder(1.0, 10.0))
-                .insert(Sensor)
-                .insert(ActiveEvents::COLLISION_EVENTS)
-                .insert(TransformBundle::from(Transform::from_translation(pos)))
-                .insert(PickupEntity::new(id, data.clone()))
-                .insert(ActiveCollisionTypes::all())
-                .insert(PbrBundle {
+            let mut pickup = if host {
+                let mut pickup = commands.spawn(Collider::cylinder(1.0, 10.0));
+                pickup
+                    .insert(Sensor)
+                    .insert(ActiveEvents::COLLISION_EVENTS)
+                    .insert(TransformBundle::from(Transform::from_translation(pos)))
+                    .insert(ActiveCollisionTypes::all())
+                    .insert(Ccd::enabled())
+                    .insert(PbrBundle {
+                        mesh: mesh_handle,
+                        material: mat_handle,
+                        transform: trans,
+                        ..Default::default()
+                    });
+                pickup
+            } else {
+                commands.spawn(PbrBundle {
                     mesh: mesh_handle,
                     material: mat_handle,
                     transform: trans,
                     ..Default::default()
                 })
+            };
+            pickup
                 .insert(PointLightBundle {
                     transform: trans,
                     point_light: PointLight {
@@ -173,7 +193,7 @@ fn spawn_pickup(
                     },
                     ..Default::default()
                 })
-                .insert(Ccd::enabled());
+                .insert(PickupEntity::new(id, data.clone()));
         }
     }
 }

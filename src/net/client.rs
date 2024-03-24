@@ -19,7 +19,7 @@ use bevy::{
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
-    log::info,
+    log::{error, info},
     pbr::StandardMaterial,
     transform::components::Transform,
 };
@@ -72,7 +72,9 @@ pub fn handle_messages(
                     }
                 }
             }
-            _ => {}
+            x => {
+                error!("unhandled message: {x:?}")
+            }
         }
     }
 
@@ -83,7 +85,9 @@ pub fn handle_messages(
             ServerMessage::PlayerUpdate { id, message } => {
                 update_world(id, &message, &mut players, current_id.0);
             }
-            _ => {}
+            x => {
+                error!("unhandled message: {x:?}")
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ use bevy_renet::renet::*;
 use macros::error_return;
 use serde::{Deserialize, Serialize};
 
-use crate::player::Player;
+use crate::{map_gen::entities::data::PickupData, player::Player};
 
 pub mod client;
 pub mod server;
@@ -89,9 +89,22 @@ impl ClientMessage {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServerMessage {
     SetMap(PathBuf),
-    SpawnPlayer { id: u64, translation: Vec3 },
-    PlayerUpdate { id: u64, message: ClientMessage },
-    DespawnPlayer { id: u64 },
+    SpawnPlayer {
+        id: u64,
+        translation: Vec3,
+    },
+    PlayerUpdate {
+        id: u64,
+        message: ClientMessage,
+    },
+    DespawnPlayer {
+        id: u64,
+    },
+    SpawnPickup {
+        id: u64,
+        translation: Vec3,
+        data: PickupData,
+    },
 }
 impl ServerMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
