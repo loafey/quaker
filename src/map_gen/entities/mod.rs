@@ -45,7 +45,10 @@ fn parse_vec(str: &str) -> Vec3 {
 
     Vec3::new(x, z, -y) / SCALE_FIX
 }
+#[allow(clippy::too_many_arguments)]
 pub fn spawn_entity(
+    id: u64,
+    is_client: bool,
     asset_server: &Res<AssetServer>,
     attributes: HashMap<String, String>,
     commands: &mut Commands,
@@ -105,15 +108,16 @@ pub fn spawn_entity(
 
             player_spawn.0 = pos;
         }
-        Some(x) if pickup_map.0.contains_key(x) => {
+        Some(x) if pickup_map.0.contains_key(x) && !is_client => {
             let data = pickup_map.0.get(x).unwrap();
-            spawn_pickup(asset_server, data, attributes, commands, materials);
+            spawn_pickup(id, asset_server, data, attributes, commands, materials);
         }
         _ => error!("unhandled entity: {attributes:?}"),
     }
 }
 
 fn spawn_pickup(
+    id: u64,
     asset_server: &Res<AssetServer>,
     data: &PickupData,
     attributes: HashMap<String, String>,
@@ -151,7 +155,7 @@ fn spawn_pickup(
                 .insert(Sensor)
                 .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(TransformBundle::from(Transform::from_translation(pos)))
-                .insert(PickupEntity::new(data.clone()))
+                .insert(PickupEntity::new(id, data.clone()))
                 .insert(ActiveCollisionTypes::all())
                 .insert(PbrBundle {
                     mesh: mesh_handle,

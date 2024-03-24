@@ -13,6 +13,7 @@ use bevy::{
     },
 };
 use bevy_rapier3d::geometry::Collider;
+use bevy_renet::renet::RenetClient;
 use entities::spawn_entity;
 use macros::error_return;
 use map_parser::parser::Brush;
@@ -35,6 +36,7 @@ fn vec_fix(mut v: Vec3) -> Vec3 {
 
 #[allow(clippy::too_many_arguments)]
 pub fn load_map(
+    client: Option<Res<RenetClient>>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     images: Res<Assets<Image>>,
@@ -52,8 +54,10 @@ pub fn load_map(
     let t = std::time::Instant::now();
     info!("Loading map...");
 
-    for entity in map {
+    for (id, entity) in map.into_iter().enumerate() {
         spawn_entity(
+            id as u64,
+            client.is_some(),
             &asset_server,
             entity.attributes,
             &mut commands,

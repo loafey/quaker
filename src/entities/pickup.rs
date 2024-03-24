@@ -22,6 +22,7 @@ use bevy_rapier3d::{pipeline::CollisionEvent, rapier::geometry::CollisionEventFl
 
 #[derive(Debug, Component)]
 pub struct PickupEntity {
+    pub id: u64,
     pub data: PickupData,
 }
 impl PickupEntity {
@@ -29,8 +30,8 @@ impl PickupEntity {
         (PickupEntity::update, PickupEntity::handle_pickups).into_configs()
     }
 
-    pub fn new(data: PickupData) -> Self {
-        Self { data }
+    pub fn new(id: u64, data: PickupData) -> Self {
+        Self { id, data }
     }
     pub fn handle_pickups(
         mut commands: Commands,
