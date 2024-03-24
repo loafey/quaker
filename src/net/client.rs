@@ -1,4 +1,5 @@
 use crate::{
+    map_gen,
     player::Player,
     resources::{CurrentMap, CurrentStage},
 };
@@ -29,7 +30,7 @@ use bevy_renet::renet::{
 };
 use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
-use std::{net::UdpSocket, time::SystemTime};
+use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 #[allow(clippy::too_many_arguments)]
@@ -72,8 +73,23 @@ pub fn handle_messages(
                     }
                 }
             }
+            ServerMessage::SpawnPickup {
+                id,
+                translation,
+                data,
+            } => {
+                map_gen::entities::spawn_pickup(
+                    id,
+                    false,
+                    translation,
+                    &asset_server,
+                    &data,
+                    &mut commands,
+                    &mut materials,
+                );
+            }
             x => {
-                error!("unhandled message: {x:?}")
+                error!("unhandled ServerMessages message: {x:?}")
             }
         }
     }
@@ -86,7 +102,7 @@ pub fn handle_messages(
                 update_world(id, &message, &mut players, current_id.0);
             }
             x => {
-                error!("unhandled message: {x:?}")
+                error!("unhandled NetworkedEntities message: {x:?}")
             }
         }
     }

@@ -110,34 +110,27 @@ pub fn spawn_entity(
         }
         Some(x) if pickup_map.0.contains_key(x) && !is_client => {
             let data = pickup_map.0.get(x).unwrap();
-            spawn_pickup(
-                id,
-                true,
-                asset_server,
-                data,
-                attributes,
-                commands,
-                materials,
-            );
+
+            let pos = attributes
+                .get("origin")
+                .map(|p| parse_vec(p))
+                .unwrap_or_default();
+
+            spawn_pickup(id, true, pos, asset_server, data, commands, materials);
         }
         _ => error!("unhandled entity: {attributes:?}"),
     }
 }
 
-fn spawn_pickup(
+pub fn spawn_pickup(
     id: u64,
     host: bool,
+    pos: Vec3,
     asset_server: &Res<AssetServer>,
     data: &PickupData,
-    attributes: HashMap<String, String>,
     commands: &mut Commands,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    let pos = attributes
-        .get("origin")
-        .map(|p| parse_vec(p))
-        .unwrap_or_default();
-
     let PickupData {
         pickup_model,
         texture_file,
