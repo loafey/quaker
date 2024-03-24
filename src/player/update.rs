@@ -404,6 +404,7 @@ impl Player {
     pub fn weaponry_switch_wheel(
         keys: Res<PlayerInput>,
         mut query: Query<&mut Player, With<PlayerController>>,
+        mut client_events: EventWriter<ClientMessage>,
     ) {
         for mut player in query.iter_mut() {
             let dir = if keys.weapon_next_pressed {
@@ -414,12 +415,17 @@ impl Player {
                 continue;
             };
             player.switch_weapon(dir);
+
+            if let Some((slot, row)) = player.current_weapon {
+                client_events.send(ClientMessage::SwitchWeapon { slot, row });
+            }
         }
     }
 
     pub fn weaponry_switch_keys(
         keys: Res<PlayerInput>,
         mut query: Query<&mut Player, With<PlayerController>>,
+        mut client_events: EventWriter<ClientMessage>,
     ) {
         for mut player in &mut query {
             // 🤫
@@ -449,13 +455,15 @@ impl Player {
             } else {
                 player.current_weapon = Some((slot, 0));
             }
+
+            client_events.send(ClientMessage::SwitchWeapon { slot, row });
         }
     }
 
     #[allow(clippy::type_complexity)]
     pub fn weaponry_switch(
         mut commands: Commands,
-        mut query: Query<&mut Player, With<PlayerController>>,
+        mut query: Query<&mut Player>,
         mut q_model: Query<
             (
                 Entity,
@@ -469,7 +477,6 @@ impl Player {
         mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,
     ) {
-        //println!("{:#?}", keys);
         for mut player in query.iter_mut() {
             if player.current_weapon == player.current_weapon_old {
                 continue;

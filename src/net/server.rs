@@ -153,28 +153,24 @@ pub fn server_events(
                     weapon: pickup.clone(),
                 };
 
-                // This should maybe be changed to a broadcast
-                if *player != current_id.0 {
-                    let pickup_message = ServerMessage::PlayerUpdate {
-                        id: *player,
-                        message: pickup_message,
-                    };
-                    server.send_message(
-                        ClientId::from_raw(*player),
-                        ServerChannel::NetworkedEntities as u8,
-                        error_continue!(pickup_message.bytes()),
-                    )
-                } else {
-                    update_world(
-                        *player,
-                        &pickup_message,
-                        &mut players,
-                        current_id.0,
-                        &asset_server,
-                        &weapon_map,
-                        &audio,
-                    );
-                }
+                update_world(
+                    *player,
+                    &pickup_message,
+                    &mut players,
+                    current_id.0,
+                    &asset_server,
+                    &weapon_map,
+                    &audio,
+                );
+
+                let pickup_message_wrapped = ServerMessage::PlayerUpdate {
+                    id: *player,
+                    message: pickup_message,
+                };
+
+                let bytes = error_continue!(pickup_message_wrapped.bytes());
+
+                server.broadcast_message(ServerChannel::NetworkedEntities as u8, bytes.clone());
             }
         }
     }

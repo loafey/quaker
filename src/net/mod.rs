@@ -36,7 +36,6 @@ pub fn update_world(
             for (_, mut player, _) in players.iter_mut() {
                 if player.id == client_id {
                     if let Some(weapon_data) = weapon_map.0.get(weapon) {
-                        println!("{weapon_data:?}");
                         let slot = weapon_data.slot;
                         let handle =
                             asset_server.load(format!("{}#Scene0", weapon_data.model_file));
@@ -57,6 +56,17 @@ pub fn update_world(
         }
         ClientMessage::Fire { slot, row, attack } => {
             error!("unhandled firing [{slot}, {row}] {attack}")
+        }
+        ClientMessage::SwitchWeapon { slot, row } => {
+            error!("unhandled switch weapon [{slot}, {row}]");
+            if current_id != client_id {
+                for (_, mut pl, _) in players.iter_mut() {
+                    if pl.id == client_id {
+                        pl.current_weapon = Some((*slot, *row));
+                        break;
+                    }
+                }
+            }
         }
     }
 }
@@ -124,6 +134,11 @@ pub enum ClientMessage {
         slot: usize,
         row: usize,
         attack: u32,
+    },
+
+    SwitchWeapon {
+        slot: usize,
+        row: usize,
     },
 }
 impl ClientMessage {

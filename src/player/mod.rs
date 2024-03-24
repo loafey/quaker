@@ -73,7 +73,7 @@ pub struct Player {
     children: PlayerChildren,
 
     weapons: [Vec<WeaponState>; 10],
-    current_weapon: Option<(usize, usize)>,
+    pub current_weapon: Option<(usize, usize)>,
     current_weapon_old: Option<(usize, usize)>,
     current_weapon_anim: String,
     restart_anim: bool,
@@ -137,21 +137,6 @@ impl Player {
             if self.current_weapon.is_none() {
                 self.current_weapon = Some((slot, 0))
             }
-
-            println!(
-                "Player inventory: [\n    {}\n]",
-                self.weapons
-                    .iter()
-                    .map(|v| format!(
-                        "[{}]",
-                        v.iter()
-                            .map(|w| w.data.id.clone())
-                            .collect::<Vec<_>>()
-                            .join(", ")
-                    ))
-                    .collect::<Vec<_>>()
-                    .join(",\n    ")
-            );
             true
         } else {
             error!("unhandled: picked up weapon when already had one");
