@@ -4,8 +4,8 @@ use crate::{
 };
 
 use super::{
-    connection_config, update_world, ClientMessage, CurrentClientId, IsSteam, NetState,
-    ServerChannel, ServerMessage, PROTOCOL_ID,
+    connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
+    ServerMessage, PROTOCOL_ID,
 };
 use bevy::{
     asset::{AssetServer, Assets},
@@ -19,13 +19,13 @@ use bevy::{
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
-    log::{info, warn},
+    log::info,
     pbr::StandardMaterial,
     transform::components::Transform,
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    ClientId, RenetClient,
+    RenetClient,
 };
 use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};

@@ -19,7 +19,6 @@ use bevy::{
     log::{error, info},
     pbr::StandardMaterial,
     transform::components::Transform,
-    ui::update,
 };
 use bevy_renet::renet::{
     transport::{
