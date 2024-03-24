@@ -2,11 +2,20 @@ use std::{path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl};
+use bevy_rapier3d::plugin::RapierContext;
 use bevy_renet::renet::*;
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
 
-use crate::{map_gen::entities::data::PickupData, player::Player, resources::WeaponMap};
+use crate::{
+    map_gen::entities::data::PickupData,
+    player::Player,
+    resources::{
+        entropy::{EGame, Entropy},
+        projectiles::Projectiles,
+        WeaponMap,
+    },
+};
 
 pub mod client;
 pub mod server;
@@ -65,8 +74,8 @@ pub fn update_world(
                 }
             }
         }
-        ClientMessage::Fire { slot, row, attack } => {
-            error!("unhandled firing [{slot}, {row}] {attack}")
+        ClientMessage::Fire { .. } => {
+            error!("got a fire event! This is wrong!");
         }
         ClientMessage::WeaponAnim { anim } => {
             if current_id != client_id {
@@ -93,6 +102,7 @@ pub fn update_world(
 }
 
 pub fn send_messages(
+    mut commands: Commands,
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
@@ -102,6 +112,11 @@ pub fn send_messages(
     asset_server: Res<AssetServer>,
     weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    rapier_context: Res<RapierContext>,
+    mut game_entropy: ResMut<Entropy<EGame>>,
+    projectile_map: Res<Projectiles>,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
         Box::new(move |message| {
@@ -119,6 +134,12 @@ pub fn send_messages(
                 &asset_server,
                 &weapon_map,
                 &audio,
+                &mut materials,
+                &mut meshes,
+                &rapier_context,
+                &mut game_entropy,
+                &projectile_map,
+                &mut commands,
             )
         })
     } else {
@@ -155,9 +176,7 @@ pub enum ClientMessage {
     },
 
     Fire {
-        slot: usize,
-        row: usize,
-        attack: u32,
+        attack: usize,
     },
 
     SwitchWeapon {
@@ -208,6 +227,9 @@ pub enum ServerMessage {
     },
     DespawnPickup {
         id: u64,
+    },
+    HitscanHits {
+        hits: Vec<Vec3>,
     },
 }
 impl ServerMessage {

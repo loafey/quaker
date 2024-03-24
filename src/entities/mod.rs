@@ -1,10 +1,13 @@
 use bevy::{
+    asset::Assets,
     ecs::{
         component::Component,
         schedule::{IntoSystemConfigs, SystemConfigs},
-        system::Query,
+        system::{Commands, Query},
     },
-    math::Vec3,
+    math::{primitives::Cuboid, Vec3},
+    pbr::{PbrBundle, StandardMaterial},
+    render::{color::Color, mesh::Mesh},
     transform::components::Transform,
 };
 
@@ -30,4 +33,23 @@ impl ProjectileEntity {
     }
 
     pub fn collision(_query: Query<&ProjectileEntity>) {}
+}
+
+pub fn hitscan_hit_gfx(
+    commands: &mut Commands,
+    poss: &[Vec3],
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<StandardMaterial>,
+) {
+    for pos in poss {
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
+            material: materials.add(StandardMaterial {
+                base_color: Color::rgb(1.0, 0.0, 0.0),
+                ..Default::default()
+            }),
+            transform: Transform::from_translation(*pos),
+            ..Default::default()
+        });
+    }
 }

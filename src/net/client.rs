@@ -1,5 +1,5 @@
 use crate::{
-    entities::pickup::PickupEntity,
+    entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
     player::Player,
     resources::{CurrentMap, CurrentStage, WeaponMap},
@@ -25,6 +25,7 @@ use bevy::{
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
     pbr::StandardMaterial,
+    render::mesh::Mesh,
     transform::components::Transform,
 };
 use bevy_kira_audio::Audio;
@@ -48,9 +49,8 @@ pub fn handle_messages(
     asset_server: Res<AssetServer>,
     client_id: Res<CurrentClientId>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    current_id: Res<CurrentClientId>,
-    weapon_map: Res<WeaponMap>,
-    audio: Res<Audio>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    (current_id, weapon_map, audio): (Res<CurrentClientId>, Res<WeaponMap>, Res<Audio>),
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -123,6 +123,9 @@ pub fn handle_messages(
                         commands.entity(ent).despawn_recursive();
                     }
                 }
+            }
+            ServerMessage::HitscanHits { hits } => {
+                hitscan_hit_gfx(&mut commands, &hits, &mut meshes, &mut materials)
             }
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")

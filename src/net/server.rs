@@ -3,10 +3,14 @@ use super::{
     PROTOCOL_ID,
 };
 use crate::{
-    entities::pickup::PickupEntity,
+    entities::{hitscan_hit_gfx, pickup::PickupEntity},
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
-    resources::{CurrentMap, PlayerSpawnpoint, WeaponMap},
+    resources::{
+        entropy::{EGame, Entropy},
+        projectiles::Projectiles,
+        CurrentMap, PlayerSpawnpoint, WeaponMap,
+    },
 };
 use bevy::{
     asset::{AssetServer, Assets},
@@ -24,16 +28,18 @@ use bevy::{
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
     pbr::StandardMaterial,
+    render::mesh::Mesh,
     transform::components::Transform,
 };
 use bevy_kira_audio::Audio;
+use bevy_rapier3d::plugin::RapierContext;
 use bevy_renet::renet::{
     transport::{
         NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig,
     },
     ClientId, RenetServer, ServerEvent,
 };
-use macros::{error_continue, error_return};
+use macros::{error_continue, error_return, option_continue};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
@@ -53,15 +59,30 @@ pub fn server_events(
     mut server: ResMut<RenetServer>,
     mut lobby: ResMut<Lobby>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    map: Res<CurrentMap>,
-    asset_server: Res<AssetServer>,
-    player_spawn: Res<PlayerSpawnpoint>,
-    current_id: Res<CurrentClientId>,
-    weapon_map: Res<WeaponMap>,
-    audio: Res<Audio>,
+    mut meshes: ResMut<Assets<Mesh>>,
     mut players: Query<(Entity, &mut Player, &mut Transform)>,
     mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
+    mut game_entropy: ResMut<Entropy<EGame>>,
+    (
+        map,
+        asset_server,
+        player_spawn,
+        current_id,
+        weapon_map,
+        audio,
+        projectile_map,
+        rapier_context,
+    ): (
+        Res<CurrentMap>,
+        Res<AssetServer>,
+        Res<PlayerSpawnpoint>,
+        Res<CurrentClientId>,
+        Res<WeaponMap>,
+        Res<Audio>,
+        Res<Projectiles>,
+        Res<RapierContext>,
+    ),
 ) {
     // Handle connection details
     for event in events.read() {
@@ -192,6 +213,12 @@ pub fn server_events(
                 &asset_server,
                 &weapon_map,
                 &audio,
+                &mut materials,
+                &mut meshes,
+                &rapier_context,
+                &mut game_entropy,
+                &projectile_map,
+                &mut commands,
             );
         }
 
@@ -207,6 +234,12 @@ pub fn server_events(
                 &asset_server,
                 &weapon_map,
                 &audio,
+                &mut materials,
+                &mut meshes,
+                &rapier_context,
+                &mut game_entropy,
+                &projectile_map,
+                &mut commands,
             );
         }
     }
@@ -222,25 +255,61 @@ pub fn handle_client_message(
     asset_server: &AssetServer,
     weapon_map: &WeaponMap,
     audio: &Audio,
+    materials: &mut Assets<StandardMaterial>,
+    meshes: &mut Assets<Mesh>,
+    rapier_context: &RapierContext,
+    game_entropy: &mut Entropy<EGame>,
+    projectile_map: &Projectiles,
+    commands: &mut Commands,
 ) {
-    update_world(
-        client_id,
-        &message,
-        players,
-        cameras,
-        current_id,
-        asset_server,
-        weapon_map,
-        audio,
-    );
-    server.broadcast_message(
-        ServerChannel::NetworkedEntities as u8,
-        error_return!(ServerMessage::PlayerUpdate {
-            id: client_id,
-            message,
+    match message {
+        ClientMessage::Fire { attack } => {
+            for (player_entity, mut player, trans) in players {
+                if player.id == client_id {
+                    let cam = option_continue!(player.children.camera);
+                    let (_, cam_trans) = error_continue!(cameras.get(cam));
+                    let hits = player.attack(
+                        attack,
+                        materials,
+                        player_entity,
+                        commands,
+                        rapier_context,
+                        cam_trans,
+                        &trans,
+                        game_entropy,
+                        projectile_map,
+                        asset_server,
+                    );
+                    let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
+                    hitscan_hit_gfx(commands, &hits, meshes, materials);
+                    server.broadcast_message(
+                        ServerChannel::NetworkedEntities as u8,
+                        error_continue!(ServerMessage::HitscanHits { hits }.bytes()),
+                    )
+                }
+            }
         }
-        .bytes()),
-    )
+        message => {
+            update_world(
+                client_id,
+                &message,
+                players,
+                cameras,
+                current_id,
+                asset_server,
+                weapon_map,
+                audio,
+            );
+            server.broadcast_message(
+                ServerChannel::NetworkedEntities as u8,
+                error_return!(ServerMessage::PlayerUpdate {
+                    id: client_id,
+                    message,
+                }
+                .bytes()),
+            )
+        }
+    }
 }
 
 pub fn init_server(

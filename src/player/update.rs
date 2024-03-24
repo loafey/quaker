@@ -60,25 +60,16 @@ impl Player {
     }
 
     pub fn shoot(
-        mut commands: Commands,
-        rapier_context: Res<RapierContext>,
         mut q_players: Query<(Entity, &mut Player, &Transform), With<PlayerController>>,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
         mut misc_entropy: ResMut<Entropy<EMisc>>,
-        mut game_entropy: ResMut<Entropy<EGame>>,
-        q_cameras: Query<(&Camera3d, &Transform, &GlobalTransform)>,
-        projectile_map: Res<Projectiles>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
         mut client_events: EventWriter<ClientMessage>,
     ) {
-        for (player_entity, mut player, player_trans) in &mut q_players {
+        for (_, mut player, _) in &mut q_players {
             let (slot, row) = option_continue!(player.current_weapon);
-            let camera = option_continue!(player.children.camera);
-            let (_, cam_trans, glob_cam_trans) = error_continue!(q_cameras.get(camera));
             let weapon = &mut player.weapons[slot][row];
             weapon.timer -= time.delta_seconds();
             weapon.timer = weapon.timer.max(-1.0);
@@ -97,25 +88,11 @@ impl Player {
 
             let mut shot = false;
 
-            let args = AttackArgs {
-                meshes: &mut meshes,
-                materials: &mut materials,
-                player_entity,
-                commands: &mut commands,
-                origin: glob_cam_trans.translation(),
-                rapier_context: &rapier_context,
-                cam_trans,
-                player_trans,
-                time: &time,
-                game_entropy: &mut game_entropy,
-                projectile_map: &projectile_map,
-                asset_server: &asset_server,
-            };
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
-                player.attack2(args, &mut client_events);
+                player.attack2(&time, &mut client_events);
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
-                player.attack1(args, &mut client_events);
+                player.attack1(&time, &mut client_events);
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
@@ -648,50 +625,31 @@ impl Player {
     }
 }
 
-struct AttackArgs<'a, 'b, 'c> {
-    meshes: &'a mut Assets<Mesh>,
-    materials: &'a mut Assets<StandardMaterial>,
-    player_entity: Entity,
-    commands: &'a mut Commands<'b, 'c>,
-    origin: Vec3,
-    rapier_context: &'a RapierContext,
-    cam_trans: &'a Transform,
-    player_trans: &'a Transform,
-    time: &'a Time,
-    game_entropy: &'a mut Entropy<EGame>,
-    projectile_map: &'a Projectiles,
-    asset_server: &'a AssetServer,
-}
-
 impl Player {
-    fn attack(
+    pub fn attack(
         &mut self,
         attack: usize,
-        AttackArgs {
-            meshes,
-            materials,
-            player_entity,
-            commands,
-            origin,
-            rapier_context,
-            cam_trans,
-            player_trans,
-            time: _,
-            game_entropy,
-            projectile_map,
-            asset_server,
-        }: AttackArgs,
-    ) {
+        materials: &mut Assets<StandardMaterial>,
+        player_entity: Entity,
+        commands: &mut Commands,
+        rapier_context: &RapierContext,
+        cam_trans: &Transform,
+        player_trans: &Transform,
+        game_entropy: &mut Entropy<EGame>,
+        projectile_map: &Projectiles,
+        asset_server: &AssetServer,
+    ) -> Vec<(Entity, Vec3)> {
         let (slot, row) = option_return!(self.current_weapon);
         let attack = match attack {
             1 => &self.weapons[slot][row].data.attack1,
             2 => &self.weapons[slot][row].data.attack2,
             x => {
                 error!("unsupported attack: {x}");
-                return;
+                return Vec::new();
             }
         };
 
+        let origin = player_trans.translation + cam_trans.translation;
         let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
         let Vec3 { x, y, z } = cam_trans.local_z().xyz();
 
@@ -743,17 +701,7 @@ impl Player {
                     }
                 }
 
-                for (_ent, pos) in hits {
-                    commands.spawn(PbrBundle {
-                        transform: Transform::from_translation(pos),
-                        mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-                        material: materials.add(StandardMaterial {
-                            base_color: Color::rgb(1.0, 0.0, 0.0),
-                            ..Default::default()
-                        }),
-                        ..Default::default()
-                    });
-                }
+                hits
             }
             Attack::Projectile { projectile } => {
                 if let Some(proj) = projectile_map.0.get(projectile) {
@@ -789,12 +737,16 @@ impl Player {
                 } else {
                     error!("Unknown projectile: {projectile}")
                 }
+                Vec::new()
             }
-            Attack::None => error!("just attacked using None"),
+            Attack::None => {
+                error!("just attacked using None");
+                Vec::new()
+            }
         }
     }
 
-    fn attack1(&mut self, attack_args: AttackArgs, client_events: &mut EventWriter<ClientMessage>) {
+    fn attack1(&mut self, time: &Time, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot1".to_string();
@@ -802,18 +754,14 @@ impl Player {
             weapon,
             weapon.data.animations.fire_time1,
             weapon.data.animations.anim_time1,
-            attack_args.time,
+            time,
         );
 
-        client_events.send(ClientMessage::Fire {
-            slot,
-            row,
-            attack: 1,
-        });
+        client_events.send(ClientMessage::Fire { attack: 1 });
         //self.attack(1, attack_args);
     }
 
-    fn attack2(&mut self, attack_args: AttackArgs, client_events: &mut EventWriter<ClientMessage>) {
+    fn attack2(&mut self, time: &Time, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot2".to_string();
@@ -821,14 +769,10 @@ impl Player {
             weapon,
             weapon.data.animations.fire_time2,
             weapon.data.animations.anim_time2,
-            attack_args.time,
+            time,
         );
 
-        client_events.send(ClientMessage::Fire {
-            slot,
-            row,
-            attack: 2,
-        });
+        client_events.send(ClientMessage::Fire { attack: 2 });
         //self.attack(2, attack_args);
     }
 }
