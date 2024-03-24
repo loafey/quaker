@@ -58,7 +58,6 @@ pub fn update_world(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn send_messages(
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,

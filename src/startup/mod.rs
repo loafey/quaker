@@ -38,7 +38,6 @@ pub fn startup_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(StartupEnt);
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn startup_update(
     mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,

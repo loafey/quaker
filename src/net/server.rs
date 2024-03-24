@@ -44,7 +44,6 @@ pub struct Lobby {
     cam_count: isize,
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn server_events(
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,

@@ -35,7 +35,6 @@ use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
-#[allow(clippy::too_many_arguments)]
 pub fn handle_messages(
     mut players: Query<(Entity, &mut Player, &mut Transform)>,
     pickups: Query<(Entity, &PickupEntity)>,

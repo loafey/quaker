@@ -45,7 +45,7 @@ fn parse_vec(str: &str) -> Vec3 {
 
     Vec3::new(x, z, -y) / SCALE_FIX
 }
-#[allow(clippy::too_many_arguments)]
+
 pub fn spawn_entity(
     id: u64,
     is_client: bool,

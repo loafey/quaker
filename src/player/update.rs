@@ -59,7 +59,6 @@ impl Player {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn shoot(
         mut commands: Commands,
         rapier_context: Res<RapierContext>,
