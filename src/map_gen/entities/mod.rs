@@ -138,62 +138,60 @@ fn spawn_pickup(
         .map(|p| parse_vec(p))
         .unwrap_or_default();
 
-    match data {
-        PickupData::Weapon {
-            pickup_model,
-            texture_file,
-            scale,
-            ..
-        } => {
-            let mesh_handle = asset_server.load(pickup_model);
-            let mut trans = Transform::from_translation(pos);
-            trans.scale = Vec3::splat(*scale);
+    let PickupData {
+        pickup_model,
+        texture_file,
+        scale,
+        ..
+    } = &data;
 
-            let mat_handle = materials.add(StandardMaterial {
-                base_color_texture: Some(asset_server.load(texture_file)),
-                diffuse_transmission: 0.64,
-                specular_transmission: 0.5,
-                perceptual_roughness: 1.0,
-                reflectance: 0.0,
-                metallic: 0.0,
+    let mesh_handle = asset_server.load(pickup_model);
+    let mut trans = Transform::from_translation(pos);
+    trans.scale = Vec3::splat(*scale);
+
+    let mat_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load(texture_file)),
+        diffuse_transmission: 0.64,
+        specular_transmission: 0.5,
+        perceptual_roughness: 1.0,
+        reflectance: 0.0,
+        metallic: 0.0,
+        ..Default::default()
+    });
+
+    let mut pickup = if host {
+        let mut pickup = commands.spawn(Collider::cylinder(1.0, 10.0));
+        pickup
+            .insert(Sensor)
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(TransformBundle::from(Transform::from_translation(pos)))
+            .insert(ActiveCollisionTypes::all())
+            .insert(Ccd::enabled())
+            .insert(PbrBundle {
+                mesh: mesh_handle,
+                material: mat_handle,
+                transform: trans,
                 ..Default::default()
             });
-
-            let mut pickup = if host {
-                let mut pickup = commands.spawn(Collider::cylinder(1.0, 10.0));
-                pickup
-                    .insert(Sensor)
-                    .insert(ActiveEvents::COLLISION_EVENTS)
-                    .insert(TransformBundle::from(Transform::from_translation(pos)))
-                    .insert(ActiveCollisionTypes::all())
-                    .insert(Ccd::enabled())
-                    .insert(PbrBundle {
-                        mesh: mesh_handle,
-                        material: mat_handle,
-                        transform: trans,
-                        ..Default::default()
-                    });
-                pickup
-            } else {
-                commands.spawn(PbrBundle {
-                    mesh: mesh_handle,
-                    material: mat_handle,
-                    transform: trans,
-                    ..Default::default()
-                })
-            };
-            pickup
-                .insert(PointLightBundle {
-                    transform: trans,
-                    point_light: PointLight {
-                        color: Color::rgba(1.0, 1.0, 1.0, 0.5),
-                        intensity: 200.0,
-                        radius: 4.0,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(PickupEntity::new(id, data.clone()));
-        }
-    }
+        pickup
+    } else {
+        commands.spawn(PbrBundle {
+            mesh: mesh_handle,
+            material: mat_handle,
+            transform: trans,
+            ..Default::default()
+        })
+    };
+    pickup
+        .insert(PointLightBundle {
+            transform: trans,
+            point_light: PointLight {
+                color: Color::rgba(1.0, 1.0, 1.0, 0.5),
+                intensity: 200.0,
+                radius: 4.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(PickupEntity::new(id, data.clone()));
 }

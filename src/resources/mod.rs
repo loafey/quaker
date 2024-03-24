@@ -85,7 +85,7 @@ impl PickupMap {
 
         let mut map = HashMap::new();
         for item in parsed {
-            map.insert(item.classname().to_string(), item);
+            map.insert(item.classname.clone(), item);
         }
 
         info!("Done loading pickups...");

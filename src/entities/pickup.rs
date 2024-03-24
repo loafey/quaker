@@ -48,7 +48,7 @@ impl PickupEntity {
                 if let (Ok(mut player), Ok(pickup)) =
                     (players.get_mut(*player), pickups.get(*ent_pickup))
                 {
-                    let classname = pickup.data.classname();
+                    let classname = &pickup.data.classname;
                     if let Some(weapon_data) = weapon_map.0.get(classname) {
                         println!("{weapon_data:?}");
                         let slot = weapon_data.slot;

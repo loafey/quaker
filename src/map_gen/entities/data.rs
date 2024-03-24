@@ -1,23 +1,19 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "pickup_type")]
-pub enum PickupData {
-    Weapon {
-        classname: String,
-        gives: String,
-        pickup_model: String,
-        pickup_material: String,
-        texture_file: String,
-        scale: f32,
-    },
+pub enum PickupType {
+    Weapon,
 }
-impl PickupData {
-    pub fn classname(&self) -> &str {
-        match self {
-            PickupData::Weapon { classname, .. } => classname,
-        }
-    }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PickupData {
+    pub pickup_type: PickupType,
+    pub classname: String,
+    pub gives: String,
+    pub pickup_model: String,
+    pub pickup_material: String,
+    pub texture_file: String,
+    pub scale: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
