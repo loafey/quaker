@@ -1,7 +1,7 @@
 use crate::{
     entities::pickup::PickupEntity,
     map_gen,
-    player::{Player, PlayerController},
+    player::Player,
     resources::{CurrentMap, CurrentStage, WeaponMap},
 };
 

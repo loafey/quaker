@@ -214,7 +214,6 @@ impl Player {
     pub fn update_input(
         keys: Res<PlayerInput>,
         time: Res<Time>,
-        mut commands: Commands,
         mut query: Query<
             (
                 &mut KinematicCharacterController,
@@ -223,7 +222,7 @@ impl Player {
             ),
             With<PlayerController>,
         >,
-        mut cameras: Query<(&Camera3d, &Transform), Without<PlayerController>>,
+        cameras: Query<(&Camera3d, &Transform), Without<PlayerController>>,
         mut events: EventWriter<ClientMessage>,
     ) {
         for (mut controller, mut player, mut gt) in &mut query {
