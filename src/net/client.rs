@@ -30,7 +30,7 @@ use bevy_renet::renet::{
 };
 use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 #[allow(clippy::too_many_arguments)]
