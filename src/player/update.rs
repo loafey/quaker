@@ -73,6 +73,7 @@ impl Player {
         time: Res<Time>,
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
+        mut client_events: EventWriter<ClientMessage>,
     ) {
         for (player_entity, mut player, player_trans) in &mut q_players {
             let (slot, row) = option_continue!(player.current_weapon);
@@ -111,10 +112,10 @@ impl Player {
                 asset_server: &asset_server,
             };
             if keys.weapon_shoot2_pressed && !weapon.need_to_reload {
-                player.attack2(args);
+                player.attack2(args, &mut client_events);
                 shot = true;
             } else if keys.weapon_shoot1_pressed && !weapon.need_to_reload {
-                player.attack1(args);
+                player.attack1(args, &mut client_events);
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
                 player.current_weapon_anim = "idle".to_string();
@@ -768,7 +769,7 @@ impl Player {
         }
     }
 
-    fn attack1(&mut self, attack_args: AttackArgs) {
+    fn attack1(&mut self, attack_args: AttackArgs, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot1".to_string();
@@ -778,11 +779,16 @@ impl Player {
             weapon.data.animations.anim_time1,
             attack_args.time,
         );
-        let _ = weapon;
-        self.attack(1, attack_args);
+
+        client_events.send(ClientMessage::Fire {
+            slot,
+            row,
+            attack: 1,
+        });
+        //self.attack(1, attack_args);
     }
 
-    fn attack2(&mut self, attack_args: AttackArgs) {
+    fn attack2(&mut self, attack_args: AttackArgs, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
         self.current_weapon_anim = "shoot2".to_string();
@@ -792,6 +798,12 @@ impl Player {
             weapon.data.animations.anim_time2,
             attack_args.time,
         );
-        self.attack(2, attack_args);
+
+        client_events.send(ClientMessage::Fire {
+            slot,
+            row,
+            attack: 2,
+        });
+        //self.attack(2, attack_args);
     }
 }

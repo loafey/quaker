@@ -55,6 +55,9 @@ pub fn update_world(
                 }
             }
         }
+        ClientMessage::Fire { slot, row, attack } => {
+            error!("unhandled firing [{slot}, {row}] {attack}")
+        }
     }
 }
 
@@ -108,9 +111,20 @@ pub enum NetState {
 
 #[derive(Debug, Serialize, Deserialize, Event, Clone)]
 pub enum ClientMessage {
-    UpdatePosition { position: Vec3, rotation: [f32; 4] },
+    UpdatePosition {
+        position: Vec3,
+        rotation: [f32; 4],
+    },
 
-    PickupWeapon { weapon: String },
+    PickupWeapon {
+        weapon: String,
+    },
+
+    Fire {
+        slot: usize,
+        row: usize,
+        attack: u32,
+    },
 }
 impl ClientMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
