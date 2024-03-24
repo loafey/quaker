@@ -45,20 +45,20 @@ pub struct Lobby {
 }
 
 pub fn server_events(
+    mut commands: Commands,
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
-    map: Res<CurrentMap>,
     mut lobby: ResMut<Lobby>,
-    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    map: Res<CurrentMap>,
     asset_server: Res<AssetServer>,
     player_spawn: Res<PlayerSpawnpoint>,
-    mut players: Query<(Entity, &mut Player, &mut Transform)>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     current_id: Res<CurrentClientId>,
-    pickups_query: Query<(&PickupEntity, &Transform), Without<Player>>,
     weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
+    mut players: Query<(Entity, &mut Player, &mut Transform)>,
+    pickups_query: Query<(&PickupEntity, &Transform), Without<Player>>,
 ) {
     // Handle connection details
     for event in events.read() {
