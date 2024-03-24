@@ -21,7 +21,7 @@ use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, S
 use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
 use steamworks::SingleClient;
 
-use crate::try_steam::try_steam;
+use crate::{net::SimulationEvent, try_steam::try_steam};
 
 mod entities;
 mod integrity;
@@ -43,7 +43,8 @@ fn main() {
 
     let mut app = App::new();
 
-    app.add_event::<ClientMessage>();
+    app.add_event::<ClientMessage>()
+        .add_event::<SimulationEvent>();
 
     app.add_plugins((
         Resources,

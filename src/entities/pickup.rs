@@ -1,5 +1,6 @@
 use crate::{
     map_gen::entities::data::PickupData,
+    net::{ServerMessage, SimulationEvent},
     player::{Player, PlayerController},
     resources::WeaponMap,
 };
@@ -7,7 +8,7 @@ use bevy::{
     asset::AssetServer,
     ecs::{
         component::Component,
-        event::EventReader,
+        event::{EventReader, EventWriter},
         query::With,
         schedule::{IntoSystemConfigs, SystemConfigs},
         system::{Commands, Query, Res},
@@ -33,37 +34,44 @@ impl PickupEntity {
     pub fn new(id: u64, data: PickupData) -> Self {
         Self { id, data }
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn handle_pickups(
         mut commands: Commands,
         pickups: Query<&PickupEntity>,
-        mut players: Query<&mut Player, With<PlayerController>>,
+        mut players: Query<&mut Player>,
         mut reader: EventReader<CollisionEvent>,
         weapon_map: Res<WeaponMap>,
         asset_server: Res<AssetServer>,
         audio: Res<Audio>,
+        mut server_event: EventWriter<SimulationEvent>,
     ) {
         for event in reader.read() {
             if let CollisionEvent::Started(ent_pickup, player, CollisionEventFlags::SENSOR) = event
             {
-                if let (Ok(mut player), Ok(pickup)) =
+                if let (Ok(player), Ok(pickup)) =
                     (players.get_mut(*player), pickups.get(*ent_pickup))
                 {
-                    let classname = &pickup.data.classname;
-                    if let Some(weapon_data) = weapon_map.0.get(classname) {
-                        println!("{weapon_data:?}");
-                        let slot = weapon_data.slot;
-                        let handle =
-                            asset_server.load(format!("{}#Scene0", weapon_data.model_file));
-                        if player.add_weapon(weapon_data.clone(), slot, handle) {
-                            audio.play(asset_server.load(
-                                weapon_data.pickup_sound.clone().unwrap_or(
-                                    "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
-                                ),
-                            ));
-                        }
-                    } else {
-                        error!("tried to pickup nonexisting weapon: \"{classname}\"")
-                    }
+                    server_event.send(SimulationEvent::PlayerPicksUpPickup {
+                        id: pickup.id,
+                        player: player.id,
+                        pickup: pickup.data.gives.clone(),
+                    });
+                    // let classname = &pickup.data.classname;
+                    // if let Some(weapon_data) = weapon_map.0.get(classname) {
+                    //     println!("{weapon_data:?}");
+                    //     let slot = weapon_data.slot;
+                    //     let handle =
+                    //         asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                    //     if player.add_weapon(weapon_data.clone(), slot, handle) {
+                    //         audio.play(asset_server.load(
+                    //             weapon_data.pickup_sound.clone().unwrap_or(
+                    //                 "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
+                    //             ),
+                    //         ));
+                    //     }
+                    // } else {
+                    //     error!("tried to pickup nonexisting weapon: \"{classname}\"")
+                    // }
 
                     commands.entity(*ent_pickup).despawn();
                 }

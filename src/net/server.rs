@@ -1,9 +1,12 @@
-use super::{connection_config, update_world, ClientChannel, ClientMessage, NetState, PROTOCOL_ID};
+use super::{
+    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent,
+    PROTOCOL_ID,
+};
 use crate::{
     entities::pickup::PickupEntity,
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
-    resources::{CurrentMap, PlayerSpawnpoint},
+    resources::{CurrentMap, PlayerSpawnpoint, WeaponMap},
 };
 use bevy::{
     asset::{AssetServer, Assets},
@@ -22,6 +25,7 @@ use bevy::{
     pbr::StandardMaterial,
     transform::components::Transform,
 };
+use bevy_kira_audio::Audio;
 use bevy_renet::renet::{
     transport::{
         NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig,
@@ -43,16 +47,19 @@ pub struct Lobby {
 #[allow(clippy::too_many_arguments)]
 pub fn server_events(
     mut events: EventReader<ServerEvent>,
+    mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
     map: Res<CurrentMap>,
     mut lobby: ResMut<Lobby>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_spawn: Res<PlayerSpawnpoint>,
-    mut players: Query<(Entity, &Player, &mut Transform)>,
+    mut players: Query<(Entity, &mut Player, &mut Transform)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     current_id: Res<CurrentClientId>,
     pickups_query: Query<(&PickupEntity, &Transform), Without<Player>>,
+    weapon_map: Res<WeaponMap>,
+    audio: Res<Audio>,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -135,6 +142,44 @@ pub fn server_events(
         }
     }
 
+    for message in sim_events.read() {
+        match message {
+            SimulationEvent::PlayerPicksUpPickup { id, player, pickup } => {
+                let remove_message = ServerMessage::DespawnPickup { id: *id };
+                server.broadcast_message(
+                    ServerChannel::NetworkedEntities as u8,
+                    error_continue!(remove_message.bytes()),
+                );
+                let pickup_message = ClientMessage::PickupWeapon {
+                    weapon: pickup.clone(),
+                };
+
+                // This should maybe be changed to a broadcast
+                if *player != current_id.0 {
+                    let pickup_message = ServerMessage::PlayerUpdate {
+                        id: *player,
+                        message: pickup_message,
+                    };
+                    server.send_message(
+                        ClientId::from_raw(*player),
+                        ServerChannel::NetworkedEntities as u8,
+                        error_continue!(pickup_message.bytes()),
+                    )
+                } else {
+                    update_world(
+                        *player,
+                        &pickup_message,
+                        &mut players,
+                        current_id.0,
+                        &asset_server,
+                        &weapon_map,
+                        &audio,
+                    );
+                }
+            }
+        }
+    }
+
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
@@ -144,6 +189,9 @@ pub fn server_events(
                 message,
                 &mut players,
                 current_id.0,
+                &asset_server,
+                &weapon_map,
+                &audio,
             );
         }
 
@@ -155,6 +203,9 @@ pub fn server_events(
                 message,
                 &mut players,
                 current_id.0,
+                &asset_server,
+                &weapon_map,
+                &audio,
             );
         }
     }
@@ -164,10 +215,21 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    players: &mut Query<(Entity, &Player, &mut Transform)>,
+    players: &mut Query<(Entity, &mut Player, &mut Transform)>,
     current_id: u64,
+    asset_server: &AssetServer,
+    weapon_map: &WeaponMap,
+    audio: &Audio,
 ) {
-    update_world(client_id, &message, players, current_id);
+    update_world(
+        client_id,
+        &message,
+        players,
+        current_id,
+        asset_server,
+        weapon_map,
+        audio,
+    );
     server.broadcast_message(
         ServerChannel::NetworkedEntities as u8,
         error_return!(ServerMessage::PlayerUpdate {

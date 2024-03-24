@@ -1,7 +1,8 @@
 use crate::{
+    entities::pickup::PickupEntity,
     map_gen,
     player::Player,
-    resources::{CurrentMap, CurrentStage},
+    resources::{CurrentMap, CurrentStage, WeaponMap},
 };
 
 use super::{
@@ -24,6 +25,7 @@ use bevy::{
     pbr::StandardMaterial,
     transform::components::Transform,
 };
+use bevy_kira_audio::Audio;
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     RenetClient,
@@ -35,7 +37,8 @@ use steamworks::SteamId;
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_messages(
-    mut players: Query<(Entity, &Player, &mut Transform)>,
+    mut players: Query<(Entity, &mut Player, &mut Transform)>,
+    pickups: Query<(Entity, &PickupEntity)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
@@ -44,6 +47,8 @@ pub fn handle_messages(
     client_id: Res<CurrentClientId>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     current_id: Res<CurrentClientId>,
+    weapon_map: Res<WeaponMap>,
+    audio: Res<Audio>,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -99,7 +104,22 @@ pub fn handle_messages(
         #[allow(clippy::single_match)]
         match message {
             ServerMessage::PlayerUpdate { id, message } => {
-                update_world(id, &message, &mut players, current_id.0);
+                update_world(
+                    id,
+                    &message,
+                    &mut players,
+                    current_id.0,
+                    &asset_server,
+                    &weapon_map,
+                    &audio,
+                );
+            }
+            ServerMessage::DespawnPickup { id } => {
+                for (ent, pickup) in &pickups {
+                    if pickup.id == id {
+                        commands.entity(ent).despawn_recursive();
+                    }
+                }
             }
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")

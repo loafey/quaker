@@ -1,11 +1,12 @@
 use std::{path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
+use bevy_kira_audio::{Audio, AudioControl};
 use bevy_renet::renet::*;
 use macros::error_return;
 use serde::{Deserialize, Serialize};
 
-use crate::{map_gen::entities::data::PickupData, player::Player};
+use crate::{map_gen::entities::data::PickupData, player::Player, resources::WeaponMap};
 
 pub mod client;
 pub mod server;
@@ -13,8 +14,11 @@ pub mod server;
 pub fn update_world(
     client_id: u64,
     message: &ClientMessage,
-    players: &mut Query<(Entity, &Player, &mut Transform)>,
+    players: &mut Query<(Entity, &mut Player, &mut Transform)>,
     current_id: u64,
+    asset_server: &AssetServer,
+    weapon_map: &WeaponMap,
+    audio: &Audio,
 ) {
     match message {
         ClientMessage::UpdatePosition { position, rotation } => {
@@ -28,15 +32,42 @@ pub fn update_world(
                 }
             }
         }
+        ClientMessage::PickupWeapon { weapon } => {
+            for (_, mut player, _) in players.iter_mut() {
+                if player.id == client_id {
+                    if let Some(weapon_data) = weapon_map.0.get(weapon) {
+                        println!("{weapon_data:?}");
+                        let slot = weapon_data.slot;
+                        let handle =
+                            asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                        if player.add_weapon(weapon_data.clone(), slot, handle) {
+                            audio.play(asset_server.load(
+                                weapon_data.pickup_sound.clone().unwrap_or(
+                                    "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
+                                ),
+                            ));
+                        }
+                    } else {
+                        error!("tried to pickup nonexisting weapon: \"{weapon}\"")
+                    }
+
+                    break;
+                }
+            }
+        }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn send_messages(
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
     current_id: Res<CurrentClientId>,
-    mut players: Query<(Entity, &Player, &mut Transform)>,
+    mut players: Query<(Entity, &mut Player, &mut Transform)>,
+    asset_server: Res<AssetServer>,
+    weapon_map: Res<WeaponMap>,
+    audio: Res<Audio>,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
         Box::new(move |message| {
@@ -50,6 +81,9 @@ pub fn send_messages(
                 message,
                 &mut players,
                 current_id.0,
+                &asset_server,
+                &weapon_map,
+                &audio,
             )
         })
     } else {
@@ -76,6 +110,8 @@ pub enum NetState {
 #[derive(Debug, Serialize, Deserialize, Event, Clone)]
 pub enum ClientMessage {
     UpdatePosition { position: Vec3, rotation: [f32; 4] },
+
+    PickupWeapon { weapon: String },
 }
 impl ClientMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
@@ -86,7 +122,16 @@ impl ClientMessage {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Event)]
+pub enum SimulationEvent {
+    PlayerPicksUpPickup {
+        id: u64,
+        player: u64,
+        pickup: String,
+    },
+}
+
+#[derive(Debug, Serialize, Deserialize, Event)]
 pub enum ServerMessage {
     SetMap(PathBuf),
     SpawnPlayer {
@@ -104,6 +149,9 @@ pub enum ServerMessage {
         id: u64,
         translation: Vec3,
         data: PickupData,
+    },
+    DespawnPickup {
+        id: u64,
     },
 }
 impl ServerMessage {
