@@ -1,4 +1,4 @@
-use super::{connection_config, ClientChannel, ClientMessage, NetState, PROTOCOL_ID};
+use super::{connection_config, update_world, ClientChannel, ClientMessage, NetState, PROTOCOL_ID};
 use crate::{
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
@@ -19,6 +19,7 @@ use bevy::{
     log::{error, info},
     pbr::StandardMaterial,
     transform::components::Transform,
+    ui::update,
 };
 use bevy_renet::renet::{
     transport::{
@@ -122,38 +123,44 @@ pub fn server_events(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(&mut server, client_id, message, &mut players, current_id.0);
+            handle_client_message(
+                &mut server,
+                client_id.raw(),
+                message,
+                &mut players,
+                current_id.0,
+            );
+        }
+
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
+            let message = error_continue!(ClientMessage::from_bytes(&message));
+            handle_client_message(
+                &mut server,
+                client_id.raw(),
+                message,
+                &mut players,
+                current_id.0,
+            );
         }
     }
 }
 
 pub fn handle_client_message(
     server: &mut RenetServer,
-    client_id: ClientId,
+    client_id: u64,
     message: ClientMessage,
     players: &mut Query<(Entity, &Player, &mut Transform)>,
     current_id: u64,
 ) {
-    match message {
-        ClientMessage::UpdatePosition { position } => {
-            if current_id != client_id.raw() {
-                for (_, pl, mut tr) in players.iter_mut() {
-                    if pl.id == client_id.raw() {
-                        tr.translation = position;
-                        break;
-                    }
-                }
-            }
-            server.broadcast_message(
-                ServerChannel::NetworkedEntities as u8,
-                error_return!(ServerMessage::PlayerUpdate {
-                    id: client_id.raw(),
-                    message,
-                }
-                .bytes()),
-            )
+    update_world(client_id, &message, players, current_id);
+    server.broadcast_message(
+        ServerChannel::NetworkedEntities as u8,
+        error_return!(ServerMessage::PlayerUpdate {
+            id: client_id,
+            message,
         }
-    }
+        .bytes()),
+    )
 }
 
 pub fn init_server(

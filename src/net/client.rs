@@ -4,8 +4,8 @@ use crate::{
 };
 
 use super::{
-    connection_config, ClientMessage, CurrentClientId, IsSteam, NetState, ServerChannel,
-    ServerMessage, PROTOCOL_ID,
+    connection_config, update_world, ClientMessage, CurrentClientId, IsSteam, NetState,
+    ServerChannel, ServerMessage, PROTOCOL_ID,
 };
 use bevy::{
     asset::{AssetServer, Assets},
@@ -25,7 +25,7 @@ use bevy::{
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    RenetClient,
+    ClientId, RenetClient,
 };
 use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
@@ -81,19 +81,7 @@ pub fn handle_messages(
         #[allow(clippy::single_match)]
         match message {
             ServerMessage::PlayerUpdate { id, message } => {
-                if current_id.0 != id {
-                    match message {
-                        ClientMessage::UpdatePosition { position } => {
-                            for (_, pl, mut tr) in players.iter_mut() {
-                                if pl.id == id {
-                                    tr.translation = position;
-                                    break;
-                                }
-                            }
-                            println!()
-                        }
-                    }
-                }
+                update_world(id, &message, &mut players, current_id.0);
             }
             _ => {}
         }

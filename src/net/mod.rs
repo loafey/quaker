@@ -10,6 +10,26 @@ use crate::player::Player;
 pub mod client;
 pub mod server;
 
+pub fn update_world(
+    client_id: u64,
+    message: &ClientMessage,
+    players: &mut Query<(Entity, &Player, &mut Transform)>,
+    current_id: u64,
+) {
+    match message {
+        ClientMessage::UpdatePosition { position } => {
+            if current_id != client_id {
+                for (_, pl, mut tr) in players.iter_mut() {
+                    if pl.id == client_id {
+                        tr.translation = *position;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub fn send_messages(
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
@@ -25,7 +45,7 @@ pub fn send_messages(
         Box::new(move |message| {
             server::handle_client_message(
                 &mut server,
-                ClientId::from_raw(current_id.0),
+                current_id.0,
                 message,
                 &mut players,
                 current_id.0,
