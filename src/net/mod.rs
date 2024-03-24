@@ -69,7 +69,6 @@ pub fn update_world(
             error!("unhandled firing [{slot}, {row}] {attack}")
         }
         ClientMessage::SwitchWeapon { slot, row } => {
-            error!("unhandled switch weapon [{slot}, {row}]");
             if current_id != client_id {
                 for (_, mut pl, _) in players.iter_mut() {
                     if pl.id == client_id {
