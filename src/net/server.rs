@@ -10,6 +10,7 @@ use crate::{
 };
 use bevy::{
     asset::{AssetServer, Assets},
+    core_pipeline::core_3d::Camera3d,
     ecs::{
         entity::Entity,
         event::EventReader,
@@ -44,6 +45,7 @@ pub struct Lobby {
     cam_count: isize,
 }
 
+#[allow(clippy::type_complexity)]
 pub fn server_events(
     mut commands: Commands,
     mut events: EventReader<ServerEvent>,
@@ -58,7 +60,8 @@ pub fn server_events(
     weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
     mut players: Query<(Entity, &mut Player, &mut Transform)>,
-    pickups_query: Query<(&PickupEntity, &Transform), Without<Player>>,
+    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
+    pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -157,6 +160,7 @@ pub fn server_events(
                     *player,
                     &pickup_message,
                     &mut players,
+                    &mut cameras,
                     current_id.0,
                     &asset_server,
                     &weapon_map,
@@ -183,6 +187,7 @@ pub fn server_events(
                 client_id.raw(),
                 message,
                 &mut players,
+                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
@@ -197,6 +202,7 @@ pub fn server_events(
                 client_id.raw(),
                 message,
                 &mut players,
+                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
@@ -211,6 +217,7 @@ pub fn handle_client_message(
     client_id: u64,
     message: ClientMessage,
     players: &mut Query<(Entity, &mut Player, &mut Transform)>,
+    cameras: &mut Query<(&Camera3d, &mut Transform), Without<Player>>,
     current_id: u64,
     asset_server: &AssetServer,
     weapon_map: &WeaponMap,
@@ -220,6 +227,7 @@ pub fn handle_client_message(
         client_id,
         &message,
         players,
+        cameras,
         current_id,
         asset_server,
         weapon_map,

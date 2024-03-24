@@ -3,7 +3,7 @@ use std::{path::PathBuf, time::Duration};
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl};
 use bevy_renet::renet::*;
-use macros::error_return;
+use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
 
 use crate::{map_gen::entities::data::PickupData, player::Player, resources::WeaponMap};
@@ -15,18 +15,29 @@ pub fn update_world(
     client_id: u64,
     message: &ClientMessage,
     players: &mut Query<(Entity, &mut Player, &mut Transform)>,
+    cameras: &mut Query<(&Camera3d, &mut Transform), Without<Player>>,
     current_id: u64,
     asset_server: &AssetServer,
     weapon_map: &WeaponMap,
     audio: &Audio,
 ) {
     match message {
-        ClientMessage::UpdatePosition { position, rotation } => {
+        ClientMessage::UpdatePosition {
+            position,
+            rotation,
+            cam_rot,
+        } => {
             if current_id != client_id {
                 for (_, pl, mut tr) in players.iter_mut() {
                     if pl.id == client_id {
                         tr.translation = *position;
                         tr.rotation = Quat::from_array(*rotation);
+
+                        error_return!(cameras.get_mut(option_return!(pl.children.camera)))
+                            .1
+                            .rotation
+                            .x = *cam_rot;
+
                         break;
                     }
                 }
@@ -77,6 +88,7 @@ pub fn send_messages(
     server: Option<ResMut<RenetServer>>,
     current_id: Res<CurrentClientId>,
     mut players: Query<(Entity, &mut Player, &mut Transform)>,
+    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     asset_server: Res<AssetServer>,
     weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
@@ -92,6 +104,7 @@ pub fn send_messages(
                 current_id.0,
                 message,
                 &mut players,
+                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
@@ -124,6 +137,7 @@ pub enum ClientMessage {
     UpdatePosition {
         position: Vec3,
         rotation: [f32; 4],
+        cam_rot: f32,
     },
 
     PickupWeapon {

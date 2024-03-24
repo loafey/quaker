@@ -46,8 +46,8 @@ pub struct WeaponState {
 
 #[derive(Debug, Default)]
 pub struct PlayerChildren {
-    camera: Option<Entity>,
-    fps_model: Option<Entity>,
+    pub camera: Option<Entity>,
+    pub fps_model: Option<Entity>,
 }
 
 #[derive(Component, Debug, Default)]
@@ -70,7 +70,7 @@ pub struct Player {
 
     fps_anims: HashMap<String, Handle<AnimationClip>>,
 
-    children: PlayerChildren,
+    pub children: PlayerChildren,
 
     weapons: [Vec<WeaponState>; 10],
     pub current_weapon: Option<(usize, usize)>,

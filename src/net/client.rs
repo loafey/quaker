@@ -1,7 +1,7 @@
 use crate::{
     entities::pickup::PickupEntity,
     map_gen,
-    player::Player,
+    player::{Player, PlayerController},
     resources::{CurrentMap, CurrentStage, WeaponMap},
 };
 
@@ -11,9 +11,11 @@ use super::{
 };
 use bevy::{
     asset::{AssetServer, Assets},
+    core_pipeline::core_3d::Camera3d,
     ecs::{
         entity::Entity,
         event::EventReader,
+        query::Without,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
@@ -37,6 +39,7 @@ use steamworks::SteamId;
 
 pub fn handle_messages(
     mut players: Query<(Entity, &mut Player, &mut Transform)>,
+    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups: Query<(Entity, &PickupEntity)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
@@ -107,6 +110,7 @@ pub fn handle_messages(
                     id,
                     &message,
                     &mut players,
+                    &mut cameras,
                     current_id.0,
                     &asset_server,
                     &weapon_map,
