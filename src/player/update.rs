@@ -319,10 +319,11 @@ impl Player {
 
     pub fn weapon_animations(
         mut commands: Commands,
-        mut players: Query<&mut Player, With<PlayerController>>,
+        mut players: Query<&mut Player>,
         q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
         q_scenes: Query<&Children>,
         mut q_anim_players: Query<&mut AnimationPlayer>,
+        mut client_events: EventWriter<ClientMessage>,
     ) {
         for mut player in &mut players {
             let (ent, _, children) = option_continue!(q_player_fps_anims
@@ -345,14 +346,24 @@ impl Player {
                     // Got GLTF scene
                     for child in children {
                         if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
-                            // now we have the animation player
-                            let clip = &player.fps_anims[&player.current_weapon_anim];
-                            if player.restart_anim {
-                                anim_player.play(clip.clone()).replay();
-                            } else if !anim_player.is_playing_clip(clip) {
-                                anim_player.play(clip.clone()).repeat();
+                            if player.current_weapon_anim != player.current_weapon_anim_old
+                                || player.restart_anim
+                            {
+                                player.current_weapon_anim_old = player.current_weapon_anim.clone();
+                                client_events.send(ClientMessage::WeaponAnim {
+                                    anim: player.current_weapon_anim.clone(),
+                                });
                             }
-                            player.restart_anim = false;
+
+                            // now we have the animation player
+                            if let Some(clip) = player.fps_anims.get(&player.current_weapon_anim) {
+                                if player.restart_anim {
+                                    anim_player.play(clip.clone()).replay();
+                                } else if !anim_player.is_playing_clip(clip) {
+                                    anim_player.play(clip.clone()).repeat();
+                                }
+                                player.restart_anim = false;
+                            }
                         }
                     }
                 }

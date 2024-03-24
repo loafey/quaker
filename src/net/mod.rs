@@ -68,6 +68,17 @@ pub fn update_world(
         ClientMessage::Fire { slot, row, attack } => {
             error!("unhandled firing [{slot}, {row}] {attack}")
         }
+        ClientMessage::WeaponAnim { anim } => {
+            if current_id != client_id {
+                for (_, mut pl, _) in players.iter_mut() {
+                    if pl.id == client_id {
+                        pl.current_weapon_anim = anim.clone();
+                        pl.restart_anim = true;
+                        break;
+                    }
+                }
+            }
+        }
         ClientMessage::SwitchWeapon { slot, row } => {
             if current_id != client_id {
                 for (_, mut pl, _) in players.iter_mut() {
@@ -152,6 +163,10 @@ pub enum ClientMessage {
     SwitchWeapon {
         slot: usize,
         row: usize,
+    },
+
+    WeaponAnim {
+        anim: String,
     },
 }
 impl ClientMessage {
