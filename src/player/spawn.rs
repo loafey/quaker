@@ -140,6 +140,7 @@ impl Player {
             commands.with_children(|c| {
                 let mut trans = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
                 trans.scale = Vec3::splat(0.5);
+                trans.rotate_y(180f32.to_radians());
                 c.spawn(PbrBundle {
                     mesh: asset_server.load("models/Player/MP/Temp.obj"),
                     material: materials.add(StandardMaterial {

@@ -305,6 +305,7 @@ impl Player {
 
             events.send(ClientMessage::UpdatePosition {
                 position: gt.translation,
+                rotation: gt.rotation.into(),
             });
         }
     }

@@ -17,11 +17,12 @@ pub fn update_world(
     current_id: u64,
 ) {
     match message {
-        ClientMessage::UpdatePosition { position } => {
+        ClientMessage::UpdatePosition { position, rotation } => {
             if current_id != client_id {
                 for (_, pl, mut tr) in players.iter_mut() {
                     if pl.id == client_id {
                         tr.translation = *position;
+                        tr.rotation = Quat::from_array(*rotation);
                         break;
                     }
                 }
@@ -74,7 +75,7 @@ pub enum NetState {
 
 #[derive(Debug, Serialize, Deserialize, Event, Clone)]
 pub enum ClientMessage {
-    UpdatePosition { position: Vec3 },
+    UpdatePosition { position: Vec3, rotation: [f32; 4] },
 }
 impl ClientMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
