@@ -20,7 +20,7 @@ use bevy_simple_text_input::TextInputPlugin;
 use net::ClientMessage;
 use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
 use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
-use steamworks::SingleClient;
+use steamworks::{AppId, SingleClient};
 
 use crate::{net::SimulationEvent, try_steam::try_steam};
 
@@ -34,6 +34,8 @@ mod plugins;
 mod resources;
 mod startup;
 mod try_steam;
+
+const APP_ID: AppId = AppId(480);
 
 fn steam_callbacks(client: NonSend<SingleClient>) {
     client.run_callbacks();

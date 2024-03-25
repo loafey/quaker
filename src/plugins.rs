@@ -105,7 +105,8 @@ impl Plugin for MainMenuStage {
         )
         .add_systems(
             Update,
-            mainmenu::update_level_buttons.run_if(in_state(CurrentStage::MainMenu)),
+            (mainmenu::update_level_buttons, mainmenu::update_id_buttons)
+                .run_if(in_state(CurrentStage::MainMenu)),
         )
         .add_systems(
             Update,

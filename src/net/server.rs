@@ -65,7 +65,7 @@ pub fn server_events(
     mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
     mut game_entropy: ResMut<Entropy<EGame>>,
-    mut time: Res<Time>,
+    time: Res<Time>,
     (
         map,
         asset_server,

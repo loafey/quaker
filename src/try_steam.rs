@@ -1,3 +1,4 @@
+use crate::APP_ID;
 use bevy::log::error;
 use macros::error_return;
 use std::sync::mpsc;
@@ -6,7 +7,7 @@ use steamworks::{Client, SingleClient};
 pub fn try_steam() -> Option<(Client, SingleClient)> {
     let (s, r) = mpsc::channel();
     std::thread::spawn(move || {
-        let a = error_return!(steamworks::Client::init_app(480));
+        let a = error_return!(steamworks::Client::init_app(APP_ID));
         error_return!(s.send(a));
     });
 

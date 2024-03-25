@@ -1,14 +1,16 @@
 use crate::{
     net::{self, NetState},
     resources::{CurrentMap, CurrentStage},
+    APP_ID,
 };
 use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_simple_text_input::{TextInputBundle, TextInputSettings, TextInputValue};
-use macros::error_return;
+use macros::{error_continue, error_return};
 use std::{
     fs, io,
     path::{Path, PathBuf},
 };
+use steamworks::FriendFlags;
 
 #[derive(Debug, Component)]
 pub struct MainMenuEnt;
@@ -22,6 +24,9 @@ pub enum ButtonEvent {
 
 #[derive(Debug, Component)]
 pub struct LevelButton(PathBuf);
+
+#[derive(Debug, Component)]
+pub struct FriendButton(u64);
 
 fn get_mapfiles<P: AsRef<Path>>(dir: P) -> io::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
@@ -97,8 +102,36 @@ pub fn update_level_buttons(
     }
 }
 
-pub fn setup(mut commands: Commands) {
+#[allow(clippy::type_complexity)]
+pub fn update_id_buttons(
+    query: Query<(&Interaction, &FriendButton), (Changed<Interaction>, With<Button>)>,
+    mut text_input: Query<&mut TextInputValue>,
+) {
+    for (interaction, button) in &query {
+        if matches!(interaction, Interaction::Pressed) {
+            let mut inp = error_continue!(text_input.get_single_mut());
+            inp.0 = format!("{}", button.0);
+            info!("set join id to: {:?}", button.0);
+        }
+    }
+}
+
+pub fn setup(mut commands: Commands, steam_client: Option<NonSend<steamworks::Client>>) {
     let map_files = error_return!(get_mapfiles("assets/maps"));
+    let friends = steam_client
+        .as_ref()
+        .map(|sc| sc.friends().get_friends(FriendFlags::ALL))
+        .map(|friends| {
+            friends
+                .into_iter()
+                .filter(|f| {
+                    f.game_played()
+                        .map(|f| f.game.app_id() == APP_ID)
+                        .unwrap_or_default()
+                })
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
 
     commands
         .spawn(Camera2dBundle::default())
@@ -199,6 +232,14 @@ pub fn setup(mut commands: Commands) {
                 ..default()
             })
             .with_children(|c| {
+                c.spawn(TextBundle::from_section(
+                    "Maps:".to_string(),
+                    TextStyle {
+                        font_size: 32.0,
+                        ..Default::default()
+                    },
+                ));
+
                 for map in map_files {
                     c.spawn(ButtonBundle {
                         style: Style {
@@ -216,6 +257,32 @@ pub fn setup(mut commands: Commands) {
                         },
                     ))
                     .insert(LevelButton(map.clone()));
+                }
+
+                c.spawn(TextBundle::from_section(
+                    "Friends:".to_string(),
+                    TextStyle {
+                        font_size: 32.0,
+                        ..Default::default()
+                    },
+                ));
+                for friend in friends {
+                    c.spawn(ButtonBundle {
+                        style: Style {
+                            border: UiRect::all(Val::Px(5.0)),
+                            ..Default::default()
+                        },
+                        border_color: BorderColor(Color::BLACK),
+                        ..Default::default()
+                    })
+                    .insert(TextBundle::from_section(
+                        friend.name(),
+                        TextStyle {
+                            font_size: 16.0,
+                            ..Default::default()
+                        },
+                    ))
+                    .insert(FriendButton(friend.id().raw()));
                 }
             });
         })
