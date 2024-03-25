@@ -263,7 +263,7 @@ impl Player {
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
             }
 
-            controller.translation = Some(player.velocity * time.delta_seconds());
+            controller.translation = Some(player.velocity);
 
             let x = player.velocity.x;
             let z = player.velocity.z;
@@ -291,6 +291,8 @@ impl Player {
                     .map(|(_, t)| t.rotation.x)
                     .unwrap_or_default(),
             });
+
+            println!("{}mu", Vec2::new(x, z).distance(Vec2::ZERO))
         }
     }
 
