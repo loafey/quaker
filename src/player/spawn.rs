@@ -277,6 +277,26 @@ impl Player {
                     )
                     .insert(AmmoHudElement);
                 });
+
+                c.spawn((
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Px(26.0 * 3.0),
+                            height: Val::Px(28.0 * 3.0),
+                            left: Val::Px(2.0 * 3.0),
+                            bottom: Val::Px(2.0 * 3.0),
+                            ..default()
+                        },
+                        // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
+                        background_color: Color::WHITE.into(),
+                        ..default()
+                    },
+                    UiImage {
+                        texture: asset_server.load("ui/PlayerIcon.png"),
+                        ..default()
+                    },
+                ));
             });
 
         id
