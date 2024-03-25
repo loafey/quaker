@@ -83,7 +83,7 @@ pub fn spawn_entity(
             let light_level = attributes
                 .get("light")
                 .and_then(|l| l.parse::<f32>().ok())
-                .unwrap_or(400.0);
+                .unwrap_or(1000.0);
             let trans =
                 Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -45.0, -45.0, -45.0));
 
