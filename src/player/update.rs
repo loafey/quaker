@@ -291,8 +291,6 @@ impl Player {
                     .map(|(_, t)| t.rotation.x)
                     .unwrap_or_default(),
             });
-
-            println!("{}mu", Vec2::new(x, z).distance(Vec2::ZERO))
         }
     }
 
