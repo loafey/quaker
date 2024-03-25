@@ -17,13 +17,6 @@ pub struct PlayerController;
 #[derive(Debug, Component)]
 pub struct PlayerMpModel;
 
-#[derive(Debug, Component)]
-pub struct HealthHudElement;
-#[derive(Debug, Component)]
-pub struct ArmorHudElement;
-#[derive(Debug, Component)]
-pub struct AmmoHudElement;
-
 #[derive(Debug)]
 pub struct CameraMovement {
     backdrift: f32,
@@ -55,6 +48,9 @@ pub struct WeaponState {
 pub struct PlayerChildren {
     pub camera: Option<Entity>,
     pub fps_model: Option<Entity>,
+    pub health_hud: Option<Entity>,
+    pub armour_hud: Option<Entity>,
+    pub ammo_hud: Option<Entity>,
 }
 
 #[derive(Component, Debug, Default)]
@@ -63,6 +59,9 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 #[derive(Component, Debug)]
 pub struct Player {
     pub id: u64,
+
+    pub health: f32,
+    pub armour: f32,
 
     velocity: Vec3,
     hort_speed: f32,
@@ -95,6 +94,8 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             id: 0,
+            health: 100.0,
+            armour: 100.0,
             velocity: Vec3::ZERO,
             hort_friction: 1.0,
             hort_speed: 4.5,

@@ -1,7 +1,4 @@
-use super::{
-    AmmoHudElement, ArmorHudElement, HealthHudElement, Player, PlayerController, PlayerFpsMaterial,
-    PlayerFpsModel, PlayerMpModel,
-};
+use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
     net::{server::Lobby, CurrentClientId},
     resources::{PlayerSpawnpoint, WeaponMap},
@@ -56,6 +53,9 @@ impl Player {
     ) -> Entity {
         let mut camera = None;
         let mut fps_model = None;
+        let mut ammo_hud = None;
+        let mut armour_hud = None;
+        let mut health_hud = None;
         let mut entity = commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
@@ -137,22 +137,6 @@ impl Player {
                 camera = Some(new_camera_id);
             });
 
-        let mut player_data = Player {
-            id: current_id,
-            children: super::PlayerChildren { camera, fps_model },
-            ..Default::default()
-        };
-
-        for (slot, list) in weapons.into_iter().enumerate() {
-            for weapon in list {
-                if let Some(weapon_data) = weapon_map.0.get(&weapon) {
-                    let handle = asset_server.load(format!("{}#Scene0", weapon_data.model_file));
-                    player_data.add_weapon(weapon_data.clone(), slot, handle);
-                }
-            }
-        }
-        player_commands.insert(player_data);
-
         if is_own {
             player_commands.insert(PlayerController);
         } else {
@@ -176,7 +160,6 @@ impl Player {
                 .insert(PlayerMpModel);
             });
         }
-
         let id = player_commands.id();
 
         commands
@@ -222,15 +205,17 @@ impl Player {
                     ..default()
                 })
                 .with_children(|c| {
-                    c.spawn(TextBundle::from_section(
-                        "HEALTH: 100",
-                        TextStyle {
-                            font_size: 32.0,
-                            font: asset_server.load("ui/Pixeled.ttf"),
-                            color: text_color,
-                        },
-                    ))
-                    .insert(HealthHudElement);
+                    health_hud = Some(
+                        c.spawn(TextBundle::from_section(
+                            "HEALTH: 100",
+                            TextStyle {
+                                font_size: 32.0,
+                                font: asset_server.load("ui/Pixeled.ttf"),
+                                color: text_color,
+                            },
+                        ))
+                        .id(),
+                    );
                 });
 
                 c.spawn(NodeBundle {
@@ -243,15 +228,17 @@ impl Player {
                     ..default()
                 })
                 .with_children(|c| {
-                    c.spawn(TextBundle::from_section(
-                        "ARMOR: 100",
-                        TextStyle {
-                            font_size: 32.0,
-                            font: asset_server.load("ui/Pixeled.ttf"),
-                            color: text_color,
-                        },
-                    ))
-                    .insert(ArmorHudElement);
+                    armour_hud = Some(
+                        c.spawn(TextBundle::from_section(
+                            "ARMOUR: 100",
+                            TextStyle {
+                                font_size: 32.0,
+                                font: asset_server.load("ui/Pixeled.ttf"),
+                                color: text_color,
+                            },
+                        ))
+                        .id(),
+                    );
                 });
 
                 c.spawn(NodeBundle {
@@ -264,18 +251,20 @@ impl Player {
                     ..default()
                 })
                 .with_children(|c| {
-                    c.spawn(
-                        TextBundle::from_section(
-                            "100\nCRUTONS",
-                            TextStyle {
-                                font_size: 32.0,
-                                font: asset_server.load("ui/Pixeled.ttf"),
-                                color: text_color,
-                            },
+                    ammo_hud = Some(
+                        c.spawn(
+                            TextBundle::from_section(
+                                "100\nCRUTONS",
+                                TextStyle {
+                                    font_size: 32.0,
+                                    font: asset_server.load("ui/Pixeled.ttf"),
+                                    color: text_color,
+                                },
+                            )
+                            .with_text_justify(JustifyText::Center),
                         )
-                        .with_text_justify(JustifyText::Center),
-                    )
-                    .insert(AmmoHudElement);
+                        .id(),
+                    );
                 });
 
                 c.spawn((
@@ -299,6 +288,29 @@ impl Player {
                 ));
             });
 
+        let mut player_commands = commands.get_entity(id).unwrap();
+
+        let mut player_data = Player {
+            id: current_id,
+            children: super::PlayerChildren {
+                camera,
+                fps_model,
+                ammo_hud,
+                armour_hud,
+                health_hud,
+            },
+            ..Default::default()
+        };
+
+        for (slot, list) in weapons.into_iter().enumerate() {
+            for weapon in list {
+                if let Some(weapon_data) = weapon_map.0.get(&weapon) {
+                    let handle = asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                    player_data.add_weapon(weapon_data.clone(), slot, handle);
+                }
+            }
+        }
+        player_commands.insert(player_data);
         id
     }
 }

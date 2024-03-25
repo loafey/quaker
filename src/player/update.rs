@@ -43,6 +43,7 @@ impl Player {
             Player::weapon_animations,
             Player::camera_movement,
             Player::shoot,
+            Player::update_hud,
         )
             .into_configs()
     }
@@ -56,6 +57,26 @@ impl Player {
                 fire_time + weapon.data.animations.reload_time_skip + time.delta_seconds();
             weapon.reload_timer = anim_time + time.delta_seconds();
             weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+        }
+    }
+
+    pub fn update_hud(
+        q_players: Query<&Player, With<PlayerController>>,
+        mut text: Query<&mut Text>,
+    ) {
+        for player in &q_players {
+            let ammo_hud = option_continue!(player.children.ammo_hud);
+            let _ammo_hud = error_continue!(text.get_mut(ammo_hud));
+
+            let health_hud = option_continue!(player.children.health_hud);
+            let mut health_hud = error_continue!(text.get_mut(health_hud));
+            let health_hud = option_continue!(health_hud.sections.get_mut(0));
+            health_hud.value = format!("HEALTH: {}", player.health);
+
+            let armour_hud = option_continue!(player.children.armour_hud);
+            let mut armour_hud = error_continue!(text.get_mut(armour_hud));
+            let armour_hud = option_continue!(armour_hud.sections.get_mut(0));
+            armour_hud.value = format!("ARMOUR: {}", player.armour);
         }
     }
 
