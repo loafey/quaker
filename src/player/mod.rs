@@ -17,6 +17,13 @@ pub struct PlayerController;
 #[derive(Debug, Component)]
 pub struct PlayerMpModel;
 
+#[derive(Debug, Component)]
+pub struct HealthHudElement;
+#[derive(Debug, Component)]
+pub struct ArmorHudElement;
+#[derive(Debug, Component)]
+pub struct AmmoHudElement;
+
 #[derive(Debug)]
 pub struct CameraMovement {
     backdrift: f32,

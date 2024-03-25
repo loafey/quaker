@@ -1,4 +1,7 @@
-use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
+use super::{
+    AmmoHudElement, ArmorHudElement, HealthHudElement, Player, PlayerController, PlayerFpsMaterial,
+    PlayerFpsModel, PlayerMpModel,
+};
 use crate::{
     net::{server::Lobby, CurrentClientId},
     resources::{PlayerSpawnpoint, WeaponMap},
@@ -55,7 +58,7 @@ impl Player {
         let mut fps_model = None;
         let mut entity = commands.spawn(Collider::cylinder(0.5, 0.15));
 
-        let commands = entity
+        let player_commands = entity
             .insert(ActiveEvents::COLLISION_EVENTS)
             .add(move |mut c: EntityWorldMut| {
                 let trans = Transform::from_translation(player_spawn);
@@ -148,12 +151,12 @@ impl Player {
                 }
             }
         }
-        commands.insert(player_data);
+        player_commands.insert(player_data);
 
         if is_own {
-            commands.insert(PlayerController);
+            player_commands.insert(PlayerController);
         } else {
-            commands.with_children(|c| {
+            player_commands.with_children(|c| {
                 let mut trans = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
                 trans.scale = Vec3::splat(0.5);
                 trans.rotate_y(180f32.to_radians());
@@ -174,6 +177,108 @@ impl Player {
             });
         }
 
-        commands.id()
+        let id = player_commands.id();
+
+        commands
+            .spawn(NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
+                ..default()
+            })
+            .with_children(|c| {
+                c.spawn((
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Px(128.0 * 3.0),
+                            height: Val::Px(32.0 * 3.0),
+                            left: Val::Px(0.0),
+                            bottom: Val::Px(0.0),
+                            ..default()
+                        },
+                        // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
+                        background_color: Color::WHITE.into(),
+                        ..default()
+                    },
+                    UiImage {
+                        texture: asset_server.load("ui/PlayerHud.png"),
+                        ..default()
+                    },
+                ));
+
+                let text_color = Color::rgb(0.921, 0.682, 0.203);
+
+                c.spawn(NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(34.0 * 3.0),
+                        bottom: Val::Px(18.0 * 2.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|c| {
+                    c.spawn(TextBundle::from_section(
+                        "HEALTH: 100",
+                        TextStyle {
+                            font_size: 32.0,
+                            font: asset_server.load("ui/Pixeled.ttf"),
+                            color: text_color,
+                        },
+                    ))
+                    .insert(HealthHudElement);
+                });
+
+                c.spawn(NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(34.0 * 3.0),
+                        bottom: Val::Px(4.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|c| {
+                    c.spawn(TextBundle::from_section(
+                        "ARMOR: 100",
+                        TextStyle {
+                            font_size: 32.0,
+                            font: asset_server.load("ui/Pixeled.ttf"),
+                            color: text_color,
+                        },
+                    ))
+                    .insert(ArmorHudElement);
+                });
+
+                c.spawn(NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(269.0),
+                        bottom: Val::Px(4.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|c| {
+                    c.spawn(
+                        TextBundle::from_section(
+                            "100\nCRUTONS",
+                            TextStyle {
+                                font_size: 32.0,
+                                font: asset_server.load("ui/Pixeled.ttf"),
+                                color: text_color,
+                            },
+                        )
+                        .with_text_justify(JustifyText::Center),
+                    )
+                    .insert(AmmoHudElement);
+                });
+            });
+
+        id
     }
 }
