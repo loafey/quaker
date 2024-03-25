@@ -26,6 +26,7 @@ use bevy::{
     log::{error, info},
     pbr::StandardMaterial,
     render::mesh::Mesh,
+    time::Time,
     transform::components::Transform,
 };
 use bevy_kira_audio::Audio;
@@ -51,6 +52,7 @@ pub fn handle_messages(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
     (current_id, weapon_map, audio): (Res<CurrentClientId>, Res<WeaponMap>, Res<Audio>),
+    time: Res<Time>,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -115,6 +117,7 @@ pub fn handle_messages(
                     &asset_server,
                     &weapon_map,
                     &audio,
+                    &time,
                 );
             }
             ServerMessage::DespawnPickup { id } => {

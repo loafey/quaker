@@ -29,6 +29,7 @@ pub fn update_world(
     asset_server: &AssetServer,
     weapon_map: &WeaponMap,
     audio: &Audio,
+    time: &Time,
 ) {
     match message {
         ClientMessage::UpdatePosition {
@@ -39,7 +40,8 @@ pub fn update_world(
             if current_id != client_id {
                 for (_, pl, mut tr) in players.iter_mut() {
                     if pl.id == client_id {
-                        tr.translation = *position;
+                        tr.translation =
+                            tr.translation.lerp(*position, time.delta_seconds() * 10.0);
                         tr.rotation = Quat::from_array(*rotation);
 
                         error_return!(cameras.get_mut(option_return!(pl.children.camera)))
@@ -117,6 +119,7 @@ pub fn send_messages(
     rapier_context: Res<RapierContext>,
     mut game_entropy: ResMut<Entropy<EGame>>,
     projectile_map: Res<Projectiles>,
+    time: Res<Time>,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
         Box::new(move |message| {
@@ -140,6 +143,7 @@ pub fn send_messages(
                 &mut game_entropy,
                 &projectile_map,
                 &mut commands,
+                &time,
             )
         })
     } else {

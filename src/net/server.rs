@@ -29,6 +29,7 @@ use bevy::{
     log::{error, info},
     pbr::StandardMaterial,
     render::mesh::Mesh,
+    time::Time,
     transform::components::Transform,
 };
 use bevy_kira_audio::Audio;
@@ -64,6 +65,7 @@ pub fn server_events(
     mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
     mut game_entropy: ResMut<Entropy<EGame>>,
+    mut time: Res<Time>,
     (
         map,
         asset_server,
@@ -186,6 +188,7 @@ pub fn server_events(
                     &asset_server,
                     &weapon_map,
                     &audio,
+                    &time,
                 );
 
                 let pickup_message_wrapped = ServerMessage::PlayerUpdate {
@@ -219,6 +222,7 @@ pub fn server_events(
                 &mut game_entropy,
                 &projectile_map,
                 &mut commands,
+                &time,
             );
         }
 
@@ -240,6 +244,7 @@ pub fn server_events(
                 &mut game_entropy,
                 &projectile_map,
                 &mut commands,
+                &time,
             );
         }
     }
@@ -261,6 +266,7 @@ pub fn handle_client_message(
     game_entropy: &mut Entropy<EGame>,
     projectile_map: &Projectiles,
     commands: &mut Commands,
+    time: &Time,
 ) {
     match message {
         ClientMessage::Fire { attack } => {
@@ -299,6 +305,7 @@ pub fn handle_client_message(
                 asset_server,
                 weapon_map,
                 audio,
+                time,
             );
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
