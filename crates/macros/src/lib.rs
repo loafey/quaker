@@ -4,7 +4,7 @@ macro_rules! error_return {
         match $context {
             Ok(map) => map,
             Err(e) => {
-                error!("{e}");
+                bevy::log::error!("{}:{}:{}: {e}", file!(), line!(), column!());
                 return Default::default();
             }
         }
@@ -13,7 +13,7 @@ macro_rules! error_return {
         match $context {
             Ok(map) => map,
             Err(e) => {
-                bevy::log::error!("{e}");
+                bevy::log::error!("{}:{}:{}: {e}", file!(), line!(), column!());
                 return Default::default();
             }
         }
@@ -26,7 +26,7 @@ macro_rules! error_continue {
         match $context {
             Ok(map) => map,
             Err(e) => {
-                error!("{e}");
+                bevy::log::error!("{}:{}:{}: {e}", file!(), line!(), column!());
                 continue;
             }
         }
@@ -35,7 +35,7 @@ macro_rules! error_continue {
         match $context {
             Ok(map) => map,
             Err(e) => {
-                bevy::log::error!("{e}");
+                bevy::log::error!("{}:{}:{}: {e}", file!(), line!(), column!());
                 continue;
             }
         }
