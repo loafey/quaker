@@ -113,13 +113,18 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, ent) in &lobby.players {
-                    let (_, _pl, trans) = error_continue!(players.get(*ent));
+                    let (_, pl, trans) = error_continue!(players.get(*ent));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
                         error_continue!(ServerMessage::SpawnPlayer {
                             id: other_id.raw(),
                             translation: trans.translation,
+                            weapons: pl
+                                .weapons
+                                .iter()
+                                .map(|v| v.iter().map(|w| w.data.id.clone()).collect())
+                                .collect()
                         }
                         .bytes()),
                     );
@@ -132,6 +137,8 @@ pub fn server_events(
                     player_spawn.0,
                     &asset_server,
                     client_id.raw(),
+                    &weapon_map,
+                    Vec::new(),
                 );
                 lobby.players.insert(*client_id, entity);
                 println!("Current players: {:?}", lobby.players);
@@ -141,6 +148,7 @@ pub fn server_events(
                     error_continue!(ServerMessage::SpawnPlayer {
                         id: client_id.raw(),
                         translation: player_spawn.0,
+                        weapons: Vec::new()
                     }
                     .bytes()),
                 )

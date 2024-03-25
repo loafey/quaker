@@ -41,7 +41,7 @@ pub struct WeaponState {
     anim_time: f32,
     need_to_reload: bool,
     reload_timer: f32,
-    data: WeaponData,
+    pub data: WeaponData,
 }
 
 #[derive(Debug, Default)]
@@ -72,7 +72,7 @@ pub struct Player {
 
     pub children: PlayerChildren,
 
-    weapons: [Vec<WeaponState>; 10],
+    pub weapons: [Vec<WeaponState>; 10],
     pub current_weapon: Option<(usize, usize)>,
     current_weapon_old: Option<(usize, usize)>,
     pub current_weapon_anim: String,

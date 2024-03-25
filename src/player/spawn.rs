@@ -1,7 +1,7 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
     net::{server::Lobby, CurrentClientId},
-    resources::PlayerSpawnpoint,
+    resources::{PlayerSpawnpoint, WeaponMap},
 };
 use bevy::{
     core_pipeline::{
@@ -23,6 +23,7 @@ impl Player {
         asset_server: Res<AssetServer>,
         lobby: Option<ResMut<Lobby>>,
         client_id: Res<CurrentClientId>,
+        weapon_map: Res<WeaponMap>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
         let id = Self::spawn(
@@ -32,6 +33,8 @@ impl Player {
             player_spawn.0,
             &asset_server,
             client_id.0,
+            &weapon_map,
+            Vec::new(),
         );
         if let Some(mut lobby) = lobby {
             lobby.players.insert(ClientId::from_raw(client_id.0), id);
@@ -45,6 +48,8 @@ impl Player {
         player_spawn: Vec3,
         asset_server: &AssetServer,
         current_id: u64,
+        weapon_map: &WeaponMap,
+        weapons: Vec<Vec<String>>,
     ) -> Entity {
         let mut camera = None;
         let mut fps_model = None;
@@ -127,12 +132,23 @@ impl Player {
                 }
 
                 camera = Some(new_camera_id);
-            })
-            .insert(Player {
-                id: current_id,
-                children: super::PlayerChildren { camera, fps_model },
-                ..Default::default()
             });
+
+        let mut player_data = Player {
+            id: current_id,
+            children: super::PlayerChildren { camera, fps_model },
+            ..Default::default()
+        };
+
+        for (slot, list) in weapons.into_iter().enumerate() {
+            for weapon in list {
+                if let Some(weapon_data) = weapon_map.0.get(&weapon) {
+                    let handle = asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                    player_data.add_weapon(weapon_data.clone(), slot, handle);
+                }
+            }
+        }
+        commands.insert(player_data);
 
         if is_own {
             commands.insert(PlayerController);

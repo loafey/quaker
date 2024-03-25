@@ -62,7 +62,11 @@ pub fn handle_messages(
                 current_stage.0 = map;
                 state.set(CurrentStage::InGame);
             }
-            ServerMessage::SpawnPlayer { id, translation } => {
+            ServerMessage::SpawnPlayer {
+                id,
+                translation,
+                weapons,
+            } => {
                 if id != client_id.0 {
                     println!("Spawning player: {id}");
                     Player::spawn(
@@ -72,6 +76,8 @@ pub fn handle_messages(
                         translation,
                         &asset_server,
                         id,
+                        &weapon_map,
+                        weapons,
                     );
                 }
             }

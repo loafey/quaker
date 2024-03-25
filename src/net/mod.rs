@@ -216,6 +216,7 @@ pub enum ServerMessage {
     SpawnPlayer {
         id: u64,
         translation: Vec3,
+        weapons: Vec<Vec<String>>,
     },
     PlayerUpdate {
         id: u64,
