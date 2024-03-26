@@ -1,6 +1,7 @@
 use crate::{
     map_gen::entities::data::PickupData,
     player::Player,
+    queries::NetWorld,
     resources::{
         entropy::{EGame, Entropy},
         projectiles::Projectiles,
@@ -47,34 +48,27 @@ pub fn grab_avatar(
     commands.insert_resource(CurrentAvatar(image));
 }
 
-pub fn update_world(
-    client_id: u64,
-    message: &ClientMessage,
-    players: &mut Query<(Entity, &mut Player, &mut Transform)>,
-    cameras: &mut Query<(&Camera3d, &mut Transform), Without<Player>>,
-    current_id: u64,
-    asset_server: &AssetServer,
-    weapon_map: &WeaponMap,
-    audio: &Audio,
-    time: &Time,
-) {
+pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut NetWorld) {
     match message {
         ClientMessage::UpdatePosition {
             position,
             rotation,
             cam_rot,
         } => {
-            if current_id != client_id {
-                for (_, pl, mut tr) in players.iter_mut() {
+            if net_world.current_id.0 != client_id {
+                for (_, pl, mut tr) in net_world.players.iter_mut() {
                     if pl.id == client_id {
-                        tr.translation =
-                            tr.translation.lerp(*position, time.delta_seconds() * 10.0);
+                        tr.translation = tr
+                            .translation
+                            .lerp(*position, net_world.time.delta_seconds() * 10.0);
                         tr.rotation = Quat::from_array(*rotation);
 
-                        error_return!(cameras.get_mut(option_return!(pl.children.camera)))
-                            .1
-                            .rotation
-                            .x = *cam_rot;
+                        error_return!(net_world
+                            .cameras
+                            .get_mut(option_return!(pl.children.camera)))
+                        .1
+                        .rotation
+                        .x = *cam_rot;
 
                         break;
                     }
@@ -82,14 +76,15 @@ pub fn update_world(
             }
         }
         ClientMessage::PickupWeapon { weapon } => {
-            for (_, mut player, _) in players.iter_mut() {
+            for (_, mut player, _) in net_world.players.iter_mut() {
                 if player.id == client_id {
-                    if let Some(weapon_data) = weapon_map.0.get(weapon) {
+                    if let Some(weapon_data) = net_world.weapon_map.0.get(weapon) {
                         let slot = weapon_data.slot;
-                        let handle =
-                            asset_server.load(format!("{}#Scene0", weapon_data.model_file));
+                        let handle = net_world
+                            .asset_server
+                            .load(format!("{}#Scene0", weapon_data.model_file));
                         if player.add_weapon(weapon_data.clone(), slot, handle) {
-                            audio.play(asset_server.load(
+                            net_world.audio.play(net_world.asset_server.load(
                                 weapon_data.pickup_sound.clone().unwrap_or(
                                     "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
                                 ),
@@ -107,8 +102,8 @@ pub fn update_world(
             error!("got a fire event! This is wrong!");
         }
         ClientMessage::WeaponAnim { anim } => {
-            if current_id != client_id {
-                for (_, mut pl, _) in players.iter_mut() {
+            if net_world.current_id.0 != client_id {
+                for (_, mut pl, _) in net_world.players.iter_mut() {
                     if pl.id == client_id {
                         pl.current_weapon_anim = anim.clone();
                         pl.restart_anim = true;
@@ -118,8 +113,8 @@ pub fn update_world(
             }
         }
         ClientMessage::SwitchWeapon { slot, row } => {
-            if current_id != client_id {
-                for (_, mut pl, _) in players.iter_mut() {
+            if net_world.current_id.0 != client_id {
+                for (_, mut pl, _) in net_world.players.iter_mut() {
                     if pl.id == client_id {
                         pl.current_weapon = Some((*slot, *row));
                         break;
@@ -136,17 +131,12 @@ pub fn send_messages(
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
     current_id: Res<CurrentClientId>,
-    mut players: Query<(Entity, &mut Player, &mut Transform)>,
-    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     asset_server: Res<AssetServer>,
     weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
     rapier_context: Res<RapierContext>,
-    mut game_entropy: ResMut<Entropy<EGame>>,
-    projectile_map: Res<Projectiles>,
-    time: Res<Time>,
+    (projectile_map, time): (Res<Projectiles>, Res<Time>),
+    mut net_world: NetWorld,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
         Box::new(move |message| {
@@ -158,19 +148,15 @@ pub fn send_messages(
                 &mut server,
                 current_id.0,
                 message,
-                &mut players,
-                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
                 &audio,
-                &mut materials,
-                &mut meshes,
                 &rapier_context,
-                &mut game_entropy,
                 &projectile_map,
                 &mut commands,
                 &time,
+                &mut net_world,
             )
         })
     } else {

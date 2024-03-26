@@ -2,6 +2,7 @@ use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
     player::Player,
+    queries::NetWorld,
     resources::{CurrentMap, CurrentStage, WeaponMap},
 };
 
@@ -40,8 +41,6 @@ use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 pub fn handle_messages(
-    mut players: Query<(Entity, &mut Player, &mut Transform)>,
-    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups: Query<(Entity, &PickupEntity)>,
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
@@ -49,10 +48,8 @@ pub fn handle_messages(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     client_id: Res<CurrentClientId>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    (current_id, weapon_map, audio): (Res<CurrentClientId>, Res<WeaponMap>, Res<Audio>),
-    time: Res<Time>,
+    weapon_map: Res<WeaponMap>,
+    mut net_world: NetWorld,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -71,7 +68,7 @@ pub fn handle_messages(
                     println!("Spawning player: {id}");
                     Player::spawn(
                         &mut commands,
-                        &mut materials,
+                        &mut net_world.materials,
                         false,
                         translation,
                         &asset_server,
@@ -83,7 +80,7 @@ pub fn handle_messages(
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
-                for (ent, player, _) in &players {
+                for (ent, player, _) in &net_world.players {
                     if player.id == id {
                         commands.entity(ent).despawn_recursive();
                     }
@@ -101,7 +98,7 @@ pub fn handle_messages(
                     &asset_server,
                     &data,
                     &mut commands,
-                    &mut materials,
+                    &mut net_world.materials,
                 );
             }
             x => {
@@ -115,17 +112,7 @@ pub fn handle_messages(
         #[allow(clippy::single_match)]
         match message {
             ServerMessage::PlayerUpdate { id, message } => {
-                update_world(
-                    id,
-                    &message,
-                    &mut players,
-                    &mut cameras,
-                    current_id.0,
-                    &asset_server,
-                    &weapon_map,
-                    &audio,
-                    &time,
-                );
+                update_world(id, &message, &mut net_world);
             }
             ServerMessage::DespawnPickup { id } => {
                 for (ent, pickup) in &pickups {
@@ -134,9 +121,12 @@ pub fn handle_messages(
                     }
                 }
             }
-            ServerMessage::HitscanHits { hits } => {
-                hitscan_hit_gfx(&mut commands, &hits, &mut meshes, &mut materials)
-            }
+            ServerMessage::HitscanHits { hits } => hitscan_hit_gfx(
+                &mut commands,
+                &hits,
+                &mut net_world.meshes,
+                &mut net_world.materials,
+            ),
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")
             }

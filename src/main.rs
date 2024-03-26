@@ -1,6 +1,6 @@
 #![feature(let_chains)]
-#![allow(clippy::too_many_arguments)]
 extern crate macros;
+use crate::{net::SimulationEvent, try_steam::try_steam};
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
     render::texture::ImageAddressMode,
@@ -22,8 +22,6 @@ use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, S
 use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
 use steamworks::{AppId, SingleClient};
 
-use crate::{net::SimulationEvent, try_steam::try_steam};
-
 mod entities;
 mod integrity;
 mod mainmenu;
@@ -31,6 +29,7 @@ mod map_gen;
 mod net;
 mod player;
 mod plugins;
+mod queries;
 mod resources;
 mod startup;
 mod try_steam;

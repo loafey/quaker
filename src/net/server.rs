@@ -6,6 +6,7 @@ use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
+    queries::NetWorld,
     resources::{
         entropy::{EGame, Entropy},
         projectiles::Projectiles,
@@ -59,12 +60,7 @@ pub fn server_events(
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
     mut lobby: ResMut<Lobby>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut players: Query<(Entity, &mut Player, &mut Transform)>,
-    mut cameras: Query<(&Camera3d, &mut Transform), Without<Player>>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
-    mut game_entropy: ResMut<Entropy<EGame>>,
     time: Res<Time>,
     (
         map,
@@ -85,6 +81,7 @@ pub fn server_events(
         Res<Projectiles>,
         Res<RapierContext>,
     ),
+    mut net_world: NetWorld,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -113,7 +110,7 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, ent) in &lobby.players {
-                    let (_, pl, trans) = error_continue!(players.get(*ent));
+                    let (_, pl, trans) = error_continue!(net_world.players.get(*ent));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -132,7 +129,7 @@ pub fn server_events(
 
                 let entity = Player::spawn(
                     &mut commands,
-                    &mut materials,
+                    &mut net_world.materials,
                     false,
                     player_spawn.0,
                     &asset_server,
@@ -159,7 +156,7 @@ pub fn server_events(
 
                 lobby.players.remove(client_id);
 
-                for (e, p, _) in &players {
+                for (e, p, _) in &net_world.players {
                     if p.id == client_id.raw() {
                         commands.entity(e).despawn_recursive();
                     }
@@ -188,17 +185,7 @@ pub fn server_events(
                     weapon: pickup.clone(),
                 };
 
-                update_world(
-                    *player,
-                    &pickup_message,
-                    &mut players,
-                    &mut cameras,
-                    current_id.0,
-                    &asset_server,
-                    &weapon_map,
-                    &audio,
-                    &time,
-                );
+                update_world(*player, &pickup_message, &mut net_world);
 
                 let pickup_message_wrapped = ServerMessage::PlayerUpdate {
                     id: *player,
@@ -219,19 +206,15 @@ pub fn server_events(
                 &mut server,
                 client_id.raw(),
                 message,
-                &mut players,
-                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
                 &audio,
-                &mut materials,
-                &mut meshes,
                 &rapier_context,
-                &mut game_entropy,
                 &projectile_map,
                 &mut commands,
                 &time,
+                &mut net_world,
             );
         }
 
@@ -241,19 +224,15 @@ pub fn server_events(
                 &mut server,
                 client_id.raw(),
                 message,
-                &mut players,
-                &mut cameras,
                 current_id.0,
                 &asset_server,
                 &weapon_map,
                 &audio,
-                &mut materials,
-                &mut meshes,
                 &rapier_context,
-                &mut game_entropy,
                 &projectile_map,
                 &mut commands,
                 &time,
+                &mut net_world,
             );
         }
     }
@@ -263,40 +242,41 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    players: &mut Query<(Entity, &mut Player, &mut Transform)>,
-    cameras: &mut Query<(&Camera3d, &mut Transform), Without<Player>>,
     current_id: u64,
     asset_server: &AssetServer,
     weapon_map: &WeaponMap,
     audio: &Audio,
-    materials: &mut Assets<StandardMaterial>,
-    meshes: &mut Assets<Mesh>,
     rapier_context: &RapierContext,
-    game_entropy: &mut Entropy<EGame>,
     projectile_map: &Projectiles,
     commands: &mut Commands,
     time: &Time,
+    mut net_world: &mut NetWorld,
 ) {
     match message {
         ClientMessage::Fire { attack } => {
-            for (player_entity, mut player, trans) in players {
+            for (player_entity, mut player, trans) in &mut net_world.players {
                 if player.id == client_id {
                     let cam = option_continue!(player.children.camera);
-                    let (_, cam_trans) = error_continue!(cameras.get(cam));
+                    let (_, cam_trans) = error_continue!(net_world.cameras.get(cam));
                     let hits = player.attack(
                         attack,
-                        materials,
+                        &mut net_world.materials,
                         player_entity,
                         commands,
                         rapier_context,
                         cam_trans,
                         &trans,
-                        game_entropy,
+                        &mut net_world.game_entropy,
                         projectile_map,
                         asset_server,
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
-                    hitscan_hit_gfx(commands, &hits, meshes, materials);
+                    hitscan_hit_gfx(
+                        commands,
+                        &hits,
+                        &mut net_world.meshes,
+                        &mut net_world.materials,
+                    );
                     server.broadcast_message(
                         ServerChannel::NetworkedEntities as u8,
                         error_continue!(ServerMessage::HitscanHits { hits }.bytes()),
@@ -305,17 +285,7 @@ pub fn handle_client_message(
             }
         }
         message => {
-            update_world(
-                client_id,
-                &message,
-                players,
-                cameras,
-                current_id,
-                asset_server,
-                weapon_map,
-                audio,
-                time,
-            );
+            update_world(client_id, &message, &mut net_world);
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
                 error_return!(ServerMessage::PlayerUpdate {
