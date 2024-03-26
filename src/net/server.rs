@@ -139,6 +139,7 @@ pub fn server_events(
                     client_id.raw(),
                     &weapon_map,
                     Vec::new(),
+                    None,
                 );
                 lobby.players.insert(*client_id, entity);
                 println!("Current players: {:?}", lobby.players);

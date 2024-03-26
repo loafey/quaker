@@ -3476,6 +3476,7 @@ dependencies = [
  "bevy_renet",
  "bevy_simple_text_input",
  "bincode",
+ "image",
  "input_derive",
  "macros",
  "map_parser",

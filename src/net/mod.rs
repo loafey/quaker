@@ -1,12 +1,3 @@
-use std::{path::PathBuf, time::Duration};
-
-use bevy::prelude::*;
-use bevy_kira_audio::{Audio, AudioControl};
-use bevy_rapier3d::plugin::RapierContext;
-use bevy_renet::renet::*;
-use macros::{error_return, option_return};
-use serde::{Deserialize, Serialize};
-
 use crate::{
     map_gen::entities::data::PickupData,
     player::Player,
@@ -16,9 +7,45 @@ use crate::{
         WeaponMap,
     },
 };
+use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
+use bevy_kira_audio::{Audio, AudioControl};
+use bevy_rapier3d::plugin::RapierContext;
+use bevy_renet::renet::*;
+use image::{DynamicImage, ImageBuffer};
+use macros::{error_return, option_return};
+use serde::{Deserialize, Serialize};
+use std::{path::PathBuf, time::Duration};
+use steamworks::Client;
 
 pub mod client;
 pub mod server;
+
+#[derive(Debug, Resource)]
+pub struct CurrentAvatar(pub Handle<Image>);
+
+pub fn grab_avatar(
+    mut commands: Commands,
+    client: Option<NonSend<Client>>,
+    mut images: ResMut<Assets<Image>>,
+) {
+    let client = option_return!(client);
+    let avatar = option_return!(client
+        .friends()
+        .get_friend(client.user().steam_id())
+        .small_avatar());
+
+    let dyn_img = DynamicImage::ImageRgba8(error_return!(
+        ImageBuffer::from_raw(32, 32, avatar).ok_or("failed to parse avatar data")
+    ));
+
+    let image = images.add(Image::from_dynamic(
+        dyn_img,
+        false,
+        RenderAssetUsages::RENDER_WORLD,
+    ));
+
+    commands.insert_resource(CurrentAvatar(image));
+}
 
 pub fn update_world(
     client_id: u64,

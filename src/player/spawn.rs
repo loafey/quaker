@@ -1,6 +1,6 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
-    net::{server::Lobby, CurrentClientId},
+    net::{server::Lobby, CurrentAvatar, CurrentClientId},
     resources::{PlayerSpawnpoint, WeaponMap},
 };
 use bevy::{
@@ -25,6 +25,7 @@ impl Player {
         client_id: Res<CurrentClientId>,
         weapon_map: Res<WeaponMap>,
         mut materials: ResMut<Assets<StandardMaterial>>,
+        avatar: Option<Res<CurrentAvatar>>,
     ) {
         let id = Self::spawn(
             &mut commands,
@@ -35,6 +36,7 @@ impl Player {
             client_id.0,
             &weapon_map,
             Vec::new(),
+            avatar.as_ref(),
         );
         if let Some(mut lobby) = lobby {
             lobby.players.insert(ClientId::from_raw(client_id.0), id);
@@ -50,6 +52,7 @@ impl Player {
         current_id: u64,
         weapon_map: &WeaponMap,
         weapons: Vec<Vec<String>>,
+        avatar: Option<&Res<CurrentAvatar>>,
     ) -> Entity {
         let mut camera = None;
         let mut fps_model = None;
@@ -282,7 +285,9 @@ impl Player {
                         ..default()
                     },
                     UiImage {
-                        texture: asset_server.load("ui/PlayerIcon.png"),
+                        texture: avatar
+                            .map(|c| c.0.clone())
+                            .unwrap_or_else(|| asset_server.load("ui/PlayerIcon.png")),
                         ..default()
                     },
                 ));

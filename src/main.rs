@@ -86,6 +86,7 @@ fn main() {
         app.insert_non_send_resource(steam);
         app.add_plugins((SteamServerPlugin, SteamClientPlugin));
         app.add_systems(PreUpdate, steam_callbacks);
+        app.add_systems(Startup, net::grab_avatar);
     } else {
         app.add_plugins((NetcodeServerPlugin, NetcodeClientPlugin));
     }

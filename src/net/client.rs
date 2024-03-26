@@ -78,6 +78,7 @@ pub fn handle_messages(
                         id,
                         &weapon_map,
                         weapons,
+                        None,
                     );
                 }
             }
