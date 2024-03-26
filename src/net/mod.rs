@@ -122,8 +122,6 @@ pub fn send_messages(
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
-    current_id: Res<CurrentClientId>,
-    (projectile_map, time): (Res<Projectiles>, Res<Time>),
     mut net_world: NetWorld,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
@@ -134,10 +132,8 @@ pub fn send_messages(
         Box::new(move |message| {
             server::handle_client_message(
                 &mut server,
-                current_id.0,
+                net_world.current_id.0,
                 message,
-                &projectile_map,
-                &time,
                 &mut net_world,
             )
         })

@@ -37,7 +37,6 @@ pub fn handle_messages(
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
-    client_id: Res<CurrentClientId>,
     mut net_world: NetWorld,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
@@ -53,7 +52,7 @@ pub fn handle_messages(
                 translation,
                 weapons,
             } => {
-                if id != client_id.0 {
+                if id != net_world.current_id.0 {
                     println!("Spawning player: {id}");
                     Player::spawn(
                         &mut net_world.commands,

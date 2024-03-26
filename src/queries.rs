@@ -37,8 +37,13 @@ pub struct NetWorld<'w, 's> {
     // checked
     pub rapier_context: Res<'w, RapierContext>,
 
+    // checked
     pub game_entropy: ResMut<'w, Entropy<EGame>>,
+
+    // checked
     pub projectile_map: Res<'w, Projectiles>,
+
+    // checked
     pub time: Res<'w, Time>,
     pub current_id: Res<'w, CurrentClientId>,
 }

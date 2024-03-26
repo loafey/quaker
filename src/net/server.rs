@@ -55,8 +55,7 @@ pub fn server_events(
     mut server: ResMut<RenetServer>,
     mut lobby: ResMut<Lobby>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
-    time: Res<Time>,
-    (map, player_spawn, projectile_map): (Res<CurrentMap>, Res<PlayerSpawnpoint>, Res<Projectiles>),
+    (map, player_spawn): (Res<CurrentMap>, Res<PlayerSpawnpoint>),
     mut net_world: NetWorld,
 ) {
     // Handle connection details
@@ -178,26 +177,12 @@ pub fn server_events(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(
-                &mut server,
-                client_id.raw(),
-                message,
-                &projectile_map,
-                &time,
-                &mut net_world,
-            );
+            handle_client_message(&mut server, client_id.raw(), message, &mut net_world);
         }
 
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(
-                &mut server,
-                client_id.raw(),
-                message,
-                &projectile_map,
-                &time,
-                &mut net_world,
-            );
+            handle_client_message(&mut server, client_id.raw(), message, &mut net_world);
         }
     }
 }
@@ -206,8 +191,6 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    projectile_map: &Projectiles,
-    time: &Time,
     mut net_world: &mut NetWorld,
 ) {
     match message {
@@ -225,7 +208,7 @@ pub fn handle_client_message(
                         cam_trans,
                         &trans,
                         &mut net_world.game_entropy,
-                        projectile_map,
+                        &net_world.projectile_map,
                         &mut net_world.asset_server,
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
