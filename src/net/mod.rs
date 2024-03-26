@@ -123,7 +123,6 @@ pub fn send_messages(
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
     current_id: Res<CurrentClientId>,
-    rapier_context: Res<RapierContext>,
     (projectile_map, time): (Res<Projectiles>, Res<Time>),
     mut net_world: NetWorld,
 ) {
@@ -137,7 +136,6 @@ pub fn send_messages(
                 &mut server,
                 current_id.0,
                 message,
-                &rapier_context,
                 &projectile_map,
                 &time,
                 &mut net_world,

@@ -27,9 +27,16 @@ pub struct NetWorld<'w, 's> {
 
     // checked
     pub audio: Res<'w, Audio>,
+
+    // checked
     pub materials: ResMut<'w, Assets<StandardMaterial>>,
+
+    // checked
     pub meshes: ResMut<'w, Assets<Mesh>>,
+
+    // checked
     pub rapier_context: Res<'w, RapierContext>,
+
     pub game_entropy: ResMut<'w, Entropy<EGame>>,
     pub projectile_map: Res<'w, Projectiles>,
     pub time: Res<'w, Time>,
