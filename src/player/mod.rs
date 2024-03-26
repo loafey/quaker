@@ -51,6 +51,14 @@ pub struct PlayerChildren {
     pub health_hud: Option<Entity>,
     pub armour_hud: Option<Entity>,
     pub ammo_hud: Option<Entity>,
+    pub debug_hud: Option<Entity>,
+}
+
+#[derive(Debug, Default)]
+pub struct DebugInfo {
+    pub current_speed: f32,
+    pub current_falling: f32,
+    pub last_airtime: f32,
 }
 
 #[derive(Component, Debug, Default)]
@@ -88,6 +96,8 @@ pub struct Player {
     half_height: f32,
     radius: f32,
     air_time: Option<std::time::Instant>,
+
+    pub debug_info: DebugInfo,
 }
 
 impl Default for Player {
@@ -129,6 +139,7 @@ impl Default for Player {
 
                 switch_offset: 0.0,
             },
+            debug_info: Default::default(),
         }
     }
 }

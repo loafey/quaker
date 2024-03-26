@@ -312,6 +312,9 @@ impl Player {
                     .map(|(_, t)| t.rotation.x)
                     .unwrap_or_default(),
             });
+
+            player.debug_info.current_speed = Vec2::new(x, z).distance(Vec2::ZERO);
+            player.debug_info.current_falling = player.velocity.y;
         }
     }
 
@@ -637,7 +640,7 @@ impl Player {
             if player.on_ground {
                 if let Some(air_time) = player.air_time {
                     if air_time.elapsed().as_secs_f32() > 0.01 {
-                        println!("Airtime of {}s", air_time.elapsed().as_secs_f32());
+                        player.debug_info.last_airtime = air_time.elapsed().as_secs_f32();
                         player.air_time = None;
                     }
                 }

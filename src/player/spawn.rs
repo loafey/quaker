@@ -53,6 +53,7 @@ impl Player {
         let mut ammo_hud = None;
         let mut armour_hud = None;
         let mut health_hud = None;
+        let mut debug_hud = None;
         let mut entity = nw.commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
@@ -285,6 +286,28 @@ impl Player {
                         ..default()
                     },
                 ));
+
+                c.spawn(NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(0.0),
+                        top: Val::Px(0.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|c| {
+                    let mut bundle = TextBundle::from_section(
+                        "yo",
+                        TextStyle {
+                            font_size: 16.0,
+                            ..default()
+                        },
+                    );
+                    bundle.visibility = Visibility::Hidden;
+
+                    debug_hud = Some(c.spawn(bundle).id());
+                });
             });
 
         let mut player_commands = nw.commands.get_entity(id).unwrap();
@@ -297,6 +320,7 @@ impl Player {
                 ammo_hud,
                 armour_hud,
                 health_hud,
+                debug_hud,
             },
             ..Default::default()
         };
