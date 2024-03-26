@@ -28,7 +28,7 @@ use bevy_renet::renet::{
     },
     ClientId, RenetServer, ServerEvent,
 };
-use macros::{error_continue, error_return, option_continue};
+use macros::{error_continue, error_return, option_continue, option_return};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
@@ -185,10 +185,15 @@ pub fn handle_client_message(
 ) {
     match message {
         ClientMessage::Fire { attack } => {
+            let mut hit_pos = Vec::new();
+            let mut hit_ents = Vec::new();
+            let mut attack_weapon = None;
             for (player_entity, mut player, trans) in &mut nw.players {
                 if player.id == client_id {
                     let cam = option_continue!(player.children.camera);
                     let (_, cam_trans) = error_continue!(nw.cameras.get(cam));
+                    let (slot, row) = option_return!(player.current_weapon);
+                    attack_weapon = Some(player.weapons[slot][row].data.id.clone());
                     let hits = player.attack(
                         attack,
                         &mut nw.materials,
@@ -201,14 +206,31 @@ pub fn handle_client_message(
                         &nw.projectile_map,
                         &nw.asset_server,
                     );
-                    let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
-                    hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials);
-                    server.broadcast_message(
-                        ServerChannel::NetworkedEntities as u8,
-                        error_continue!(ServerMessage::HitscanHits { hits }.bytes()),
-                    )
+                    for (hit, pos) in hits {
+                        hit_pos.push(pos);
+                        hit_ents.push(hit);
+                    }
+                    break;
                 }
             }
+
+            let attack_weapon = option_return!(attack_weapon);
+            for ent in hit_ents {
+                if let Ok((_, player, _)) = nw.players.get_mut(ent) {
+                    println!("Player {} attacked with {}", player.id, attack_weapon);
+                }
+            }
+
+            hitscan_hit_gfx(
+                &mut nw.commands,
+                &hit_pos,
+                &mut nw.meshes,
+                &mut nw.materials,
+            );
+            server.broadcast_message(
+                ServerChannel::NetworkedEntities as u8,
+                error_return!(ServerMessage::HitscanHits { hits: hit_pos }.bytes()),
+            );
         }
         message => {
             update_world(client_id, &message, nw);
