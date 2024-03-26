@@ -56,20 +56,10 @@ pub fn server_events(
     mut lobby: ResMut<Lobby>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
     time: Res<Time>,
-    (
-        map,
-        asset_server,
-        player_spawn,
-        current_id,
-        weapon_map,
-        audio,
-        projectile_map,
-        rapier_context,
-    ): (
+    (map, asset_server, player_spawn, weapon_map, audio, projectile_map, rapier_context): (
         Res<CurrentMap>,
         Res<AssetServer>,
         Res<PlayerSpawnpoint>,
-        Res<CurrentClientId>,
         Res<WeaponMap>,
         Res<Audio>,
         Res<Projectiles>,
@@ -204,7 +194,6 @@ pub fn server_events(
                 &audio,
                 &rapier_context,
                 &projectile_map,
-                &mut commands,
                 &time,
                 &mut net_world,
             );
@@ -220,7 +209,6 @@ pub fn server_events(
                 &audio,
                 &rapier_context,
                 &projectile_map,
-                &mut commands,
                 &time,
                 &mut net_world,
             );
@@ -236,7 +224,6 @@ pub fn handle_client_message(
     audio: &Audio,
     rapier_context: &RapierContext,
     projectile_map: &Projectiles,
-    commands: &mut Commands,
     time: &Time,
     mut net_world: &mut NetWorld,
 ) {
@@ -250,7 +237,7 @@ pub fn handle_client_message(
                         attack,
                         &mut net_world.materials,
                         player_entity,
-                        commands,
+                        &mut net_world.commands,
                         rapier_context,
                         cam_trans,
                         &trans,
@@ -260,7 +247,7 @@ pub fn handle_client_message(
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
                     hitscan_hit_gfx(
-                        commands,
+                        &mut net_world.commands,
                         &hits,
                         &mut net_world.meshes,
                         &mut net_world.materials,
@@ -273,7 +260,7 @@ pub fn handle_client_message(
             }
         }
         message => {
-            update_world(client_id, &message, &mut net_world);
+            update_world(client_id, &message, net_world);
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
                 error_return!(ServerMessage::PlayerUpdate {

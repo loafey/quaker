@@ -13,6 +13,7 @@ use bevy_rapier3d::plugin::RapierContext;
 
 #[derive(SystemParam)]
 pub struct NetWorld<'w, 's> {
+    // Checked
     pub commands: Commands<'w, 's>,
     pub players:
         Query<'w, 's, (Entity, &'static mut Player, &'static mut Transform), Without<Camera3d>>,

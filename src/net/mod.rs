@@ -1,7 +1,5 @@
 use crate::{
-    map_gen::entities::data::PickupData,
-    queries::NetWorld,
-    resources::{projectiles::Projectiles, WeaponMap},
+    map_gen::entities::data::PickupData, queries::NetWorld, resources::projectiles::Projectiles,
 };
 use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
 use bevy_kira_audio::{Audio, AudioControl};
@@ -121,7 +119,6 @@ pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut Net
 }
 
 pub fn send_messages(
-    mut commands: Commands,
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
@@ -146,7 +143,6 @@ pub fn send_messages(
                 &audio,
                 &rapier_context,
                 &projectile_map,
-                &mut commands,
                 &time,
                 &mut net_world,
             )
