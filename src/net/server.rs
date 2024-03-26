@@ -99,13 +99,10 @@ pub fn server_events(
                 }
 
                 let entity = Player::spawn(
-                    &mut commands,
-                    &mut net_world.materials,
+                    &mut net_world,
                     false,
                     player_spawn.0,
-                    &net_world.asset_server,
                     client_id.raw(),
-                    &net_world.weapon_map,
                     Vec::new(),
                     None,
                 );

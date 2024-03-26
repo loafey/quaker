@@ -54,17 +54,7 @@ pub fn handle_messages(
             } => {
                 if id != net_world.current_id.0 {
                     println!("Spawning player: {id}");
-                    Player::spawn(
-                        &mut net_world.commands,
-                        &mut net_world.materials,
-                        false,
-                        translation,
-                        &net_world.asset_server,
-                        id,
-                        &net_world.weapon_map,
-                        weapons,
-                        None,
-                    );
+                    Player::spawn(&mut net_world, false, translation, id, weapons, None);
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
