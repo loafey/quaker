@@ -647,6 +647,7 @@ impl Player {
 }
 
 impl Player {
+    #[allow(clippy::too_many_arguments)]
     pub fn attack(
         &mut self,
         attack: usize,
