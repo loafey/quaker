@@ -34,6 +34,7 @@ fn vec_fix(mut v: Vec3) -> Vec3 {
     v
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn load_map(
     client: Option<Res<RenetClient>>,
     asset_server: Res<AssetServer>,

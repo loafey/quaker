@@ -3,27 +3,24 @@ use super::{
     PROTOCOL_ID,
 };
 use crate::{
-    entities::{hitscan_hit_gfx, pickup::PickupEntity},
+    entities::hitscan_hit_gfx,
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
-    resources::{CurrentMap, PlayerSpawnpoint},
+    resources::CurrentMap,
 };
 use bevy::{
-    core_pipeline::core_3d::Camera3d,
     ecs::{
         entity::Entity,
         event::EventReader,
-        query::Without,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{Commands, NonSend, Query, Res, ResMut, Resource},
+        system::{NonSend, Res, ResMut, Resource},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
-    transform::components::Transform,
 };
 use bevy_renet::renet::{
     transport::{
@@ -45,13 +42,12 @@ pub struct Lobby {
 
 #[allow(clippy::type_complexity)]
 pub fn server_events(
-    mut commands: Commands,
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
     mut lobby: ResMut<Lobby>,
-    pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
-    (map, player_spawn): (Res<CurrentMap>, Res<PlayerSpawnpoint>),
+
+    map: Res<CurrentMap>,
     mut net_world: NetWorld,
 ) {
     // Handle connection details
@@ -66,7 +62,7 @@ pub fn server_events(
                 );
                 lobby.cam_count += 2;
 
-                for (pickup, trans) in &pickups_query {
+                for (pickup, trans) in &net_world.pickups_query {
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -98,10 +94,11 @@ pub fn server_events(
                     );
                 }
 
+                let spawn_point = net_world.player_spawn.0;
                 let entity = Player::spawn(
                     &mut net_world,
                     false,
-                    player_spawn.0,
+                    spawn_point,
                     client_id.raw(),
                     Vec::new(),
                     None,
@@ -113,7 +110,7 @@ pub fn server_events(
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::SpawnPlayer {
                         id: client_id.raw(),
-                        translation: player_spawn.0,
+                        translation: spawn_point,
                         weapons: Vec::new()
                     }
                     .bytes()),
@@ -126,7 +123,7 @@ pub fn server_events(
 
                 for (e, p, _) in &net_world.players {
                     if p.id == client_id.raw() {
-                        commands.entity(e).despawn_recursive();
+                        net_world.commands.entity(e).despawn_recursive();
                     }
                 }
 
