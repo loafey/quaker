@@ -38,7 +38,6 @@ pub fn handle_messages(
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
     client_id: Res<CurrentClientId>,
-    weapon_map: Res<WeaponMap>,
     mut net_world: NetWorld,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
@@ -63,7 +62,7 @@ pub fn handle_messages(
                         translation,
                         &net_world.asset_server,
                         id,
-                        &weapon_map,
+                        &net_world.weapon_map,
                         weapons,
                         None,
                     );

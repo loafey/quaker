@@ -56,10 +56,9 @@ pub fn server_events(
     mut lobby: ResMut<Lobby>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
     time: Res<Time>,
-    (map, player_spawn, weapon_map, audio, projectile_map, rapier_context): (
+    (map, player_spawn, audio, projectile_map, rapier_context): (
         Res<CurrentMap>,
         Res<PlayerSpawnpoint>,
-        Res<WeaponMap>,
         Res<Audio>,
         Res<Projectiles>,
         Res<RapierContext>,
@@ -117,7 +116,7 @@ pub fn server_events(
                     player_spawn.0,
                     &net_world.asset_server,
                     client_id.raw(),
-                    &weapon_map,
+                    &net_world.weapon_map,
                     Vec::new(),
                     None,
                 );
