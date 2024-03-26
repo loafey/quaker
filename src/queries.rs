@@ -24,6 +24,8 @@ pub struct NetWorld<'w, 's> {
 
     // checked
     pub weapon_map: Res<'w, WeaponMap>,
+
+    // checked
     pub audio: Res<'w, Audio>,
     pub materials: ResMut<'w, Assets<StandardMaterial>>,
     pub meshes: ResMut<'w, Assets<Mesh>>,
