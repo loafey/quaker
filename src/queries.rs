@@ -18,6 +18,8 @@ pub struct NetWorld<'w, 's> {
     pub players:
         Query<'w, 's, (Entity, &'static mut Player, &'static mut Transform), Without<Camera3d>>,
     pub cameras: Query<'w, 's, (&'static Camera3d, &'static mut Transform), Without<Player>>,
+
+    // dhcekd
     pub asset_server: Res<'w, AssetServer>,
     pub weapon_map: Res<'w, WeaponMap>,
     pub audio: Res<'w, Audio>,

@@ -56,9 +56,8 @@ pub fn server_events(
     mut lobby: ResMut<Lobby>,
     pickups_query: Query<(&PickupEntity, &Transform), (Without<Player>, Without<Camera3d>)>,
     time: Res<Time>,
-    (map, asset_server, player_spawn, weapon_map, audio, projectile_map, rapier_context): (
+    (map, player_spawn, weapon_map, audio, projectile_map, rapier_context): (
         Res<CurrentMap>,
-        Res<AssetServer>,
         Res<PlayerSpawnpoint>,
         Res<WeaponMap>,
         Res<Audio>,
@@ -116,7 +115,7 @@ pub fn server_events(
                     &mut net_world.materials,
                     false,
                     player_spawn.0,
-                    &asset_server,
+                    &net_world.asset_server,
                     client_id.raw(),
                     &weapon_map,
                     Vec::new(),
@@ -190,7 +189,6 @@ pub fn server_events(
                 &mut server,
                 client_id.raw(),
                 message,
-                &asset_server,
                 &audio,
                 &rapier_context,
                 &projectile_map,
@@ -205,7 +203,6 @@ pub fn server_events(
                 &mut server,
                 client_id.raw(),
                 message,
-                &asset_server,
                 &audio,
                 &rapier_context,
                 &projectile_map,
@@ -220,7 +217,6 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    asset_server: &AssetServer,
     audio: &Audio,
     rapier_context: &RapierContext,
     projectile_map: &Projectiles,
@@ -243,7 +239,7 @@ pub fn handle_client_message(
                         &trans,
                         &mut net_world.game_entropy,
                         projectile_map,
-                        asset_server,
+                        &mut net_world.asset_server,
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
                     hitscan_hit_gfx(

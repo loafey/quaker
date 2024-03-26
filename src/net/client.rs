@@ -11,14 +11,13 @@ use super::{
     ServerMessage, PROTOCOL_ID,
 };
 use bevy::{
-    asset::AssetServer,
     ecs::{
         entity::Entity,
         event::EventReader,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{Commands, NonSend, Query, Res, ResMut},
+        system::{NonSend, Query, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
@@ -38,8 +37,6 @@ pub fn handle_messages(
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
     client_id: Res<CurrentClientId>,
     weapon_map: Res<WeaponMap>,
     mut net_world: NetWorld,
@@ -60,11 +57,11 @@ pub fn handle_messages(
                 if id != client_id.0 {
                     println!("Spawning player: {id}");
                     Player::spawn(
-                        &mut commands,
+                        &mut net_world.commands,
                         &mut net_world.materials,
                         false,
                         translation,
-                        &asset_server,
+                        &net_world.asset_server,
                         id,
                         &weapon_map,
                         weapons,
@@ -75,7 +72,7 @@ pub fn handle_messages(
             ServerMessage::DespawnPlayer { id } => {
                 for (ent, player, _) in &net_world.players {
                     if player.id == id {
-                        commands.entity(ent).despawn_recursive();
+                        net_world.commands.entity(ent).despawn_recursive();
                     }
                 }
             }
@@ -88,9 +85,9 @@ pub fn handle_messages(
                     id,
                     false,
                     translation,
-                    &asset_server,
+                    &net_world.asset_server,
                     &data,
-                    &mut commands,
+                    &mut net_world.commands,
                     &mut net_world.materials,
                 );
             }
@@ -110,12 +107,12 @@ pub fn handle_messages(
             ServerMessage::DespawnPickup { id } => {
                 for (ent, pickup) in &pickups {
                     if pickup.id == id {
-                        commands.entity(ent).despawn_recursive();
+                        net_world.commands.entity(ent).despawn_recursive();
                     }
                 }
             }
             ServerMessage::HitscanHits { hits } => hitscan_hit_gfx(
-                &mut commands,
+                &mut net_world.commands,
                 &hits,
                 &mut net_world.meshes,
                 &mut net_world.materials,
