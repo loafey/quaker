@@ -3,7 +3,7 @@ use crate::{
     map_gen,
     player::Player,
     queries::NetWorld,
-    resources::{CurrentMap, CurrentStage, WeaponMap},
+    resources::{CurrentMap, CurrentStage},
 };
 
 use super::{
@@ -17,7 +17,7 @@ use bevy::{
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, Query, Res, ResMut},
+        system::{NonSend, Query, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,

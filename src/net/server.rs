@@ -7,10 +7,9 @@ use crate::{
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
-    resources::{projectiles::Projectiles, CurrentMap, PlayerSpawnpoint, WeaponMap},
+    resources::{CurrentMap, PlayerSpawnpoint},
 };
 use bevy::{
-    asset::AssetServer,
     core_pipeline::core_3d::Camera3d,
     ecs::{
         entity::Entity,
@@ -24,11 +23,8 @@ use bevy::{
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
-    time::Time,
     transform::components::Transform,
 };
-use bevy_kira_audio::Audio;
-use bevy_rapier3d::plugin::RapierContext;
 use bevy_renet::renet::{
     transport::{
         NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig,
@@ -191,7 +187,7 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    mut net_world: &mut NetWorld,
+    net_world: &mut NetWorld,
 ) {
     match message {
         ClientMessage::Fire { attack } => {
@@ -204,12 +200,12 @@ pub fn handle_client_message(
                         &mut net_world.materials,
                         player_entity,
                         &mut net_world.commands,
-                        &mut net_world.rapier_context,
+                        &net_world.rapier_context,
                         cam_trans,
                         &trans,
                         &mut net_world.game_entropy,
                         &net_world.projectile_map,
-                        &mut net_world.asset_server,
+                        &net_world.asset_server,
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
                     hitscan_hit_gfx(

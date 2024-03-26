@@ -1,9 +1,6 @@
-use crate::{
-    map_gen::entities::data::PickupData, queries::NetWorld, resources::projectiles::Projectiles,
-};
+use crate::{map_gen::entities::data::PickupData, queries::NetWorld};
 use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
-use bevy_kira_audio::{Audio, AudioControl};
-use bevy_rapier3d::plugin::RapierContext;
+use bevy_kira_audio::AudioControl;
 use bevy_renet::renet::*;
 use image::{DynamicImage, ImageBuffer};
 use macros::{error_return, option_return};
