@@ -37,7 +37,7 @@ pub fn handle_messages(
     mut client: ResMut<RenetClient>,
     mut current_stage: ResMut<CurrentMap>,
     mut state: ResMut<NextState<CurrentStage>>,
-    mut net_world: NetWorld,
+    mut nw: NetWorld,
 ) {
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages as u8) {
         let message = error_continue!(ServerMessage::from_bytes(&message));
@@ -52,15 +52,15 @@ pub fn handle_messages(
                 translation,
                 weapons,
             } => {
-                if id != net_world.current_id.0 {
+                if id != nw.current_id.0 {
                     println!("Spawning player: {id}");
-                    Player::spawn(&mut net_world, false, translation, id, weapons, None);
+                    Player::spawn(&mut nw, false, translation, id, weapons, None);
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
-                for (ent, player, _) in &net_world.players {
+                for (ent, player, _) in &nw.players {
                     if player.id == id {
-                        net_world.commands.entity(ent).despawn_recursive();
+                        nw.commands.entity(ent).despawn_recursive();
                     }
                 }
             }
@@ -73,10 +73,10 @@ pub fn handle_messages(
                     id,
                     false,
                     translation,
-                    &net_world.asset_server,
+                    &nw.asset_server,
                     &data,
-                    &mut net_world.commands,
-                    &mut net_world.materials,
+                    &mut nw.commands,
+                    &mut nw.materials,
                 );
             }
             x => {
@@ -90,21 +90,18 @@ pub fn handle_messages(
         #[allow(clippy::single_match)]
         match message {
             ServerMessage::PlayerUpdate { id, message } => {
-                update_world(id, &message, &mut net_world);
+                update_world(id, &message, &mut nw);
             }
             ServerMessage::DespawnPickup { id } => {
                 for (ent, pickup) in &pickups {
                     if pickup.id == id {
-                        net_world.commands.entity(ent).despawn_recursive();
+                        nw.commands.entity(ent).despawn_recursive();
                     }
                 }
             }
-            ServerMessage::HitscanHits { hits } => hitscan_hit_gfx(
-                &mut net_world.commands,
-                &hits,
-                &mut net_world.meshes,
-                &mut net_world.materials,
-            ),
+            ServerMessage::HitscanHits { hits } => {
+                hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials)
+            }
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")
             }

@@ -48,7 +48,7 @@ pub fn server_events(
     mut lobby: ResMut<Lobby>,
 
     map: Res<CurrentMap>,
-    mut net_world: NetWorld,
+    mut nw: NetWorld,
 ) {
     // Handle connection details
     for event in events.read() {
@@ -62,7 +62,7 @@ pub fn server_events(
                 );
                 lobby.cam_count += 2;
 
-                for (pickup, trans) in &net_world.pickups_query {
+                for (pickup, trans) in &nw.pickups_query {
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -77,7 +77,7 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, ent) in &lobby.players {
-                    let (_, pl, trans) = error_continue!(net_world.players.get(*ent));
+                    let (_, pl, trans) = error_continue!(nw.players.get(*ent));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -94,9 +94,9 @@ pub fn server_events(
                     );
                 }
 
-                let spawn_point = net_world.player_spawn.0;
+                let spawn_point = nw.player_spawn.0;
                 let entity = Player::spawn(
-                    &mut net_world,
+                    &mut nw,
                     false,
                     spawn_point,
                     client_id.raw(),
@@ -121,9 +121,9 @@ pub fn server_events(
 
                 lobby.players.remove(client_id);
 
-                for (e, p, _) in &net_world.players {
+                for (e, p, _) in &nw.players {
                     if p.id == client_id.raw() {
-                        net_world.commands.entity(e).despawn_recursive();
+                        nw.commands.entity(e).despawn_recursive();
                     }
                 }
 
@@ -150,7 +150,7 @@ pub fn server_events(
                     weapon: pickup.clone(),
                 };
 
-                update_world(*player, &pickup_message, &mut net_world);
+                update_world(*player, &pickup_message, &mut nw);
 
                 let pickup_message_wrapped = ServerMessage::PlayerUpdate {
                     id: *player,
@@ -167,12 +167,12 @@ pub fn server_events(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(&mut server, client_id.raw(), message, &mut net_world);
+            handle_client_message(&mut server, client_id.raw(), message, &mut nw);
         }
 
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(&mut server, client_id.raw(), message, &mut net_world);
+            handle_client_message(&mut server, client_id.raw(), message, &mut nw);
         }
     }
 }
@@ -181,33 +181,28 @@ pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
     message: ClientMessage,
-    net_world: &mut NetWorld,
+    nw: &mut NetWorld,
 ) {
     match message {
         ClientMessage::Fire { attack } => {
-            for (player_entity, mut player, trans) in &mut net_world.players {
+            for (player_entity, mut player, trans) in &mut nw.players {
                 if player.id == client_id {
                     let cam = option_continue!(player.children.camera);
-                    let (_, cam_trans) = error_continue!(net_world.cameras.get(cam));
+                    let (_, cam_trans) = error_continue!(nw.cameras.get(cam));
                     let hits = player.attack(
                         attack,
-                        &mut net_world.materials,
+                        &mut nw.materials,
                         player_entity,
-                        &mut net_world.commands,
-                        &net_world.rapier_context,
+                        &mut nw.commands,
+                        &nw.rapier_context,
                         cam_trans,
                         &trans,
-                        &mut net_world.game_entropy,
-                        &net_world.projectile_map,
-                        &net_world.asset_server,
+                        &mut nw.game_entropy,
+                        &nw.projectile_map,
+                        &nw.asset_server,
                     );
                     let hits = hits.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
-                    hitscan_hit_gfx(
-                        &mut net_world.commands,
-                        &hits,
-                        &mut net_world.meshes,
-                        &mut net_world.materials,
-                    );
+                    hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials);
                     server.broadcast_message(
                         ServerChannel::NetworkedEntities as u8,
                         error_continue!(ServerMessage::HitscanHits { hits }.bytes()),
@@ -216,7 +211,7 @@ pub fn handle_client_message(
             }
         }
         message => {
-            update_world(client_id, &message, net_world);
+            update_world(client_id, &message, nw);
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
                 error_return!(ServerMessage::PlayerUpdate {

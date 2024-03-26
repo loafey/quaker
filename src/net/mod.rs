@@ -38,27 +38,25 @@ pub fn grab_avatar(
     commands.insert_resource(CurrentAvatar(image));
 }
 
-pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut NetWorld) {
+pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) {
     match message {
         ClientMessage::UpdatePosition {
             position,
             rotation,
             cam_rot,
         } => {
-            if net_world.current_id.0 != client_id {
-                for (_, pl, mut tr) in net_world.players.iter_mut() {
+            if nw.current_id.0 != client_id {
+                for (_, pl, mut tr) in nw.players.iter_mut() {
                     if pl.id == client_id {
                         tr.translation = tr
                             .translation
-                            .lerp(*position, net_world.time.delta_seconds() * 10.0);
+                            .lerp(*position, nw.time.delta_seconds() * 10.0);
                         tr.rotation = Quat::from_array(*rotation);
 
-                        error_return!(net_world
-                            .cameras
-                            .get_mut(option_return!(pl.children.camera)))
-                        .1
-                        .rotation
-                        .x = *cam_rot;
+                        error_return!(nw.cameras.get_mut(option_return!(pl.children.camera)))
+                            .1
+                            .rotation
+                            .x = *cam_rot;
 
                         break;
                     }
@@ -66,15 +64,15 @@ pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut Net
             }
         }
         ClientMessage::PickupWeapon { weapon } => {
-            for (_, mut player, _) in net_world.players.iter_mut() {
+            for (_, mut player, _) in nw.players.iter_mut() {
                 if player.id == client_id {
-                    if let Some(weapon_data) = net_world.weapon_map.0.get(weapon) {
+                    if let Some(weapon_data) = nw.weapon_map.0.get(weapon) {
                         let slot = weapon_data.slot;
-                        let handle = net_world
+                        let handle = nw
                             .asset_server
                             .load(format!("{}#Scene0", weapon_data.model_file));
                         if player.add_weapon(weapon_data.clone(), slot, handle) {
-                            net_world.audio.play(net_world.asset_server.load(
+                            nw.audio.play(nw.asset_server.load(
                                 weapon_data.pickup_sound.clone().unwrap_or(
                                     "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
                                 ),
@@ -92,8 +90,8 @@ pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut Net
             error!("got a fire event! This is wrong!");
         }
         ClientMessage::WeaponAnim { anim } => {
-            if net_world.current_id.0 != client_id {
-                for (_, mut pl, _) in net_world.players.iter_mut() {
+            if nw.current_id.0 != client_id {
+                for (_, mut pl, _) in nw.players.iter_mut() {
                     if pl.id == client_id {
                         pl.current_weapon_anim = anim.clone();
                         pl.restart_anim = true;
@@ -103,8 +101,8 @@ pub fn update_world(client_id: u64, message: &ClientMessage, net_world: &mut Net
             }
         }
         ClientMessage::SwitchWeapon { slot, row } => {
-            if net_world.current_id.0 != client_id {
-                for (_, mut pl, _) in net_world.players.iter_mut() {
+            if nw.current_id.0 != client_id {
+                for (_, mut pl, _) in nw.players.iter_mut() {
                     if pl.id == client_id {
                         pl.current_weapon = Some((*slot, *row));
                         break;
@@ -119,7 +117,7 @@ pub fn send_messages(
     mut events: EventReader<ClientMessage>,
     client: Option<ResMut<RenetClient>>,
     server: Option<ResMut<RenetServer>>,
-    mut net_world: NetWorld,
+    mut nw: NetWorld,
 ) {
     let mut send: Box<dyn FnMut(ClientMessage)> = if let Some(mut client) = client {
         Box::new(move |message| {
@@ -127,12 +125,7 @@ pub fn send_messages(
         })
     } else if let Some(mut server) = server {
         Box::new(move |message| {
-            server::handle_client_message(
-                &mut server,
-                net_world.current_id.0,
-                message,
-                &mut net_world,
-            )
+            server::handle_client_message(&mut server, nw.current_id.0, message, &mut nw)
         })
     } else {
         error!("no way to handle messages");

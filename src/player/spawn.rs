@@ -19,14 +19,14 @@ use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 
 impl Player {
     pub fn spawn_own_player(
-        mut net_world: NetWorld,
+        mut nw: NetWorld,
         player_spawn: Res<PlayerSpawnpoint>,
         lobby: Option<ResMut<Lobby>>,
         avatar: Option<Res<CurrentAvatar>>,
     ) {
-        let id = net_world.current_id.0;
+        let id = nw.current_id.0;
         let id = Self::spawn(
-            &mut net_world,
+            &mut nw,
             true,
             player_spawn.0,
             id,
@@ -36,12 +36,12 @@ impl Player {
         if let Some(mut lobby) = lobby {
             lobby
                 .players
-                .insert(ClientId::from_raw(net_world.current_id.0), id);
+                .insert(ClientId::from_raw(nw.current_id.0), id);
         }
     }
 
     pub fn spawn(
-        net_world: &mut NetWorld,
+        nw: &mut NetWorld,
         is_own: bool,
         player_spawn: Vec3,
         current_id: u64,
@@ -53,7 +53,7 @@ impl Player {
         let mut ammo_hud = None;
         let mut armour_hud = None;
         let mut health_hud = None;
-        let mut entity = net_world.commands.spawn(Collider::cylinder(0.5, 0.15));
+        let mut entity = nw.commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
             .insert(ActiveEvents::COLLISION_EVENTS)
@@ -126,7 +126,7 @@ impl Player {
 
                 if is_own {
                     c.spawn(SpriteBundle {
-                        texture: net_world.asset_server.load("crosshair.png"),
+                        texture: nw.asset_server.load("crosshair.png"),
                         ..default()
                     });
                 }
@@ -142,12 +142,10 @@ impl Player {
                 trans.scale = Vec3::splat(0.5);
                 trans.rotate_y(180f32.to_radians());
                 c.spawn(PbrBundle {
-                    mesh: net_world.asset_server.load("models/Player/MP/Temp.obj"),
-                    material: net_world.materials.add(StandardMaterial {
+                    mesh: nw.asset_server.load("models/Player/MP/Temp.obj"),
+                    material: nw.materials.add(StandardMaterial {
                         base_color_texture: Some(
-                            net_world
-                                .asset_server
-                                .load("models/Enemies/DeadMan/deadman.png"),
+                            nw.asset_server.load("models/Enemies/DeadMan/deadman.png"),
                         ),
                         perceptual_roughness: 1.0,
                         reflectance: 0.0,
@@ -161,8 +159,7 @@ impl Player {
         }
         let id = player_commands.id();
 
-        net_world
-            .commands
+        nw.commands
             .spawn(NodeBundle {
                 style: Style {
                     width: Val::Percent(100.0),
@@ -188,7 +185,7 @@ impl Player {
                         ..default()
                     },
                     UiImage {
-                        texture: net_world.asset_server.load("ui/PlayerHud.png"),
+                        texture: nw.asset_server.load("ui/PlayerHud.png"),
                         ..default()
                     },
                 ));
@@ -210,7 +207,7 @@ impl Player {
                             "HEALTH: 100",
                             TextStyle {
                                 font_size: 32.0,
-                                font: net_world.asset_server.load("ui/Pixeled.ttf"),
+                                font: nw.asset_server.load("ui/Pixeled.ttf"),
                                 color: text_color,
                             },
                         ))
@@ -233,7 +230,7 @@ impl Player {
                             "ARMOUR: 100",
                             TextStyle {
                                 font_size: 32.0,
-                                font: net_world.asset_server.load("ui/Pixeled.ttf"),
+                                font: nw.asset_server.load("ui/Pixeled.ttf"),
                                 color: text_color,
                             },
                         ))
@@ -257,7 +254,7 @@ impl Player {
                                 "100\nCRUTONS",
                                 TextStyle {
                                     font_size: 32.0,
-                                    font: net_world.asset_server.load("ui/Pixeled.ttf"),
+                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
                                     color: text_color,
                                 },
                             )
@@ -284,13 +281,13 @@ impl Player {
                     UiImage {
                         texture: avatar
                             .map(|c| c.0.clone())
-                            .unwrap_or_else(|| net_world.asset_server.load("ui/PlayerIcon.png")),
+                            .unwrap_or_else(|| nw.asset_server.load("ui/PlayerIcon.png")),
                         ..default()
                     },
                 ));
             });
 
-        let mut player_commands = net_world.commands.get_entity(id).unwrap();
+        let mut player_commands = nw.commands.get_entity(id).unwrap();
 
         let mut player_data = Player {
             id: current_id,
@@ -306,8 +303,8 @@ impl Player {
 
         for (slot, list) in weapons.into_iter().enumerate() {
             for weapon in list {
-                if let Some(weapon_data) = net_world.weapon_map.0.get(&weapon) {
-                    let handle = net_world
+                if let Some(weapon_data) = nw.weapon_map.0.get(&weapon) {
+                    let handle = nw
                         .asset_server
                         .load(format!("{}#Scene0", weapon_data.model_file));
                     player_data.add_weapon(weapon_data.clone(), slot, handle);
