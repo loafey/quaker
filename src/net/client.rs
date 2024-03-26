@@ -11,12 +11,10 @@ use super::{
     ServerMessage, PROTOCOL_ID,
 };
 use bevy::{
-    asset::{AssetServer, Assets},
-    core_pipeline::core_3d::Camera3d,
+    asset::AssetServer,
     ecs::{
         entity::Entity,
         event::EventReader,
-        query::Without,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
@@ -25,12 +23,7 @@ use bevy::{
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
-    pbr::StandardMaterial,
-    render::mesh::Mesh,
-    time::Time,
-    transform::components::Transform,
 };
-use bevy_kira_audio::Audio;
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     RenetClient,

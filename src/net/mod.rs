@@ -1,12 +1,7 @@
 use crate::{
     map_gen::entities::data::PickupData,
-    player::Player,
     queries::NetWorld,
-    resources::{
-        entropy::{EGame, Entropy},
-        projectiles::Projectiles,
-        WeaponMap,
-    },
+    resources::{projectiles::Projectiles, WeaponMap},
 };
 use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
 use bevy_kira_audio::{Audio, AudioControl};
@@ -132,7 +127,6 @@ pub fn send_messages(
     server: Option<ResMut<RenetServer>>,
     current_id: Res<CurrentClientId>,
     asset_server: Res<AssetServer>,
-    weapon_map: Res<WeaponMap>,
     audio: Res<Audio>,
     rapier_context: Res<RapierContext>,
     (projectile_map, time): (Res<Projectiles>, Res<Time>),
@@ -148,9 +142,7 @@ pub fn send_messages(
                 &mut server,
                 current_id.0,
                 message,
-                current_id.0,
                 &asset_server,
-                &weapon_map,
                 &audio,
                 &rapier_context,
                 &projectile_map,
