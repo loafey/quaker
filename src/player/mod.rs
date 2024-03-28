@@ -179,7 +179,7 @@ impl Player {
                     TextStyle {
                         font: asset_server.load("ui/Color Basic.otf"),
                         color: Color::rgb(1.0, 0.0, 0.0),
-                        font_size: 32.0,
+                        font_size: 24.0,
                     },
                 ))
                 .insert(Message::default())
