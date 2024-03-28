@@ -291,10 +291,6 @@ pub fn handle_client_message(
                         error!("weird attack 2");
                         0.0
                     };
-                    println!(
-                        "Player {} attacked with {} for {damage} damage",
-                        hit_player.id, attack_weapon.id
-                    );
                     hit_player.health -= damage;
                     if hit_player.id != nw.current_id.0 {
                         server.send_message(
