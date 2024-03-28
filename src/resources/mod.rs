@@ -32,6 +32,7 @@ pub struct CurrentMap(pub PathBuf);
 /// Represents the pause state of the game
 #[derive(Debug, Resource)]
 pub struct Paused(pub bool);
+#[allow(unused)]
 pub fn if_not_paused(val: Res<Paused>) -> bool {
     !val.0
 }
