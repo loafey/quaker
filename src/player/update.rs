@@ -223,7 +223,7 @@ impl Player {
         cameras: Query<(&Camera3d, &Transform), Without<PlayerController>>,
         mut events: EventWriter<ClientMessage>,
     ) {
-        for (mut controller, mut player, mut gt) in &mut query {
+        for (mut controller, mut player, gt) in &mut query {
             // movement
             let local_z = gt.local_z();
             let forward = -Vec3::new(local_z.x, 0., local_z.z);
@@ -295,12 +295,6 @@ impl Player {
                 z.lerp(0.0, player.hort_friction)
                     .clamp(-player.hort_max_speed, player.hort_max_speed),
             );
-
-            if keys.debug_fly_up_pressed {
-                gt.translation.y += 0.1;
-            } else if keys.debug_fly_down_pressed {
-                gt.translation.y -= 0.1;
-            }
 
             events.send(ClientMessage::UpdatePosition {
                 position: gt.translation,
