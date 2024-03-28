@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{
     entities::hitscan_hit_gfx,
+    map_gen::entities::data::Attack,
     net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
@@ -214,10 +215,38 @@ pub fn handle_client_message(
                 }
             }
 
-            let attack_weapon = option_return!(attack_weapon);
+            let attack_weapon = error_return!(attack_weapon
+                .ok_or_else(|| format!("player {} attacked without holding weapon", client_id)));
+            let attack_weapon = error_return!(nw
+                .weapon_map
+                .0
+                .get(&attack_weapon)
+                .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
             for ent in hit_ents {
                 if let Ok((_, player, _)) = nw.players.get_mut(ent) {
-                    println!("Player {} attacked with {}", player.id, attack_weapon);
+                    let damage = if attack == 1 {
+                        if let Attack::RayCast {
+                            damage, damage_mod, ..
+                        } = &attack_weapon.attack1
+                        {
+                            damage + damage_mod * nw.game_entropy.get_f32()
+                        } else {
+                            error!("weird attack 1");
+                            0.0
+                        }
+                    } else if let Attack::RayCast {
+                        damage, damage_mod, ..
+                    } = &attack_weapon.attack2
+                    {
+                        damage + damage_mod * nw.game_entropy.get_f32()
+                    } else {
+                        error!("weird attack 2");
+                        0.0
+                    };
+                    println!(
+                        "Player {} attacked with {} for {damage} damage",
+                        player.id, attack_weapon.id
+                    );
                 }
             }
 
