@@ -66,7 +66,7 @@ fn default_fancyname() -> String {
 }
 
 fn default_pickupmessage1() -> String {
-    "pICKED UP: ".to_string()
+    "PICKED UP: ".to_string()
 }
 
 fn default_pickupmessage2() -> String {
