@@ -149,8 +149,7 @@ impl Plugin for GameStage {
                     PickupEntity::systems(),
                     ProjectileEntity::systems(),
                 )
-                    .run_if(in_state(CurrentStage::InGame))
-                    .run_if(if_not_paused),
+                    .run_if(in_state(CurrentStage::InGame)), //.run_if(if_not_paused),
             )
             .add_systems(
                 Update,
