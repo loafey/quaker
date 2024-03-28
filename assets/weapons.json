@@ -225,7 +225,7 @@
             "type": "Projectile",
             "projectile": "rocket"
         },
-        "fancy_name": "RPG",
+        "fancy_name": "rpg",
         "pickup_message2": "! STAY BACK!"
     },
     {
@@ -398,7 +398,7 @@
             "type": "Projectile",
             "projectile": "nuke"
         },
-        "fancy_name": "crockpocket",
+        "fancy_name": "pocketcrocket",
         "pickup_message2": "! FOR INDOOR USAGE ONLY!"
     }
 ]
