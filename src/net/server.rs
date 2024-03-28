@@ -248,11 +248,19 @@ pub fn handle_client_message(
                         hit_player.id, attack_weapon.id
                     );
                     hit_player.health -= damage;
-                    server.send_message(
-                        ClientId::from_raw(hit_player.id),
-                        ServerChannel::NetworkedEntities as u8,
-                        error_continue!(ServerMessage::Hit { amount: damage }.bytes()),
-                    )
+                    if hit_player.id != client_id {
+                        server.send_message(
+                            ClientId::from_raw(hit_player.id),
+                            ServerChannel::NetworkedEntities as u8,
+                            error_continue!(ServerMessage::Hit { amount: damage }.bytes()),
+                        )
+                    } else {
+                        for (_, mut player, _) in &mut nw.players {
+                            if player.id == client_id {
+                                player.health -= damage;
+                            }
+                        }
+                    }
                 }
             }
 
