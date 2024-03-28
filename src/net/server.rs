@@ -248,7 +248,7 @@ pub fn handle_client_message(
                         hit_player.id, attack_weapon.id
                     );
                     hit_player.health -= damage;
-                    if hit_player.id != client_id {
+                    if hit_player.id != nw.current_id.0 {
                         server.send_message(
                             ClientId::from_raw(hit_player.id),
                             ServerChannel::NetworkedEntities as u8,
