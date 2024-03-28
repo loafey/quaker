@@ -114,18 +114,18 @@ impl Player {
                     })
                     .id();
 
-                c.spawn(Camera2dBundle {
-                    camera: Camera {
-                        order: 2,
-                        clear_color: ClearColorConfig::None,
-                        is_active: is_own,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(IsDefaultUiCamera);
-
                 if is_own {
+                    c.spawn(Camera2dBundle {
+                        camera: Camera {
+                            order: 2,
+                            clear_color: ClearColorConfig::None,
+                            is_active: is_own,
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(IsDefaultUiCamera);
+
                     c.spawn(SpriteBundle {
                         texture: nw.asset_server.load("crosshair.png"),
                         ..default()
@@ -159,156 +159,157 @@ impl Player {
             });
         }
         let id = player_commands.id();
-
-        nw.commands
-            .spawn(NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    justify_content: JustifyContent::SpaceBetween,
+        if is_own {
+            nw.commands
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        justify_content: JustifyContent::SpaceBetween,
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            })
-            .with_children(|c| {
-                c.spawn((
-                    NodeBundle {
-                        style: Style {
-                            position_type: PositionType::Absolute,
-                            width: Val::Px(128.0 * 3.0),
-                            height: Val::Px(32.0 * 3.0),
-                            left: Val::Px(0.0),
-                            bottom: Val::Px(0.0),
+                })
+                .with_children(|c| {
+                    c.spawn((
+                        NodeBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                width: Val::Px(128.0 * 3.0),
+                                height: Val::Px(32.0 * 3.0),
+                                left: Val::Px(0.0),
+                                bottom: Val::Px(0.0),
+                                ..default()
+                            },
+                            // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
+                            background_color: Color::WHITE.into(),
                             ..default()
                         },
-                        // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
-                        background_color: Color::WHITE.into(),
-                        ..default()
-                    },
-                    UiImage {
-                        texture: nw.asset_server.load("ui/PlayerHud.png"),
-                        ..default()
-                    },
-                ));
+                        UiImage {
+                            texture: nw.asset_server.load("ui/PlayerHud.png"),
+                            ..default()
+                        },
+                    ));
 
-                let text_color = Color::rgb(0.921, 0.682, 0.203);
+                    let text_color = Color::rgb(0.921, 0.682, 0.203);
 
-                c.spawn(NodeBundle {
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        left: Val::Px(34.0 * 3.0),
-                        bottom: Val::Px(18.0 * 2.0),
+                    c.spawn(NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(34.0 * 3.0),
+                            bottom: Val::Px(18.0 * 2.0),
+                            ..default()
+                        },
                         ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|c| {
-                    health_hud = Some(
-                        c.spawn(TextBundle::from_section(
-                            "HEALTH: 100",
-                            TextStyle {
-                                font_size: 32.0,
-                                font: nw.asset_server.load("ui/Pixeled.ttf"),
-                                color: text_color,
-                            },
-                        ))
-                        .id(),
-                    );
-                });
-
-                c.spawn(NodeBundle {
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        left: Val::Px(34.0 * 3.0),
-                        bottom: Val::Px(4.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|c| {
-                    armour_hud = Some(
-                        c.spawn(TextBundle::from_section(
-                            "ARMOUR: 100",
-                            TextStyle {
-                                font_size: 32.0,
-                                font: nw.asset_server.load("ui/Pixeled.ttf"),
-                                color: text_color,
-                            },
-                        ))
-                        .id(),
-                    );
-                });
-
-                c.spawn(NodeBundle {
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        left: Val::Px(269.0),
-                        bottom: Val::Px(4.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|c| {
-                    ammo_hud = Some(
-                        c.spawn(
-                            TextBundle::from_section(
-                                "100\nCRUTONS",
+                    })
+                    .with_children(|c| {
+                        health_hud = Some(
+                            c.spawn(TextBundle::from_section(
+                                "HEALTH: 100",
                                 TextStyle {
                                     font_size: 32.0,
                                     font: nw.asset_server.load("ui/Pixeled.ttf"),
                                     color: text_color,
                                 },
-                            )
-                            .with_text_justify(JustifyText::Center),
-                        )
-                        .id(),
-                    );
-                });
+                            ))
+                            .id(),
+                        );
+                    });
 
-                c.spawn((
-                    NodeBundle {
+                    c.spawn(NodeBundle {
                         style: Style {
                             position_type: PositionType::Absolute,
-                            width: Val::Px(26.0 * 3.0),
-                            height: Val::Px(28.0 * 3.0),
-                            left: Val::Px(2.0 * 3.0),
-                            bottom: Val::Px(2.0 * 3.0),
+                            left: Val::Px(34.0 * 3.0),
+                            bottom: Val::Px(4.0),
                             ..default()
                         },
-                        // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
-                        background_color: Color::WHITE.into(),
                         ..default()
-                    },
-                    UiImage {
-                        texture: avatar
-                            .map(|c| c.0.clone())
-                            .unwrap_or_else(|| nw.asset_server.load("ui/PlayerIcon.png")),
-                        ..default()
-                    },
-                ));
+                    })
+                    .with_children(|c| {
+                        armour_hud = Some(
+                            c.spawn(TextBundle::from_section(
+                                "ARMOUR: 100",
+                                TextStyle {
+                                    font_size: 32.0,
+                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    color: text_color,
+                                },
+                            ))
+                            .id(),
+                        );
+                    });
 
-                c.spawn(NodeBundle {
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        left: Val::Px(0.0),
-                        top: Val::Px(0.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|c| {
-                    let mut bundle = TextBundle::from_section(
-                        "yo",
-                        TextStyle {
-                            font_size: 16.0,
+                    c.spawn(NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(269.0),
+                            bottom: Val::Px(4.0),
                             ..default()
                         },
-                    );
-                    bundle.visibility = Visibility::Hidden;
+                        ..default()
+                    })
+                    .with_children(|c| {
+                        ammo_hud = Some(
+                            c.spawn(
+                                TextBundle::from_section(
+                                    "100\nCRUTONS",
+                                    TextStyle {
+                                        font_size: 32.0,
+                                        font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                        color: text_color,
+                                    },
+                                )
+                                .with_text_justify(JustifyText::Center),
+                            )
+                            .id(),
+                        );
+                    });
 
-                    debug_hud = Some(c.spawn(bundle).id());
+                    c.spawn((
+                        NodeBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                width: Val::Px(26.0 * 3.0),
+                                height: Val::Px(28.0 * 3.0),
+                                left: Val::Px(2.0 * 3.0),
+                                bottom: Val::Px(2.0 * 3.0),
+                                ..default()
+                            },
+                            // a `NodeBundle` is transparent by default, so to see the image we have to its color to `WHITE`
+                            background_color: Color::WHITE.into(),
+                            ..default()
+                        },
+                        UiImage {
+                            texture: avatar
+                                .map(|c| c.0.clone())
+                                .unwrap_or_else(|| nw.asset_server.load("ui/PlayerIcon.png")),
+                            ..default()
+                        },
+                    ));
+
+                    c.spawn(NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(0.0),
+                            top: Val::Px(0.0),
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .with_children(|c| {
+                        let mut bundle = TextBundle::from_section(
+                            "yo",
+                            TextStyle {
+                                font_size: 16.0,
+                                ..default()
+                            },
+                        );
+                        bundle.visibility = Visibility::Hidden;
+
+                        debug_hud = Some(c.spawn(bundle).id());
+                    });
                 });
-            });
+        }
 
         let mut player_commands = nw.commands.get_entity(id).unwrap();
 
