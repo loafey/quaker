@@ -71,12 +71,12 @@ impl Player {
             let health_hud = option_continue!(player.children.health_hud);
             let mut health_hud = error_continue!(text.get_mut(health_hud));
             let health_hud = option_continue!(health_hud.sections.get_mut(0));
-            health_hud.value = format!("HEALTH: {}", player.health);
+            health_hud.value = format!("HEALTH: {}", player.health.round());
 
             let armour_hud = option_continue!(player.children.armour_hud);
             let mut armour_hud = error_continue!(text.get_mut(armour_hud));
             let armour_hud = option_continue!(armour_hud.sections.get_mut(0));
-            armour_hud.value = format!("ARMOUR: {}", player.armour);
+            armour_hud.value = format!("ARMOUR: {}", player.armour.round());
         }
     }
 

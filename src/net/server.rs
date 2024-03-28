@@ -223,7 +223,7 @@ pub fn handle_client_message(
                 .get(&attack_weapon)
                 .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
             for ent in hit_ents {
-                if let Ok((_, player, _)) = nw.players.get_mut(ent) {
+                if let Ok((_, mut hit_player, _)) = nw.players.get_mut(ent) {
                     let damage = if attack == 1 {
                         if let Attack::RayCast {
                             damage, damage_mod, ..
@@ -245,8 +245,14 @@ pub fn handle_client_message(
                     };
                     println!(
                         "Player {} attacked with {} for {damage} damage",
-                        player.id, attack_weapon.id
+                        hit_player.id, attack_weapon.id
                     );
+                    hit_player.health -= damage;
+                    server.send_message(
+                        ClientId::from_raw(hit_player.id),
+                        ServerChannel::NetworkedEntities as u8,
+                        error_continue!(ServerMessage::Hit { amount: damage }.bytes()),
+                    )
                 }
             }
 

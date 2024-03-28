@@ -102,6 +102,14 @@ pub fn handle_messages(
             ServerMessage::HitscanHits { hits } => {
                 hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials)
             }
+            ServerMessage::Hit { amount } => {
+                for (_, mut player, _) in &mut nw.players {
+                    if player.id == nw.current_id.0 {
+                        player.health -= amount;
+                        break;
+                    }
+                }
+            }
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")
             }

@@ -217,6 +217,9 @@ pub enum ServerMessage {
     HitscanHits {
         hits: Vec<Vec3>,
     },
+    Hit {
+        amount: f32,
+    },
 }
 impl ServerMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
