@@ -64,6 +64,16 @@ pub fn handle_messages(
                     }
                 }
             }
+            ServerMessage::Reset => {
+                for (_, mut player, mut trans) in &mut nw.players {
+                    if player.id == nw.current_id.0 {
+                        player.health = 100.0;
+                        player.armour = 0.0;
+                        trans.translation = nw.player_spawn.0;
+                        break;
+                    }
+                }
+            }
             ServerMessage::SpawnPickup {
                 id,
                 translation,
@@ -78,6 +88,14 @@ pub fn handle_messages(
                     &mut nw.commands,
                     &mut nw.materials,
                 );
+            }
+            ServerMessage::Message { text } => {
+                for (_, player, _) in &nw.players {
+                    if player.id == nw.current_id.0 {
+                        player.display_message(&mut nw.commands, &nw.asset_server, text);
+                        break;
+                    }
+                }
             }
             x => {
                 error!("unhandled ServerMessages message: {x:?}")

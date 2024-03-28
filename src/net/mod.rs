@@ -233,6 +233,7 @@ pub enum ServerMessage {
     Hit {
         amount: f32,
     },
+    Reset,
     Message {
         text: String,
     },

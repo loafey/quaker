@@ -41,6 +41,51 @@ pub struct Lobby {
     cam_count: isize,
 }
 
+fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
+    for (_, player, _) in &nw.players {
+        if player.id == nw.current_id.0 {
+            player.display_message(&mut nw.commands, &nw.asset_server, text.clone());
+            break;
+        }
+    }
+    server.broadcast_message(
+        ServerChannel::ServerMessages as u8,
+        error_return!(ServerMessage::Message { text }.bytes()),
+    );
+}
+
+fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
+    let mut frags = Vec::new();
+    for (_, mut player, mut trans) in &mut nw.players {
+        if player.health <= 0.0 {
+            println!("dead player: {}", player.id);
+            player.health = 100.0;
+            player.armour = 0.0;
+
+            if player.id == nw.current_id.0 {
+                trans.translation = nw.player_spawn.0;
+            } else {
+                server.send_message(
+                    ClientId::from_raw(player.id),
+                    ServerChannel::ServerMessages as u8,
+                    error_continue!(ServerMessage::Reset.bytes()),
+                );
+            }
+
+            frags.push((player.id, player.last_hurter));
+        }
+    }
+    if !frags.is_empty() {
+        println!();
+    }
+
+    for (id, hurter) in frags {
+        let message = format!("{} GOT FRAGGED BY {}", id, hurter);
+
+        transmit_message(server, nw, message);
+    }
+}
+
 #[allow(clippy::type_complexity)]
 pub fn server_events(
     mut events: EventReader<ServerEvent>,
@@ -51,6 +96,8 @@ pub fn server_events(
     map: Res<CurrentMap>,
     mut nw: NetWorld,
 ) {
+    frag_checker(&mut server, &mut nw);
+
     // Handle connection details
     for event in events.read() {
         match event {
@@ -224,6 +271,7 @@ pub fn handle_client_message(
                 .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
             for ent in hit_ents {
                 if let Ok((_, mut hit_player, _)) = nw.players.get_mut(ent) {
+                    hit_player.last_hurter = client_id;
                     let damage = if attack == 1 {
                         if let Attack::RayCast {
                             damage, damage_mod, ..
@@ -256,8 +304,9 @@ pub fn handle_client_message(
                         )
                     } else {
                         for (_, mut player, _) in &mut nw.players {
-                            if player.id == client_id {
+                            if player.id == nw.current_id.0 {
                                 player.health -= damage;
+                                break;
                             }
                         }
                     }

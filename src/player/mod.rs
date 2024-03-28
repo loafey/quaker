@@ -68,6 +68,7 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 #[derive(Component, Debug)]
 pub struct Player {
     pub id: u64,
+    pub last_hurter: u64,
 
     pub health: f32,
     pub armour: f32,
@@ -105,6 +106,7 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             id: 0,
+            last_hurter: 0,
             health: 100.0,
             armour: 100.0,
             velocity: Vec3::ZERO,
