@@ -54,6 +54,7 @@ impl Player {
         let mut armour_hud = None;
         let mut health_hud = None;
         let mut debug_hud = None;
+        let mut message_holder = None;
         let mut entity = nw.commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
@@ -191,6 +192,20 @@ impl Player {
                         },
                     ));
 
+                    message_holder = Some(
+                        c.spawn(NodeBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                left: Val::Px(10.0),
+                                top: Val::Px(10.0),
+                                flex_direction: FlexDirection::Column,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .id(),
+                    );
+
                     let text_color = Color::rgb(0.921, 0.682, 0.203);
 
                     c.spawn(NodeBundle {
@@ -322,6 +337,7 @@ impl Player {
                 armour_hud,
                 health_hud,
                 debug_hud,
+                message_holder,
             },
             ..Default::default()
         };

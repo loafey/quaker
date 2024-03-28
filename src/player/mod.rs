@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use crate::map_gen::entities::data::WeaponData;
+use crate::{entities::message::Message, map_gen::entities::data::WeaponData};
 
 mod debug;
 mod spawn;
@@ -52,6 +52,7 @@ pub struct PlayerChildren {
     pub armour_hud: Option<Entity>,
     pub ammo_hud: Option<Entity>,
     pub debug_hud: Option<Entity>,
+    pub message_holder: Option<Entity>,
 }
 
 #[derive(Debug, Default)]
@@ -162,6 +163,30 @@ impl Player {
         } else {
             error!("unhandled: picked up weapon when already had one");
             false
+        }
+    }
+
+    pub fn display_message(
+        &self,
+        commands: &mut Commands,
+        asset_server: &AssetServer,
+        message: String,
+    ) {
+        if let Some(holder) = self.children.message_holder {
+            let message_id = commands
+                .spawn(TextBundle::from_section(
+                    message,
+                    TextStyle {
+                        font: asset_server.load("ui/Color Basic.otf"),
+                        color: Color::rgb(1.0, 0.0, 0.0),
+                        font_size: 32.0,
+                    },
+                ))
+                .insert(Message::default())
+                .id();
+            commands.entity(holder).add_child(message_id);
+        } else {
+            info!("Got message: {message}")
         }
     }
 }

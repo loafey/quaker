@@ -13,6 +13,7 @@ use bevy::{
 
 use crate::resources::projectiles::Projectile;
 
+pub mod message;
 pub mod pickup;
 pub mod projectiles;
 

@@ -48,11 +48,29 @@ pub struct WeaponData {
     pub attack1: Attack,
     #[serde(default)]
     pub attack2: Attack,
+    #[serde(default = "default_pickupmessage1")]
+    pub pickup_message1: String,
+    #[serde(default = "default_pickupmessage2")]
+    pub pickup_message2: String,
+    #[serde(default = "default_fancyname")]
+    pub fancy_name: String,
 }
 impl WeaponData {
     fn default_firetime() -> f32 {
         1.0
     }
+}
+
+fn default_fancyname() -> String {
+    "UNNAMNED_WEAPON".to_string()
+}
+
+fn default_pickupmessage1() -> String {
+    "pICKED UP: ".to_string()
+}
+
+fn default_pickupmessage2() -> String {
+    "!".to_string()
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

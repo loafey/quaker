@@ -77,6 +77,19 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                                     "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
                                 ),
                             ));
+
+                            if player.id == nw.current_id.0 {
+                                player.display_message(
+                                    &mut nw.commands,
+                                    &nw.asset_server,
+                                    format!(
+                                        "{}{}{}",
+                                        weapon_data.pickup_message1,
+                                        weapon_data.fancy_name,
+                                        weapon_data.pickup_message2
+                                    ),
+                                );
+                            }
                         }
                     } else {
                         error!("tried to pickup nonexisting weapon: \"{weapon}\"")
@@ -219,6 +232,9 @@ pub enum ServerMessage {
     },
     Hit {
         amount: f32,
+    },
+    Message {
+        text: String,
     },
 }
 impl ServerMessage {

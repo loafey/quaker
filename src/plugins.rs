@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use crate::entities::message::Message;
 use crate::entities::{pickup::PickupEntity, ProjectileEntity};
 use crate::map_gen::{load_map, texture_systems::*};
 use crate::net::{self, NetState};
@@ -148,6 +149,7 @@ impl Plugin for GameStage {
                     Player::systems(),
                     PickupEntity::systems(),
                     ProjectileEntity::systems(),
+                    Message::update_messages,
                 )
                     .run_if(in_state(CurrentStage::InGame)), //.run_if(if_not_paused),
             )
