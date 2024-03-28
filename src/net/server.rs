@@ -229,7 +229,7 @@ pub fn handle_client_message(
                             damage, damage_mod, ..
                         } = &attack_weapon.attack1
                         {
-                            damage + damage_mod * nw.game_entropy.get_f32()
+                            damage + (damage_mod * (nw.game_entropy.get_f32() * 2.0 - 1.0))
                         } else {
                             error!("weird attack 1");
                             0.0
@@ -238,7 +238,7 @@ pub fn handle_client_message(
                         damage, damage_mod, ..
                     } = &attack_weapon.attack2
                     {
-                        damage + damage_mod * nw.game_entropy.get_f32()
+                        damage + (damage_mod * (nw.game_entropy.get_f32() * 2.0 - 1.0))
                     } else {
                         error!("weird attack 2");
                         0.0
