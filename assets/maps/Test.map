@@ -4,7 +4,7 @@
 {
 "classname" "worldspawn"
 "_tb_textures" "textures/maps"
-"_tb_def" "external:../Entites/Base.fgd"
+"_tb_def" "external:../Base.fgd"
 // brush 0
 {
 ( -272 112 -16 ) ( -96 -176 -16 ) ( -96 -176 -32 ) maps/Granite 0 0 0 1 1

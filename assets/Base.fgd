@@ -1,0 +1,138 @@
+@SolidClass = worldspawn : "World entity" []
+
+@baseclass size(-8 -8 -24, 8 8 12) color(0 255 0) = PlayerClass []
+
+@PointClass base(PlayerClass) = info_player_start : "Player 1 start" []
+
+@PointClass base(PlayerClass) = info_end_camera : "Player End Camera" []
+
+
+// Light
+
+@baseclass color(255 255 40) = Light [
+	light(integer) : "Brightness" : 300
+	wait(integer) : "Fade distance multiplier" : 1
+	delay(choices) : "Attenuation" =
+	[
+		0 : "Linear falloff (Default)"
+		1 : "Inverse distance falloff"
+		2 : "Inverse distance squared"
+		3 : "No falloff"
+		4 : "Local minlight"
+		5 : "Inverse distance squared B"
+	]
+	mangle(string) : "Spotlight angle"
+	style(Choices) : "Appearance" : 0 =
+	[
+		0 : "Normal"
+		10: "Fluorescent flicker"
+		2 : "Slow, strong pulse"
+		11: "Slow pulse, noblack"
+		5 : "Gentle pulse"
+		1 : "Flicker A"
+		6 : "Flicker B"
+		3 : "Candle A"
+		7 : "Candle B"
+		8 : "Candle C"
+		4 : "Fast strobe"
+		9 : "Slow strobe"
+	]
+]
+
+@PointClass size(-8 -8 -8, 8 8 8) base(Light, Target, Targetname) =
+	light : "Invisible light source"
+	[
+		spawnflags(Flags) = [ 1 : "Start off" : 0 ]
+	]
+
+
+// Enemies
+
+@baseclass size(-16 -16 -24, 16 16 16) color(255 0 0) = EnemyClass [
+	angle(integer) : "Angle" : 0
+]
+
+@PointClass base(EnemyClass) = enemy_deadman : "Deadman" []
+
+@PointClass base(EnemyClass) = enemy_grunt : "Grunt" []
+
+@PointClass base(EnemyClass) = enemy_panzer : "Panzer" []
+
+
+// Ammo
+@baseclass size(-4 -4 -4, 4 4 4) color(0 0 255) = AmmoPickupClass []
+
+@PointClass base(AmmoPickupClass) = ammo_bullet: "AmmoBullet" []
+@PointClass base(AmmoPickupClass) = ammo_shell: "AmmoShell" []
+@PointClass base(AmmoPickupClass) = ammo_rocket: "AmmoRocket" []
+@PointClass base(AmmoPickupClass) = ammo_fuel: "AmmoFuel" []
+@PointClass base(AmmoPickupClass) = ammo_energy: "AmmoEnergy" []
+@PointClass base(AmmoPickupClass) = ammo_nuke: "AmmoNuke" []
+
+
+// Weapon
+@baseclass size(-4 -4 -4, 4 4 4) color(0 0 255) = WeaponPickupClass []
+
+@PointClass base(WeaponPickupClass) = weapon_bayonet: "WeaponBayonet" []
+@PointClass base(WeaponPickupClass) = weapon_revolver: "WeaponRevolver" []
+@PointClass base(WeaponPickupClass) = weapon_pumpshotgun: "WeaponPumpshotgun" []
+@PointClass base(WeaponPickupClass) = weapon_smgbelter: "WeaponSmgbelter" []
+@PointClass base(WeaponPickupClass) = weapon_rpg: "WeaponRpg" []
+@PointClass base(WeaponPickupClass) = weapon_dynamite: "WeaponDynamite" []
+@PointClass base(WeaponPickupClass) = weapon_supershotgun: "WeaponSupershotgun" []
+@PointClass base(WeaponPickupClass) = weapon_flamethrower: "WeaponFlamethrower" []
+@PointClass base(WeaponPickupClass) = weapon_supercoolgun: "WeaponSuperCoolGun" []
+@PointClass base(WeaponPickupClass) = weapon_nukegun: "WeaponNukeGun" []
+
+
+// Interactable
+@baseclass base(Appearflags, Target, Killarget, Targetname) = Trigger
+[
+	sounds(choices) : "Sound style" : 0 =
+	[
+		0 : "None"
+		1 : "Secret sound"
+		2 : "Beep beep"
+		3 : "Large switch"
+	]
+	delay(string) : "Delay before trigger" : "0"
+	message(string) : "Message"
+	firemultiple(choices): "Trigger Times": 0 = [
+		0: "Once"
+		1: "Multiple"
+	]
+	invisible(choices): "Invisble": 0 = [
+		0: "False"
+		1: "True"
+	]
+	triggerbox(integer): "Triggerbox": 0
+]
+
+@SolidClass base(Trigger) = trigger_changelevel : "Trigger: Change level"
+[
+	map(string) : "Next map"
+	target(target_destination) : "Target"
+	spawnflags(flags) =
+	[
+		1: "No intermission" : 0
+	]
+]
+
+@SolidClass base(Trigger) = trigger_one : "Trigger: Activate once"
+[
+	health(integer) : "Health (shootable)"
+	spawnflags(flags) = [ 1: "Not touchable" : 0 ]
+]
+@SolidClass base(Trigger) = trigger_multiple : "Trigger: Activate multiple"
+[
+	wait(string) : "Wait before reset" : "0.2"
+	health(integer) : "Health (shootable)"
+	spawnflags(flags) = [ 1: "Not touchable" : 0 ]
+]
+
+// Scriptable
+@baseclass base(Appearflags, Target, Killarget, Targetname) = Scriptable
+[
+	script(string) : "Script" : ""
+]
+@SolidClass base(Scriptable) = scriptable : "Scriptable" []
