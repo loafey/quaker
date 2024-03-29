@@ -2155,20 +2155,20 @@
 // entity 11
 {
 "classname" "weapon_revolver"
-"origin" "4 4 212"
+"origin" "164 100 -332"
 }
 // entity 12
 {
 "classname" "weapon_revolver"
-"origin" "4 4 188"
+"origin" "148 -108 -324"
 }
 // entity 13
 {
 "classname" "weapon_pumpshotgun"
-"origin" "4 4 164"
+"origin" "148 -108 -348"
 }
 // entity 14
 {
 "classname" "weapon_pumpshotgun"
-"origin" "4 4 140"
+"origin" "164 100 -356"
 }
