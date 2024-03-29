@@ -1,6 +1,5 @@
 use crate::{map_gen::entities::data::PickupData, queries::NetWorld};
 use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
-use bevy_kira_audio::AudioControl;
 use bevy_renet::renet::*;
 use image::{DynamicImage, ImageBuffer};
 use macros::{error_return, option_return};
@@ -72,11 +71,11 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                             .asset_server
                             .load(format!("{}#Scene0", weapon_data.model_file));
                         if player.add_weapon(weapon_data.clone(), slot, handle) {
-                            nw.audio.play(nw.asset_server.load(
-                                weapon_data.pickup_sound.clone().unwrap_or(
-                                    "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
-                                ),
-                            ));
+                            // nw.audio.play(nw.asset_server.load(
+                            //     weapon_data.pickup_sound.clone().unwrap_or(
+                            //         "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
+                            //     ),
+                            // ));
 
                             if player.id == nw.current_id.0 {
                                 player.display_message(

@@ -18,7 +18,6 @@ use bevy::{
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use bevy_kira_audio::{Audio, AudioControl};
 use bevy_rapier3d::{
     control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
     plugin::RapierContext,
@@ -86,7 +85,6 @@ impl Player {
         keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
-        audio: Res<Audio>,
         mut client_events: EventWriter<ClientMessage>,
     ) {
         for (_, mut player, _) in &mut q_players {
@@ -123,10 +121,10 @@ impl Player {
                 player.restart_anim = true;
                 match &player.weapons[slot][row].data.shoot_sfx {
                     SoundEffect::Single(path) => {
-                        audio.play(asset_server.load(path));
+                        //audio.play(asset_server.load(path));
                     }
                     SoundEffect::Random(list) if !list.is_empty() => {
-                        audio.play(asset_server.load(misc_entropy.choose(list)));
+                        //audio.play(asset_server.load(misc_entropy.choose(list)));
                     }
                     _ => {}
                 }

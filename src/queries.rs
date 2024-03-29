@@ -9,7 +9,6 @@ use crate::{
     },
 };
 use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_kira_audio::Audio;
 use bevy_rapier3d::plugin::RapierContext;
 
 #[allow(clippy::type_complexity)]
@@ -28,7 +27,6 @@ pub struct NetWorld<'w, 's> {
     >,
     pub asset_server: Res<'w, AssetServer>,
     pub weapon_map: Res<'w, WeaponMap>,
-    pub audio: Res<'w, Audio>,
     pub materials: ResMut<'w, Assets<StandardMaterial>>,
     pub meshes: ResMut<'w, Assets<Mesh>>,
     pub rapier_context: Res<'w, RapierContext>,

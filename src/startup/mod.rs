@@ -1,11 +1,8 @@
+use crate::resources::CurrentStage;
 use bevy::ecs::prelude::Res;
 use bevy::input::keyboard::KeyCode;
 use bevy::input::ButtonInput;
 use bevy::prelude::*;
-use bevy_kira_audio::Audio;
-use bevy_kira_audio::AudioControl;
-
-use crate::resources::CurrentStage;
 
 #[derive(Component)]
 pub struct StartupEnt;
@@ -44,7 +41,6 @@ pub fn startup_update(
     keys: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Sprite, &mut StartUpState)>,
     time: Res<Time>,
-    audio: Res<Audio>,
     asset_server: Res<AssetServer>,
     mut game_stage: ResMut<NextState<CurrentStage>>,
     ents: Query<(Entity, &StartupEnt)>,
@@ -62,7 +58,7 @@ pub fn startup_update(
         state.time += time.delta_seconds();
         if state.time > 1.0 && !state.played_sound {
             state.played_sound = true;
-            audio.play(asset_server.load("sounds/splip.ogg"));
+            //audio.play(asset_server.load("sounds/splip.ogg"));
         }
 
         if state.time < 2.4 {
