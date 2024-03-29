@@ -58,7 +58,12 @@ pub fn startup_update(
         state.time += time.delta_seconds();
         if state.time > 1.0 && !state.played_sound {
             state.played_sound = true;
-            //audio.play(asset_server.load("sounds/splip.ogg"));
+            commands
+                .spawn(AudioBundle {
+                    source: asset_server.load("sounds/splip.ogg"),
+                    ..Default::default()
+                })
+                .insert(StartupEnt);
         }
 
         if state.time < 2.4 {

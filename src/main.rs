@@ -2,8 +2,8 @@
 extern crate macros;
 use crate::{net::SimulationEvent, try_steam::try_steam};
 use bevy::{
-    audio::AudioPlugin, core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin,
-    prelude::*, render::texture::ImageAddressMode,
+    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
+    render::texture::ImageAddressMode,
 };
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
@@ -67,7 +67,6 @@ fn main() {
         //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
         TemporalAntiAliasPlugin,
         ObjPlugin,
-        AudioPlugin::default(),
         HookPlugin,
         (StartupStage, MainMenuStage, GameStage),
         TextInputPlugin,
