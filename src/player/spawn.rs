@@ -55,6 +55,7 @@ impl Player {
         let mut health_hud = None;
         let mut debug_hud = None;
         let mut message_holder = None;
+        let mut shoot_sound_holder = None;
         let mut entity = nw.commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
@@ -70,52 +71,58 @@ impl Player {
                     .insert(Ccd::enabled());
             })
             .with_children(|c| {
-                let new_camera_id = c
-                    .spawn({
-                        Camera3dBundle {
-                            projection: Projection::Perspective(PerspectiveProjection {
-                                fov: 80.0f32.to_radians(),
-                                ..default()
-                            }),
-                            //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
-                            transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
-                            camera: Camera {
-                                is_active: is_own,
-                                ..Default::default()
-                            },
-                            ..Default::default()
-                        }
-                    })
-                    .insert(ScreenSpaceAmbientOcclusionBundle::default())
-                    .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
-                    .insert(TemporalAntiAliasBundle::default())
-                    .insert(Name::new("player camera"))
-                    .with_children(|c| {
-                        let new_fps_model = c
-                            .spawn(PlayerFpsModel)
-                            .insert(HookedSceneBundle {
-                                scene: SceneBundle::default(),
-                                reload: Hook::new(|entity, commands, world, root| {
-                                    if entity.get::<Handle<Mesh>>().is_some() {
-                                        commands.insert(NoFrustumCulling);
-                                    }
-                                    if entity.get::<Handle<StandardMaterial>>().is_some() {
-                                        if let Some(material) =
-                                            world.entity(root).get::<PlayerFpsMaterial>()
-                                        {
-                                            commands.insert(material.0.clone());
-                                        }
-                                    }
-                                }),
-                            })
-                            .insert(PlayerFpsMaterial::default())
-                            .insert(Name::new("fps model holder"))
-                            .id();
-                        fps_model = Some(new_fps_model);
-                    })
-                    .id();
-
                 if is_own {
+                    let new_camera_id = c
+                        .spawn({
+                            Camera3dBundle {
+                                projection: Projection::Perspective(PerspectiveProjection {
+                                    fov: 80.0f32.to_radians(),
+                                    ..default()
+                                }),
+                                //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
+                                transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
+                                camera: Camera {
+                                    is_active: is_own,
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }
+                        })
+                        .insert(ScreenSpaceAmbientOcclusionBundle::default())
+                        .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
+                        .insert(TemporalAntiAliasBundle::default())
+                        .insert(Name::new("player camera"))
+                        .with_children(|c| {
+                            let new_fps_model = c
+                                .spawn(PlayerFpsModel)
+                                .insert(HookedSceneBundle {
+                                    scene: SceneBundle::default(),
+                                    reload: Hook::new(|entity, commands, world, root| {
+                                        if entity.get::<Handle<Mesh>>().is_some() {
+                                            commands.insert(NoFrustumCulling);
+                                        }
+                                        if entity.get::<Handle<StandardMaterial>>().is_some() {
+                                            if let Some(material) =
+                                                world.entity(root).get::<PlayerFpsMaterial>()
+                                            {
+                                                commands.insert(material.0.clone());
+                                            }
+                                        }
+                                    }),
+                                })
+                                .insert(PlayerFpsMaterial::default())
+                                .insert(Name::new("fps model holder"))
+                                .id();
+                            fps_model = Some(new_fps_model);
+
+                            c.spawn((TransformBundle::IDENTITY, SpatialListener::new(2.0)));
+
+                            shoot_sound_holder = Some(c.spawn(TransformBundle::IDENTITY).id());
+                        })
+                        .id();
+
+                    camera = Some(new_camera_id);
+
                     c.spawn(Camera2dBundle {
                         camera: Camera {
                             order: 2,
@@ -132,8 +139,6 @@ impl Player {
                         ..default()
                     });
                 }
-
-                camera = Some(new_camera_id);
             });
 
         if is_own {
@@ -338,6 +343,7 @@ impl Player {
                 health_hud,
                 debug_hud,
                 message_holder,
+                shoot_sound_holder,
             },
             ..Default::default()
         };

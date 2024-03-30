@@ -13,6 +13,7 @@ use crate::{
     },
 };
 use bevy::{
+    audio::Volume,
     ecs::schedule::SystemConfigs,
     input::mouse::MouseMotion,
     prelude::*,
@@ -121,18 +122,25 @@ impl Player {
             if shot {
                 player.restart_anim = true;
                 let sound = match &player.weapons[slot][row].data.shoot_sfx {
-                    SoundEffect::Single(path) => Some(path),
+                    SoundEffect::Single(path) => Some(path.clone()),
                     SoundEffect::Random(list) if !list.is_empty() => {
-                        Some(misc_entropy.choose(list))
+                        Some(misc_entropy.choose(list).clone())
                     }
                     _ => None,
                 };
                 if let Some(sound) = sound {
-                    commands.entity(player_ent).with_children(|c| {
-                        c.spawn(AudioBundle {
-                            source: asset_server.load(sound),
-                            settings: PlaybackSettings::DESPAWN.with_spatial(true),
-                        });
+                    let sound_holder = player.children.shoot_sound_holder.unwrap_or(player_ent);
+
+                    commands.entity(sound_holder).with_children(|c| {
+                        c.spawn((
+                            TransformBundle::IDENTITY,
+                            AudioBundle {
+                                source: asset_server.load(sound),
+                                settings: PlaybackSettings::DESPAWN
+                                    .with_spatial(true)
+                                    .with_volume(Volume::new(0.8)),
+                            },
+                        ));
                     });
                 }
             }

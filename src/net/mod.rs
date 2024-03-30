@@ -72,7 +72,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                             .load(format!("{}#Scene0", weapon_data.model_file));
                         if player.add_weapon(weapon_data.clone(), slot, handle) {
                             nw.commands.entity(player_ent).with_children(|c| {
-                                c.spawn(AudioBundle {
+                                c.spawn(PbrBundle::default()).insert(AudioBundle {
                                     source: nw.asset_server.load(
                                         weapon_data.pickup_sound.clone().unwrap_or(
                                             "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"

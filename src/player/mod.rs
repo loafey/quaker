@@ -53,6 +53,7 @@ pub struct PlayerChildren {
     pub ammo_hud: Option<Entity>,
     pub debug_hud: Option<Entity>,
     pub message_holder: Option<Entity>,
+    pub shoot_sound_holder: Option<Entity>,
 }
 
 #[derive(Debug, Default)]
