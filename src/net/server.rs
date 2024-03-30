@@ -54,7 +54,6 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
         if player.health <= 0.0 {
             player.health = 100.0;
             player.armour = 0.0;
-            player.last_hurter = 0;
 
             if player.id == nw.current_id.0 {
                 trans.translation = nw.player_spawn.0;
@@ -67,10 +66,25 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
             }
 
             frags.push((player.id, player.last_hurter));
+            player.last_hurter = 0;
         }
     }
 
     for (id, hurter) in frags {
+        server.broadcast_message(
+            ServerChannel::ServerMessages as u8,
+            error_continue!(ServerMessage::KillStat {
+                death: id,
+                hurter: (hurter != 0).then_some(hurter)
+            }
+            .bytes()),
+        );
+        if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(id)) {
+            info.deaths += 1;
+        }
+        if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(hurter)) {
+            info.kills += 1;
+        }
         transmit_message(server, nw, format!("{} GOT FRAGGED BY {}", id, hurter));
     }
 }

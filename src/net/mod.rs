@@ -288,6 +288,10 @@ pub enum ServerMessage {
     Message {
         text: String,
     },
+    KillStat {
+        death: u64,
+        hurter: Option<u64>,
+    },
 }
 impl ServerMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {

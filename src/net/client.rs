@@ -104,6 +104,16 @@ pub fn handle_messages(
                     }
                 }
             }
+            ServerMessage::KillStat { death, hurter } => {
+                if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(death)) {
+                    info.deaths += 1;
+                }
+                if let Some(hurter) = hurter
+                    && let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(hurter))
+                {
+                    info.kills += 1;
+                }
+            }
             x => {
                 error!("unhandled ServerMessages message: {x:?}")
             }
