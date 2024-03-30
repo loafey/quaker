@@ -1,6 +1,6 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
-    net::{CurrentAvatar, PlayerInfo},
+    net::{CurrentAvatar, PlayerInfo, SteamClient},
     queries::NetWorld,
     resources::PlayerSpawnpoint,
 };
@@ -22,6 +22,7 @@ impl Player {
         mut nw: NetWorld,
         player_spawn: Res<PlayerSpawnpoint>,
         avatar: Option<Res<CurrentAvatar>>,
+        steam: Option<Res<SteamClient>>,
     ) {
         let id = nw.current_id.0;
         let entity = Self::spawn(
@@ -33,9 +34,16 @@ impl Player {
             avatar.as_ref(),
         );
 
-        nw.lobby
-            .players
-            .insert(ClientId::from_raw(nw.current_id.0), PlayerInfo { entity });
+        nw.lobby.players.insert(
+            ClientId::from_raw(nw.current_id.0),
+            PlayerInfo {
+                entity,
+                name: steam.map(|s| s.friends().name()).unwrap_or_else(|| {
+                    println!("no steamy");
+                    format!("{id}")
+                }),
+            },
+        );
     }
 
     pub fn spawn(

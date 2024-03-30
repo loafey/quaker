@@ -52,13 +52,14 @@ pub fn handle_messages(
                 id,
                 translation,
                 weapons,
+                name,
             } => {
                 if id != nw.current_id.0 {
                     println!("Spawning player: {id}");
                     let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
                     nw.lobby
                         .players
-                        .insert(ClientId::from_raw(id), PlayerInfo { entity });
+                        .insert(ClientId::from_raw(id), PlayerInfo { entity, name });
                 }
             }
             ServerMessage::DespawnPlayer { id } => {

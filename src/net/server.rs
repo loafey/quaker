@@ -33,6 +33,7 @@ use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
 use std::{net::UdpSocket, time::SystemTime};
+use steamworks::SteamId;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
     for (_, player, _) in &nw.players {
@@ -79,6 +80,7 @@ pub fn server_events(
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
 
+    steam: Option<Res<SteamClient>>,
     map: Res<CurrentMap>,
     mut nw: NetWorld,
 ) {
@@ -120,6 +122,7 @@ pub fn server_events(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
                         error_continue!(ServerMessage::SpawnPlayer {
+                            name: info.name.clone(),
                             id: other_id.raw(),
                             translation: trans.translation,
                             weapons: pl
@@ -141,14 +144,26 @@ pub fn server_events(
                     Vec::new(),
                     None,
                 );
-                nw.lobby.players.insert(*client_id, PlayerInfo { entity });
+                let name = steam
+                    .as_ref()
+                    .map(|s| s.friends().get_friend(SteamId::from_raw(client_id.raw())))
+                    .map(|f| f.name())
+                    .unwrap_or(format!("{client_id}"));
+                nw.lobby.players.insert(
+                    *client_id,
+                    PlayerInfo {
+                        entity,
+                        name: name.clone(),
+                    },
+                );
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::SpawnPlayer {
                         id: client_id.raw(),
                         translation: spawn_point,
-                        weapons: Vec::new()
+                        weapons: Vec::new(),
+                        name
                     }
                     .bytes()),
                 )

@@ -12,6 +12,7 @@ pub mod server;
 #[derive(Debug)]
 pub struct PlayerInfo {
     pub entity: Entity,
+    pub name: String,
 }
 
 #[derive(Resource)]
@@ -246,6 +247,7 @@ pub enum ServerMessage {
     SetMap(PathBuf),
     SpawnPlayer {
         id: u64,
+        name: String,
         translation: Vec3,
         weapons: Vec<Vec<String>>,
     },

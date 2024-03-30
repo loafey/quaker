@@ -87,8 +87,8 @@ impl Player {
                 *vis = Visibility::Visible;
                 text.sections[0].value = format!(
                     "Players:\n{}",
-                    lobby.players.keys().fold(String::new(), |mut output, i| {
-                        let _ = writeln!(output, "{i}");
+                    lobby.players.values().fold(String::new(), |mut output, i| {
+                        let _ = writeln!(output, "{}", i.name);
                         output
                     })
                 )
