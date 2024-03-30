@@ -4,7 +4,7 @@ use super::{
 use crate::{
     entities::ProjectileEntity,
     map_gen::entities::data::{Attack, SoundEffect},
-    net::ClientMessage,
+    net::{server::Lobby, ClientMessage},
     resources::{
         entropy::{EGame, EMisc, Entropy},
         inputs::PlayerInput,
@@ -25,6 +25,7 @@ use bevy_rapier3d::{
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use macros::{error_continue, option_continue, option_return};
+use std::fmt::Write;
 
 enum SwitchDirection {
     Back,
@@ -62,21 +63,39 @@ impl Player {
 
     pub fn update_hud(
         q_players: Query<&Player, With<PlayerController>>,
-        mut text: Query<&mut Text>,
+        mut text: Query<(&mut Text, &mut Visibility)>,
+        input: Res<PlayerInput>,
+        lobby: Res<Lobby>,
     ) {
         for player in &q_players {
             let ammo_hud = option_continue!(player.children.ammo_hud);
             let _ammo_hud = error_continue!(text.get_mut(ammo_hud));
 
             let health_hud = option_continue!(player.children.health_hud);
-            let mut health_hud = error_continue!(text.get_mut(health_hud));
+            let (mut health_hud, _) = error_continue!(text.get_mut(health_hud));
             let health_hud = option_continue!(health_hud.sections.get_mut(0));
             health_hud.value = format!("HEALTH: {}", player.health.round());
 
             let armour_hud = option_continue!(player.children.armour_hud);
-            let mut armour_hud = error_continue!(text.get_mut(armour_hud));
+            let (mut armour_hud, _) = error_continue!(text.get_mut(armour_hud));
             let armour_hud = option_continue!(armour_hud.sections.get_mut(0));
             armour_hud.value = format!("ARMOUR: {}", player.armour.round());
+
+            let lobby_hud = option_continue!(player.children.lobby_hud);
+            let (mut text, mut vis) = error_continue!(text.get_mut(lobby_hud));
+            if input.show_lobby_just_pressed {
+                *vis = Visibility::Visible;
+                text.sections[0].value = format!(
+                    "Players:\n{}",
+                    lobby.players.keys().fold(String::new(), |mut output, i| {
+                        let _ = writeln!(output, "{i}");
+                        output
+                    })
+                )
+            }
+            if input.show_lobby_just_released {
+                *vis = Visibility::Hidden;
+            }
         }
     }
 

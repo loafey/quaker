@@ -29,6 +29,7 @@ pub struct PlayerInput {
     weapon_slot8: Key,
     weapon_slot9: Key,
     weapon_slot10: Key,
+    show_lobby: Key,
 }
 impl PlayerInput {
     pub fn new() -> Self {

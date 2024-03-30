@@ -50,6 +50,7 @@ impl Player {
         let mut debug_hud = None;
         let mut message_holder = None;
         let mut shoot_sound_holder = None;
+        let mut lobby_hud = None;
         let mut entity = nw.commands.spawn(Collider::cylinder(0.5, 0.15));
 
         let player_commands = entity
@@ -191,6 +192,34 @@ impl Player {
                             ..default()
                         },
                     ));
+
+                    c.spawn(NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(0.0),
+                            top: Val::Px(0.0),
+                            width: Val::Percent(100.0),
+                            height: Val::Percent(100.0),
+                            align_content: AlignContent::Center,
+                            justify_content: JustifyContent::Center,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .with_children(|c| {
+                        lobby_hud = Some(
+                            c.spawn(TextBundle::from_section(
+                                "HEALTH: 100",
+                                TextStyle {
+                                    font_size: 32.0,
+                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    color: Color::WHITE,
+                                },
+                            ))
+                            .insert(Visibility::Hidden)
+                            .id(),
+                        );
+                    });
 
                     message_holder = Some(
                         c.spawn(NodeBundle {
@@ -339,6 +368,7 @@ impl Player {
                 debug_hud,
                 message_holder,
                 shoot_sound_holder,
+                lobby_hud,
             },
             ..Default::default()
         };
