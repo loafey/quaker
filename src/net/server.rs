@@ -150,13 +150,9 @@ pub fn server_events(
                     .map(|s| s.friends().get_friend(SteamId::from_raw(client_id.raw())))
                     .map(|f| f.name())
                     .unwrap_or(format!("{client_id}"));
-                nw.lobby.players.insert(
-                    *client_id,
-                    PlayerInfo {
-                        entity,
-                        name: name.clone(),
-                    },
-                );
+                nw.lobby
+                    .players
+                    .insert(*client_id, PlayerInfo::new(entity, name.clone()));
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,

@@ -59,7 +59,7 @@ pub fn handle_messages(
                     let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
                     nw.lobby
                         .players
-                        .insert(ClientId::from_raw(id), PlayerInfo { entity, name });
+                        .insert(ClientId::from_raw(id), PlayerInfo::new(entity, name));
                 }
             }
             ServerMessage::DespawnPlayer { id } => {

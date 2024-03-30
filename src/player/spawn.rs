@@ -36,13 +36,10 @@ impl Player {
 
         nw.lobby.players.insert(
             ClientId::from_raw(nw.current_id.0),
-            PlayerInfo {
+            PlayerInfo::new(
                 entity,
-                name: steam.map(|s| s.friends().name()).unwrap_or_else(|| {
-                    println!("no steamy");
-                    format!("{id}")
-                }),
-            },
+                steam.map(|s| s.friends().name()).unwrap_or(format!("{id}")),
+            ),
         );
     }
 
