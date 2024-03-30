@@ -1,9 +1,5 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
-use crate::{
-    net::{server::Lobby, CurrentAvatar},
-    queries::NetWorld,
-    resources::PlayerSpawnpoint,
-};
+use crate::{net::CurrentAvatar, queries::NetWorld, resources::PlayerSpawnpoint};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -21,7 +17,6 @@ impl Player {
     pub fn spawn_own_player(
         mut nw: NetWorld,
         player_spawn: Res<PlayerSpawnpoint>,
-        lobby: Option<ResMut<Lobby>>,
         avatar: Option<Res<CurrentAvatar>>,
     ) {
         let id = nw.current_id.0;
@@ -33,11 +28,10 @@ impl Player {
             Vec::new(),
             avatar.as_ref(),
         );
-        if let Some(mut lobby) = lobby {
-            lobby
-                .players
-                .insert(ClientId::from_raw(nw.current_id.0), id);
-        }
+
+        nw.lobby
+            .players
+            .insert(ClientId::from_raw(nw.current_id.0), id);
     }
 
     pub fn spawn(

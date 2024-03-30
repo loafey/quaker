@@ -1,6 +1,6 @@
 use crate::{
     entities::pickup::PickupEntity,
-    net::CurrentClientId,
+    net::{server::Lobby, CurrentClientId},
     player::Player,
     resources::{
         entropy::{EGame, Entropy},
@@ -35,4 +35,5 @@ pub struct NetWorld<'w, 's> {
     pub time: Res<'w, Time>,
     pub current_id: Res<'w, CurrentClientId>,
     pub player_spawn: Res<'w, PlayerSpawnpoint>,
+    pub lobby: ResMut<'w, Lobby>,
 }

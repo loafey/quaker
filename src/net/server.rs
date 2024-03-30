@@ -33,11 +33,11 @@ use macros::{error_continue, error_return, option_continue, option_return};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{collections::BTreeMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
-    pub players: HashMap<ClientId, Entity>,
+    pub players: BTreeMap<ClientId, Entity>,
     cam_count: isize,
 }
 
@@ -85,7 +85,6 @@ pub fn server_events(
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
-    mut lobby: ResMut<Lobby>,
 
     map: Res<CurrentMap>,
     mut nw: NetWorld,
@@ -106,7 +105,7 @@ pub fn server_events(
                     ServerChannel::ServerMessages as u8,
                     error_return!(ServerMessage::SetMap(map.0.clone()).bytes()),
                 );
-                lobby.cam_count += 2;
+                nw.lobby.cam_count += 2;
 
                 for (pickup, trans) in &nw.pickups_query {
                     server.send_message(
@@ -122,7 +121,7 @@ pub fn server_events(
                 }
 
                 // Spawn players for newly joined client
-                for (other_id, ent) in &lobby.players {
+                for (other_id, ent) in &nw.lobby.players {
                     let (_, pl, trans) = error_continue!(nw.players.get(*ent));
                     server.send_message(
                         *client_id,
@@ -149,7 +148,7 @@ pub fn server_events(
                     Vec::new(),
                     None,
                 );
-                lobby.players.insert(*client_id, entity);
+                nw.lobby.players.insert(*client_id, entity);
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
@@ -169,7 +168,7 @@ pub fn server_events(
                 info!("{message}");
                 messages.push(message);
 
-                lobby.players.remove(client_id);
+                nw.lobby.players.remove(client_id);
 
                 for (e, p, _) in &nw.players {
                     if p.id == client_id.raw() {

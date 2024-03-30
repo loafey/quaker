@@ -1,6 +1,7 @@
 use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
+    net::server::Lobby,
     player::Player,
     queries::NetWorld,
     resources::{CurrentMap, CurrentStage},
@@ -25,7 +26,7 @@ use bevy::{
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    RenetClient,
+    ClientId, RenetClient,
 };
 use macros::{error_continue, error_return};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
@@ -54,13 +55,15 @@ pub fn handle_messages(
             } => {
                 if id != nw.current_id.0 {
                     println!("Spawning player: {id}");
-                    Player::spawn(&mut nw, false, translation, id, weapons, None);
+                    let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
+                    nw.lobby.players.insert(ClientId::from_raw(id), entity);
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
                 for (ent, player, _) in &nw.players {
                     if player.id == id {
                         nw.commands.entity(ent).despawn_recursive();
+                        nw.lobby.players.remove(&ClientId::from_raw(id));
                     }
                 }
             }
@@ -178,6 +181,7 @@ pub fn init_client(
         world.insert_resource(CurrentClientId(client_id));
     }
     world.insert_resource(client);
+    world.insert_resource(Lobby::default());
     next_state.set(NetState::Client);
     info!("started client");
     true
