@@ -71,58 +71,59 @@ impl Player {
                     .insert(Ccd::enabled());
             })
             .with_children(|c| {
-                if is_own {
-                    let new_camera_id = c
-                        .spawn({
-                            Camera3dBundle {
-                                projection: Projection::Perspective(PerspectiveProjection {
-                                    fov: 80.0f32.to_radians(),
-                                    ..default()
-                                }),
-                                //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
-                                transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
-                                camera: Camera {
-                                    is_active: is_own,
-                                    ..Default::default()
-                                },
+                let new_camera_id = c
+                    .spawn({
+                        Camera3dBundle {
+                            projection: Projection::Perspective(PerspectiveProjection {
+                                fov: 80.0f32.to_radians(),
+                                ..default()
+                            }),
+                            //transform: Transform::from_translation(Vec3::new(0.0, 0.25, 1.0)),
+                            transform: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
+                            camera: Camera {
+                                is_active: is_own,
                                 ..Default::default()
-                            }
-                        })
-                        .insert(ScreenSpaceAmbientOcclusionBundle::default())
-                        .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
-                        .insert(TemporalAntiAliasBundle::default())
-                        .insert(Name::new("player camera"))
-                        .with_children(|c| {
-                            let new_fps_model = c
-                                .spawn(PlayerFpsModel)
-                                .insert(HookedSceneBundle {
-                                    scene: SceneBundle::default(),
-                                    reload: Hook::new(|entity, commands, world, root| {
-                                        if entity.get::<Handle<Mesh>>().is_some() {
-                                            commands.insert(NoFrustumCulling);
+                            },
+                            ..Default::default()
+                        }
+                    })
+                    .insert(ScreenSpaceAmbientOcclusionBundle::default())
+                    .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
+                    .insert(TemporalAntiAliasBundle::default())
+                    .insert(Name::new("player camera"))
+                    .with_children(|c| {
+                        let new_fps_model = c
+                            .spawn(PlayerFpsModel)
+                            .insert(HookedSceneBundle {
+                                scene: SceneBundle::default(),
+                                reload: Hook::new(|entity, commands, world, root| {
+                                    if entity.get::<Handle<Mesh>>().is_some() {
+                                        commands.insert(NoFrustumCulling);
+                                    }
+                                    if entity.get::<Handle<StandardMaterial>>().is_some() {
+                                        if let Some(material) =
+                                            world.entity(root).get::<PlayerFpsMaterial>()
+                                        {
+                                            commands.insert(material.0.clone());
                                         }
-                                        if entity.get::<Handle<StandardMaterial>>().is_some() {
-                                            if let Some(material) =
-                                                world.entity(root).get::<PlayerFpsMaterial>()
-                                            {
-                                                commands.insert(material.0.clone());
-                                            }
-                                        }
-                                    }),
-                                })
-                                .insert(PlayerFpsMaterial::default())
-                                .insert(Name::new("fps model holder"))
-                                .id();
-                            fps_model = Some(new_fps_model);
+                                    }
+                                }),
+                            })
+                            .insert(PlayerFpsMaterial::default())
+                            .insert(Name::new("fps model holder"))
+                            .id();
+                        fps_model = Some(new_fps_model);
 
+                        if is_own {
                             c.spawn((TransformBundle::IDENTITY, SpatialListener::new(2.0)));
+                        }
 
-                            shoot_sound_holder = Some(c.spawn(TransformBundle::IDENTITY).id());
-                        })
-                        .id();
+                        shoot_sound_holder = Some(c.spawn(TransformBundle::IDENTITY).id());
+                    })
+                    .id();
 
-                    camera = Some(new_camera_id);
-
+                camera = Some(new_camera_id);
+                if is_own {
                     c.spawn(Camera2dBundle {
                         camera: Camera {
                             order: 2,
