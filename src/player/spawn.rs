@@ -1,5 +1,9 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
-use crate::{net::CurrentAvatar, queries::NetWorld, resources::PlayerSpawnpoint};
+use crate::{
+    net::{CurrentAvatar, PlayerInfo},
+    queries::NetWorld,
+    resources::PlayerSpawnpoint,
+};
 use bevy::{
     core_pipeline::{
         experimental::taa::TemporalAntiAliasBundle,
@@ -20,7 +24,7 @@ impl Player {
         avatar: Option<Res<CurrentAvatar>>,
     ) {
         let id = nw.current_id.0;
-        let id = Self::spawn(
+        let entity = Self::spawn(
             &mut nw,
             true,
             player_spawn.0,
@@ -31,7 +35,7 @@ impl Player {
 
         nw.lobby
             .players
-            .insert(ClientId::from_raw(nw.current_id.0), id);
+            .insert(ClientId::from_raw(nw.current_id.0), PlayerInfo { entity });
     }
 
     pub fn spawn(

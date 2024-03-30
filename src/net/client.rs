@@ -1,7 +1,7 @@
 use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
-    net::Lobby,
+    net::{Lobby, PlayerInfo},
     player::Player,
     queries::NetWorld,
     resources::{CurrentMap, CurrentStage},
@@ -56,7 +56,9 @@ pub fn handle_messages(
                 if id != nw.current_id.0 {
                     println!("Spawning player: {id}");
                     let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
-                    nw.lobby.players.insert(ClientId::from_raw(id), entity);
+                    nw.lobby
+                        .players
+                        .insert(ClientId::from_raw(id), PlayerInfo { entity });
                 }
             }
             ServerMessage::DespawnPlayer { id } => {

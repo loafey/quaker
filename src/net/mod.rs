@@ -10,9 +10,14 @@ use steamworks::Client;
 pub mod client;
 pub mod server;
 
+#[derive(Debug)]
+pub struct PlayerInfo {
+    pub entity: Entity,
+}
+
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
-    pub players: BTreeMap<ClientId, Entity>,
+    pub players: BTreeMap<ClientId, PlayerInfo>,
     cam_count: isize,
 }
 

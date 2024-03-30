@@ -5,7 +5,7 @@ use super::{
 use crate::{
     entities::hitscan_hit_gfx,
     map_gen::entities::data::Attack,
-    net::{CurrentClientId, IsSteam, Lobby, ServerChannel, ServerMessage},
+    net::{CurrentClientId, IsSteam, Lobby, PlayerInfo, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
     resources::CurrentMap,
@@ -33,6 +33,7 @@ use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
 use std::{net::UdpSocket, time::SystemTime};
+use steamworks::Client;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
     for (_, player, _) in &nw.players {
@@ -78,6 +79,7 @@ pub fn server_events(
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
+    mut steam_client: NonSend<Client>,
 
     map: Res<CurrentMap>,
     mut nw: NetWorld,
@@ -114,8 +116,8 @@ pub fn server_events(
                 }
 
                 // Spawn players for newly joined client
-                for (other_id, ent) in &nw.lobby.players {
-                    let (_, pl, trans) = error_continue!(nw.players.get(*ent));
+                for (other_id, info) in &nw.lobby.players {
+                    let (_, pl, trans) = error_continue!(nw.players.get(info.entity));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -141,7 +143,7 @@ pub fn server_events(
                     Vec::new(),
                     None,
                 );
-                nw.lobby.players.insert(*client_id, entity);
+                nw.lobby.players.insert(*client_id, PlayerInfo { entity });
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
