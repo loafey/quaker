@@ -5,19 +5,18 @@ use super::{
 use crate::{
     entities::hitscan_hit_gfx,
     map_gen::entities::data::Attack,
-    net::{CurrentClientId, IsSteam, ServerChannel, ServerMessage},
+    net::{CurrentClientId, IsSteam, Lobby, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
     resources::CurrentMap,
 };
 use bevy::{
     ecs::{
-        entity::Entity,
         event::EventReader,
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, Res, ResMut, Resource},
+        system::{NonSend, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
@@ -33,13 +32,7 @@ use macros::{error_continue, error_return, option_continue, option_return};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
-use std::{collections::BTreeMap, net::UdpSocket, time::SystemTime};
-
-#[derive(Debug, Resource, Default)]
-pub struct Lobby {
-    pub players: BTreeMap<ClientId, Entity>,
-    cam_count: isize,
-}
+use std::{net::UdpSocket, time::SystemTime};
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
     for (_, player, _) in &nw.players {

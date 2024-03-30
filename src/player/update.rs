@@ -4,7 +4,7 @@ use super::{
 use crate::{
     entities::ProjectileEntity,
     map_gen::entities::data::{Attack, SoundEffect},
-    net::{server::Lobby, ClientMessage},
+    net::{ClientMessage, Lobby},
     resources::{
         entropy::{EGame, EMisc, Entropy},
         inputs::PlayerInput,

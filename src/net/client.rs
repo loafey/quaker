@@ -1,7 +1,7 @@
 use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
-    net::server::Lobby,
+    net::Lobby,
     player::Player,
     queries::NetWorld,
     resources::{CurrentMap, CurrentStage},

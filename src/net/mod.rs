@@ -4,11 +4,17 @@ use bevy_renet::renet::*;
 use image::{DynamicImage, ImageBuffer};
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
-use std::{path::PathBuf, time::Duration};
+use std::{collections::BTreeMap, path::PathBuf, time::Duration};
 use steamworks::Client;
 
 pub mod client;
 pub mod server;
+
+#[derive(Debug, Resource, Default)]
+pub struct Lobby {
+    pub players: BTreeMap<ClientId, Entity>,
+    cam_count: isize,
+}
 
 #[derive(Debug, Resource)]
 pub struct CurrentAvatar(pub Handle<Image>);

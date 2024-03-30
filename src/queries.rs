@@ -1,6 +1,6 @@
 use crate::{
     entities::pickup::PickupEntity,
-    net::{server::Lobby, CurrentClientId},
+    net::{CurrentClientId, Lobby},
     player::Player,
     resources::{
         entropy::{EGame, Entropy},
