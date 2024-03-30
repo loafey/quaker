@@ -9,7 +9,7 @@ use crate::{
 
 use super::{
     connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
-    ServerMessage, PROTOCOL_ID,
+    ServerMessage, SteamClient, PROTOCOL_ID,
 };
 use bevy::{
     ecs::{
@@ -18,7 +18,7 @@ use bevy::{
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, Query, ResMut},
+        system::{NonSend, Query, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
@@ -144,7 +144,7 @@ pub fn init_client(
     world: &mut World,
     next_state: &mut NextState<NetState>,
     ip: &String,
-    steam_client: &Option<NonSend<steamworks::Client>>,
+    steam_client: &Option<Res<SteamClient>>,
 ) -> bool {
     info!("joining: {ip}");
     let client = RenetClient::new(connection_config());

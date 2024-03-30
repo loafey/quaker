@@ -5,7 +5,6 @@ use image::{DynamicImage, ImageBuffer};
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::PathBuf, time::Duration};
-use steamworks::Client;
 
 pub mod client;
 pub mod server;
@@ -13,6 +12,28 @@ pub mod server;
 #[derive(Debug)]
 pub struct PlayerInfo {
     pub entity: Entity,
+}
+
+#[derive(Resource)]
+pub struct SteamClient {
+    client: steamworks::Client,
+}
+impl SteamClient {
+    pub fn new(client: steamworks::Client) -> Self {
+        Self { client }
+    }
+}
+impl std::ops::Deref for SteamClient {
+    type Target = steamworks::Client;
+
+    fn deref(&self) -> &Self::Target {
+        &self.client
+    }
+}
+impl std::ops::DerefMut for SteamClient {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.client
+    }
 }
 
 #[derive(Debug, Resource, Default)]
@@ -26,7 +47,7 @@ pub struct CurrentAvatar(pub Handle<Image>);
 
 pub fn grab_avatar(
     mut commands: Commands,
-    client: Option<NonSend<Client>>,
+    client: Option<Res<SteamClient>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let client = option_return!(client);

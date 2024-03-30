@@ -1,6 +1,9 @@
 #![feature(let_chains)]
 extern crate macros;
-use crate::{net::SimulationEvent, try_steam::try_steam};
+use crate::{
+    net::{SimulationEvent, SteamClient},
+    try_steam::try_steam,
+};
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
     render::texture::ImageAddressMode,
@@ -80,7 +83,7 @@ fn main() {
 
     if let Some((steam, single_client)) = try_steam() {
         app.insert_non_send_resource(single_client);
-        app.insert_non_send_resource(steam);
+        app.insert_resource(SteamClient::new(steam));
         app.add_plugins((SteamServerPlugin, SteamClientPlugin));
         app.add_systems(PreUpdate, steam_callbacks);
         app.add_systems(Startup, net::grab_avatar);

@@ -1,6 +1,5 @@
 use super::{
-    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent,
-    PROTOCOL_ID,
+    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent, SteamClient, PROTOCOL_ID
 };
 use crate::{
     entities::hitscan_hit_gfx,
@@ -33,7 +32,6 @@ use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
 use std::{net::UdpSocket, time::SystemTime};
-use steamworks::Client;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
     for (_, player, _) in &nw.players {
@@ -336,7 +334,7 @@ pub fn handle_client_message(
 pub fn init_server(
     world: &mut World,
     next_state: &mut NextState<NetState>,
-    steam_client: &Option<NonSend<steamworks::Client>>,
+    steam_client: &Option<Res<SteamClient>>,
 ) -> bool {
     let server = RenetServer::new(connection_config());
 

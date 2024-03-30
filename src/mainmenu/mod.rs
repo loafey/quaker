@@ -1,5 +1,5 @@
 use crate::{
-    net::{self, NetState},
+    net::{self, NetState, SteamClient},
     resources::{CurrentMap, CurrentStage},
     APP_ID,
 };
@@ -52,7 +52,7 @@ pub fn buttons(world: &mut World) {
         Query<&TextInputValue>,
         ResMut<NextState<CurrentStage>>,
         ResMut<NextState<NetState>>,
-        Option<NonSend<steamworks::Client>>,
+        Option<Res<SteamClient>>,
     )> = SystemState::new(world);
     // yea this is cursed, but i am lazy, bypassing the borrow checker like a baus
     let world_copy = unsafe { &mut *(world as *mut World) };
@@ -116,7 +116,7 @@ pub fn update_id_buttons(
     }
 }
 
-pub fn setup(mut commands: Commands, steam_client: Option<NonSend<steamworks::Client>>) {
+pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
     let map_files = error_return!(get_mapfiles("assets/maps"));
     let friends = steam_client
         .as_ref()
