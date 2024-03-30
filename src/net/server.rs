@@ -58,7 +58,6 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
     let mut frags = Vec::new();
     for (_, mut player, mut trans) in &mut nw.players {
         if player.health <= 0.0 {
-            println!("dead player: {}", player.id);
             player.health = 100.0;
             player.armour = 0.0;
 
@@ -75,14 +74,9 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
             frags.push((player.id, player.last_hurter));
         }
     }
-    if !frags.is_empty() {
-        println!();
-    }
 
     for (id, hurter) in frags {
-        let message = format!("{} GOT FRAGGED BY {}", id, hurter);
-
-        transmit_message(server, nw, message);
+        transmit_message(server, nw, format!("{} GOT FRAGGED BY {}", id, hurter));
     }
 }
 
@@ -99,10 +93,14 @@ pub fn server_events(
     frag_checker(&mut server, &mut nw);
 
     // Handle connection details
+    let mut messages = Vec::new();
     for event in events.read() {
         match event {
             ServerEvent::ClientConnected { client_id } => {
-                info!("Player: {client_id} joined");
+                let message = format!("PLAYER {client_id} JOINED");
+                info!("{message}");
+                messages.push(message);
+
                 server.send_message(
                     *client_id,
                     ServerChannel::ServerMessages as u8,
@@ -152,7 +150,6 @@ pub fn server_events(
                     None,
                 );
                 lobby.players.insert(*client_id, entity);
-                println!("Current players: {:?}", lobby.players);
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
@@ -165,7 +162,12 @@ pub fn server_events(
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                info!("Player: {client_id} left due to {reason}");
+                let message = format!(
+                    "PLAYER {client_id} LEFT: {}",
+                    format!("{reason}").to_uppercase()
+                );
+                info!("{message}");
+                messages.push(message);
 
                 lobby.players.remove(client_id);
 
@@ -184,6 +186,10 @@ pub fn server_events(
                 )
             }
         }
+    }
+
+    for message in messages {
+        transmit_message(&mut server, &mut nw, message);
     }
 
     for message in sim_events.read() {
