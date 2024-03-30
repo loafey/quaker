@@ -13,12 +13,12 @@ use crate::{
     },
 };
 use bevy::{
+    audio::Volume,
     ecs::schedule::SystemConfigs,
     input::mouse::MouseMotion,
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use bevy_kira_audio::{Audio, AudioControl};
 use bevy_rapier3d::{
     control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
     plugin::RapierContext,
@@ -81,15 +81,15 @@ impl Player {
     }
 
     pub fn shoot(
+        mut commands: Commands,
         mut q_players: Query<(Entity, &mut Player, &Transform), With<PlayerController>>,
         mut misc_entropy: ResMut<Entropy<EMisc>>,
         keys: Res<PlayerInput>,
         time: Res<Time>,
         asset_server: Res<AssetServer>,
-        audio: Res<Audio>,
         mut client_events: EventWriter<ClientMessage>,
     ) {
-        for (_, mut player, _) in &mut q_players {
+        for (player_ent, mut player, _) in &mut q_players {
             let (slot, row) = option_continue!(player.current_weapon);
             let weapon = &mut player.weapons[slot][row];
             weapon.timer -= time.delta_seconds();
@@ -121,14 +121,27 @@ impl Player {
 
             if shot {
                 player.restart_anim = true;
-                match &player.weapons[slot][row].data.shoot_sfx {
-                    SoundEffect::Single(path) => {
-                        audio.play(asset_server.load(path));
-                    }
+                let sound = match &player.weapons[slot][row].data.shoot_sfx {
+                    SoundEffect::Single(path) => Some(path.clone()),
                     SoundEffect::Random(list) if !list.is_empty() => {
-                        audio.play(asset_server.load(misc_entropy.choose(list)));
+                        Some(misc_entropy.choose(list).clone())
                     }
-                    _ => {}
+                    _ => None,
+                };
+                if let Some(sound) = sound {
+                    let sound_holder = player.children.shoot_sound_holder.unwrap_or(player_ent);
+
+                    commands.entity(sound_holder).with_children(|c| {
+                        c.spawn((
+                            TransformBundle::IDENTITY,
+                            AudioBundle {
+                                source: asset_server.load(sound),
+                                settings: PlaybackSettings::DESPAWN
+                                    .with_spatial(true)
+                                    .with_volume(Volume::new(0.8)),
+                            },
+                        ));
+                    });
                 }
             }
         }

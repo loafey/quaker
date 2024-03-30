@@ -5,7 +5,6 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
-use bevy_kira_audio::AudioPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
@@ -68,7 +67,6 @@ fn main() {
         //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
         TemporalAntiAliasPlugin,
         ObjPlugin,
-        AudioPlugin,
         HookPlugin,
         (StartupStage, MainMenuStage, GameStage),
         TextInputPlugin,
