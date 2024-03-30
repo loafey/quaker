@@ -79,7 +79,6 @@ pub fn server_events(
     mut events: EventReader<ServerEvent>,
     mut sim_events: EventReader<SimulationEvent>,
     mut server: ResMut<RenetServer>,
-    mut steam_client: NonSend<Client>,
 
     map: Res<CurrentMap>,
     mut nw: NetWorld,
