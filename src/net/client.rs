@@ -75,6 +75,7 @@ pub fn handle_messages(
                     if player.id == nw.current_id.0 {
                         player.health = 100.0;
                         player.armour = 0.0;
+                        player.last_hurter = 0;
                         trans.translation = nw.player_spawn.0;
                         break;
                     }

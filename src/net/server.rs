@@ -54,6 +54,7 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
         if player.health <= 0.0 {
             player.health = 100.0;
             player.armour = 0.0;
+            player.last_hurter = 0;
 
             if player.id == nw.current_id.0 {
                 trans.translation = nw.player_spawn.0;
