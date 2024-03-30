@@ -80,6 +80,7 @@ impl Player {
     }
 
     pub fn shoot(
+        mut commands: Commands,
         mut q_players: Query<(Entity, &mut Player, &Transform), With<PlayerController>>,
         mut misc_entropy: ResMut<Entropy<EMisc>>,
         keys: Res<PlayerInput>,
@@ -87,7 +88,7 @@ impl Player {
         asset_server: Res<AssetServer>,
         mut client_events: EventWriter<ClientMessage>,
     ) {
-        for (_, mut player, _) in &mut q_players {
+        for (player_ent, mut player, _) in &mut q_players {
             let (slot, row) = option_continue!(player.current_weapon);
             let weapon = &mut player.weapons[slot][row];
             weapon.timer -= time.delta_seconds();
@@ -119,14 +120,20 @@ impl Player {
 
             if shot {
                 player.restart_anim = true;
-                match &player.weapons[slot][row].data.shoot_sfx {
-                    SoundEffect::Single(path) => {
-                        //audio.play(asset_server.load(path));
-                    }
+                let sound = match &player.weapons[slot][row].data.shoot_sfx {
+                    SoundEffect::Single(path) => Some(path),
                     SoundEffect::Random(list) if !list.is_empty() => {
-                        //audio.play(asset_server.load(misc_entropy.choose(list)));
+                        Some(misc_entropy.choose(list))
                     }
-                    _ => {}
+                    _ => None,
+                };
+                if let Some(sound) = sound {
+                    commands.entity(player_ent).with_children(|c| {
+                        c.spawn(AudioBundle {
+                            source: asset_server.load(sound),
+                            settings: PlaybackSettings::DESPAWN.with_spatial(true),
+                        });
+                    });
                 }
             }
         }
