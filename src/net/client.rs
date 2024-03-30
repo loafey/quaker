@@ -18,7 +18,7 @@ use bevy::{
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, Query, Res, ResMut},
+        system::{Query, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,

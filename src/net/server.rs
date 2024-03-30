@@ -1,5 +1,6 @@
 use super::{
-    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent, SteamClient, PROTOCOL_ID
+    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent,
+    SteamClient, PROTOCOL_ID,
 };
 use crate::{
     entities::hitscan_hit_gfx,
@@ -15,7 +16,7 @@ use bevy::{
         schedule::{
             common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
         },
-        system::{NonSend, Res, ResMut},
+        system::{Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
