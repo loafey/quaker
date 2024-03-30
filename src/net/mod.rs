@@ -63,7 +63,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
             }
         }
         ClientMessage::PickupWeapon { weapon } => {
-            for (_, mut player, _) in nw.players.iter_mut() {
+            for (player_ent, mut player, t) in nw.players.iter_mut() {
                 if player.id == client_id {
                     if let Some(weapon_data) = nw.weapon_map.0.get(weapon) {
                         let slot = weapon_data.slot;
@@ -71,6 +71,17 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                             .asset_server
                             .load(format!("{}#Scene0", weapon_data.model_file));
                         if player.add_weapon(weapon_data.clone(), slot, handle) {
+                            nw.commands.entity(player_ent).with_children(|c| {
+                                c.spawn(AudioBundle {
+                                    source: nw.asset_server.load(
+                                        weapon_data.pickup_sound.clone().unwrap_or(
+                                            "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"
+                                                .to_string(),
+                                        ),
+                                    ),
+                                    settings: PlaybackSettings::DESPAWN.with_spatial(true),
+                                });
+                            });
                             // nw.audio.play(nw.asset_server.load(
                             //     weapon_data.pickup_sound.clone().unwrap_or(
                             //         "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
