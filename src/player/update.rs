@@ -88,7 +88,7 @@ impl Player {
                 text.sections[0].value = format!(
                     "Players:\n{}",
                     lobby.players.values().fold(String::new(), |mut output, i| {
-                        let _ = writeln!(output, "{}", i.name);
+                        let _ = writeln!(output, "{}: K/D | {}/{}", i.name, i.kills, i.deaths);
                         output
                     })
                 )
