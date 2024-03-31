@@ -1,5 +1,5 @@
 use crate::{
-    net::{self, NetState, SteamClient},
+    net::{self, steam::SteamClient, NetState},
     resources::{CurrentMap, CurrentStage},
     APP_ID,
 };

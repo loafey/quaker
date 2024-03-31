@@ -1,6 +1,9 @@
 use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
 use crate::{
-    net::{CurrentAvatar, PlayerInfo, SteamClient},
+    net::{
+        steam::{CurrentAvatar, SteamClient},
+        PlayerInfo,
+    },
     queries::NetWorld,
     resources::PlayerSpawnpoint,
 };

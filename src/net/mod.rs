@@ -1,13 +1,15 @@
 use crate::{map_gen::entities::data::PickupData, queries::NetWorld};
-use bevy::{prelude::*, render::render_asset::RenderAssetUsages};
+use bevy::prelude::*;
 use bevy_renet::renet::*;
-use image::{DynamicImage, ImageBuffer};
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::PathBuf, time::Duration};
 
+use self::steam::SteamClient;
+
 pub mod client;
 pub mod server;
+pub mod steam;
 
 #[derive(Debug)]
 pub struct PlayerInfo {
@@ -27,58 +29,9 @@ impl PlayerInfo {
     }
 }
 
-#[derive(Resource)]
-pub struct SteamClient {
-    client: steamworks::Client,
-}
-impl SteamClient {
-    pub fn new(client: steamworks::Client) -> Self {
-        Self { client }
-    }
-}
-impl std::ops::Deref for SteamClient {
-    type Target = steamworks::Client;
-
-    fn deref(&self) -> &Self::Target {
-        &self.client
-    }
-}
-impl std::ops::DerefMut for SteamClient {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.client
-    }
-}
-
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
     pub players: BTreeMap<u64, PlayerInfo>,
-}
-
-#[derive(Debug, Resource)]
-pub struct CurrentAvatar(pub Handle<Image>);
-
-pub fn grab_avatar(
-    mut commands: Commands,
-    client: Option<Res<SteamClient>>,
-    mut images: ResMut<Assets<Image>>,
-) {
-    let client = option_return!(client);
-    let avatar = option_return!(client
-        .friends()
-        .get_friend(client.user().steam_id())
-        .small_avatar());
-
-    let dyn_img = DynamicImage::ImageRgba8(error_return!(
-        ImageBuffer::from_raw(32, 32, avatar).ok_or("failed to parse avatar data")
-    ));
-
-    let image = images.add(Image::from_dynamic(
-        dyn_img,
-        false,
-        RenderAssetUsages::RENDER_WORLD,
-    ));
-
-    commands.insert_resource(CurrentAvatar(image));
 }
 
 pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) {

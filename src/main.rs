@@ -1,8 +1,8 @@
 #![feature(let_chains)]
 extern crate macros;
-use crate::{
-    net::{SimulationEvent, SteamClient},
-    try_steam::try_steam,
+use crate::net::{
+    steam::{try_steam, SteamClient},
+    SimulationEvent,
 };
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
@@ -34,7 +34,6 @@ mod plugins;
 mod queries;
 mod resources;
 mod startup;
-mod try_steam;
 
 const APP_ID: AppId = AppId(480);
 
@@ -86,7 +85,7 @@ fn main() {
         app.insert_resource(SteamClient::new(steam));
         app.add_plugins((SteamServerPlugin, SteamClientPlugin));
         app.add_systems(PreUpdate, steam_callbacks);
-        app.add_systems(Startup, net::grab_avatar);
+        app.add_systems(Startup, net::steam::grab_avatar);
     } else {
         app.add_plugins((NetcodeServerPlugin, NetcodeClientPlugin));
     }
