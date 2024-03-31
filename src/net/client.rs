@@ -28,7 +28,7 @@ use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     ClientId, RenetClient,
 };
-use macros::{error_continue, error_return};
+use macros::{error_continue, error_return, option_continue};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
@@ -63,23 +63,19 @@ pub fn handle_messages(
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
-                for (ent, player, _) in &nw.players {
-                    if player.id == id {
-                        nw.commands.entity(ent).despawn_recursive();
-                        nw.lobby.players.remove(&ClientId::from_raw(id));
-                    }
-                }
+                let player = option_continue!(nw.lobby.players.get(&ClientId::from_raw(id))).entity;
+                nw.commands.entity(player).despawn_recursive();
+                nw.lobby.players.remove(&ClientId::from_raw(id));
             }
             ServerMessage::Reset => {
-                for (_, mut player, mut trans) in &mut nw.players {
-                    if player.id == nw.current_id.0 {
-                        player.health = 100.0;
-                        player.armour = 0.0;
-                        player.last_hurter = 0;
-                        trans.translation = nw.player_spawn.0;
-                        break;
-                    }
-                }
+                let player =
+                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
+                        .entity;
+                let (_, mut player, mut trans) = error_continue!(nw.players.get_mut(player));
+                player.health = 100.0;
+                player.armour = 0.0;
+                player.last_hurter = 0;
+                trans.translation = nw.player_spawn.0;
             }
             ServerMessage::SpawnPickup {
                 id,
@@ -97,12 +93,11 @@ pub fn handle_messages(
                 );
             }
             ServerMessage::Message { text } => {
-                for (_, player, _) in &nw.players {
-                    if player.id == nw.current_id.0 {
-                        player.display_message(&mut nw.commands, &nw.asset_server, text);
-                        break;
-                    }
-                }
+                let player =
+                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
+                        .entity;
+                let (_, player, _) = error_continue!(nw.players.get(player));
+                player.display_message(&mut nw.commands, &nw.asset_server, text);
             }
             ServerMessage::KillStat { death, hurter } => {
                 if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(death)) {
@@ -128,6 +123,7 @@ pub fn handle_messages(
                 update_world(id, &message, &mut nw);
             }
             ServerMessage::DespawnPickup { id } => {
+                // TODO: Improve this
                 for (ent, pickup) in &pickups {
                     if pickup.id == id {
                         nw.commands.entity(ent).despawn_recursive();
@@ -138,12 +134,11 @@ pub fn handle_messages(
                 hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials)
             }
             ServerMessage::Hit { amount } => {
-                for (_, mut player, _) in &mut nw.players {
-                    if player.id == nw.current_id.0 {
-                        player.health -= amount;
-                        break;
-                    }
-                }
+                let player =
+                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
+                        .entity;
+                let (_, mut player, _) = error_continue!(nw.players.get_mut(player));
+                player.health -= amount;
             }
             x => {
                 error!("unhandled NetworkedEntities message: {x:?}")
