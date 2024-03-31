@@ -205,7 +205,6 @@ impl Poly {
             //v.uv[0] += 0.5;
             //v.uv[1] += 0.5;
         });
-        println!("{:?}", self.verts.iter().map(|p| p.p).collect::<Vec<_>>());
 
         // let mut bdo_u = true;
         // let mut bdo_v = true;

@@ -55,7 +55,6 @@ pub fn handle_messages(
                 name,
             } => {
                 if id != nw.current_id.0 {
-                    println!("Spawning player: {id}");
                     let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
                     nw.lobby
                         .players

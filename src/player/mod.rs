@@ -163,7 +163,6 @@ impl Player {
             if self.current_weapon.is_none() {
                 self.current_weapon = Some((slot, 0))
             }
-            println!("{:?}", self.current_weapon);
             true
         } else {
             error!("unhandled: picked up weapon when already had one");
