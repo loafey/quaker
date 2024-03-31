@@ -3,36 +3,15 @@ use bevy::prelude::*;
 use bevy_renet::renet::*;
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, path::PathBuf, time::Duration};
+use std::{path::PathBuf, time::Duration};
 
 use self::steam::SteamClient;
 
 pub mod client;
+mod lobby;
 pub mod server;
 pub mod steam;
-
-#[derive(Debug)]
-pub struct PlayerInfo {
-    pub entity: Entity,
-    pub name: String,
-    pub kills: u64,
-    pub deaths: u64,
-}
-impl PlayerInfo {
-    pub fn new(entity: Entity, name: String) -> Self {
-        Self {
-            entity,
-            name,
-            kills: 0,
-            deaths: 0,
-        }
-    }
-}
-
-#[derive(Debug, Resource, Default)]
-pub struct Lobby {
-    pub players: BTreeMap<u64, PlayerInfo>,
-}
+pub use lobby::*;
 
 pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) {
     match message {
