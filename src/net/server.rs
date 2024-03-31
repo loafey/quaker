@@ -79,10 +79,10 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
             }
             .bytes()),
         );
-        if let Some(info) = nw.lobby.players.get_mut(&id) {
+        if let Some(info) = nw.lobby.get_mut(&id) {
             info.deaths += 1;
         }
-        if let Some(info) = nw.lobby.players.get_mut(&hurter) {
+        if let Some(info) = nw.lobby.get_mut(&hurter) {
             info.kills += 1;
         }
         transmit_message(server, nw, format!("{} GOT FRAGGED BY {}", id, hurter));
@@ -130,7 +130,7 @@ pub fn server_events(
                 }
 
                 // Spawn players for newly joined client
-                for (other_id, info) in &nw.lobby.players {
+                for (other_id, info) in &nw.lobby {
                     let (_, pl, trans) = error_continue!(nw.players.get(info.entity));
                     server.send_message(
                         *client_id,
@@ -164,7 +164,6 @@ pub fn server_events(
                     .map(|f| f.name())
                     .unwrap_or(format!("{client_id}"));
                 nw.lobby
-                    .players
                     .insert(client_id.raw(), PlayerInfo::new(entity, name.clone()));
 
                 server.broadcast_message(
@@ -186,7 +185,7 @@ pub fn server_events(
                 info!("{message}");
                 messages.push(message);
 
-                if let Some(player_info) = nw.lobby.players.remove(&client_id.raw()) {
+                if let Some(player_info) = nw.lobby.remove(&client_id.raw()) {
                     nw.commands.entity(player_info.entity).despawn_recursive();
                 }
 
@@ -255,7 +254,7 @@ pub fn handle_client_message(
             let mut hit_pos = Vec::new();
             let mut hit_ents = Vec::new();
 
-            let player = option_return!(nw.lobby.players.get(&client_id)).entity;
+            let player = option_return!(nw.lobby.get(&client_id)).entity;
             let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
 
             let cam = option_return!(player.children.camera);

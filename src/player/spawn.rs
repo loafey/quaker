@@ -36,7 +36,7 @@ impl Player {
             avatar.as_ref(),
         );
 
-        nw.lobby.players.insert(
+        nw.lobby.insert(
             nw.current_id.0,
             PlayerInfo::new(
                 entity,

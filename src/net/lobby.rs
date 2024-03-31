@@ -20,7 +20,30 @@ impl PlayerInfo {
     }
 }
 
+type InnerLobby = BTreeMap<u64, PlayerInfo>;
+
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
-    pub players: BTreeMap<u64, PlayerInfo>,
+    players: InnerLobby,
+}
+impl std::ops::Deref for Lobby {
+    type Target = InnerLobby;
+
+    fn deref(&self) -> &Self::Target {
+        &self.players
+    }
+}
+impl std::ops::DerefMut for Lobby {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.players
+    }
+}
+impl<'a> std::iter::IntoIterator for &'a Lobby {
+    type Item = (&'a u64, &'a PlayerInfo);
+
+    type IntoIter = std::collections::btree_map::Iter<'a, u64, PlayerInfo>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.players.iter()
+    }
 }
