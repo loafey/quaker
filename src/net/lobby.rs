@@ -1,6 +1,9 @@
+use bevy::ecs::{entity::Entity, system::Resource};
 use std::collections::BTreeMap;
 
-use bevy::ecs::{entity::Entity, system::Resource};
+type K = u64;
+type V = PlayerInfo;
+type InnerLobby = BTreeMap<K, V>;
 
 #[derive(Debug)]
 pub struct PlayerInfo {
@@ -20,8 +23,6 @@ impl PlayerInfo {
     }
 }
 
-type InnerLobby = BTreeMap<u64, PlayerInfo>;
-
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
     players: InnerLobby,
@@ -39,9 +40,9 @@ impl std::ops::DerefMut for Lobby {
     }
 }
 impl<'a> std::iter::IntoIterator for &'a Lobby {
-    type Item = (&'a u64, &'a PlayerInfo);
+    type Item = (&'a K, &'a V);
 
-    type IntoIter = std::collections::btree_map::Iter<'a, u64, PlayerInfo>;
+    type IntoIter = std::collections::btree_map::Iter<'a, K, V>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.players.iter()
