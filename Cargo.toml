@@ -26,6 +26,7 @@ renet_steam = { version = "0.0.1", features = ["bevy"] }
 steamworks = "0.11.0"
 sha256 = { version = "1.5.0", default-features = false }
 image = { version = "0.24.8", default-features = false }
+bevy_hanabi = { version = "0.10.0", default-features = false, features = ["3d"] }
 
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]

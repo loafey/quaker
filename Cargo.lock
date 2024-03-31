@@ -703,6 +703,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_hanabi"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f63879a7274ed0d629f7240b0acc4c262aca0276503bdc182552b0f69cba163"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bitflags 2.4.2",
+ "bytemuck",
+ "copyless",
+ "naga",
+ "naga_oil",
+ "rand",
+ "rand_pcg",
+ "ron",
+ "serde",
+ "thiserror",
+ "typetag",
+]
+
+[[package]]
 name = "bevy_hierarchy"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1589,6 +1610,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "copyless"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2472,6 +2499,12 @@ dependencies = [
  "quote",
  "syn 2.0.52",
 ]
+
+[[package]]
+name = "inventory"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f958d3d68f4167080a18141e10381e7634563984a537f2a49a30fd8e53ac5767"
 
 [[package]]
 name = "io-kit-sys"
@@ -3419,6 +3452,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy-scene-hook",
+ "bevy_hanabi",
  "bevy_obj",
  "bevy_rapier3d",
  "bevy_renet",
@@ -3478,6 +3512,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
+dependencies = [
+ "rand_core",
 ]
 
 [[package]]
@@ -4187,6 +4230,30 @@ name = "typenum"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+
+[[package]]
+name = "typetag"
+version = "0.2.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "661d18414ec032a49ece2d56eee03636e43c4e8d577047ab334c0ba892e29aaf"
+dependencies = [
+ "erased-serde",
+ "inventory",
+ "once_cell",
+ "serde",
+ "typetag-impl",
+]
+
+[[package]]
+name = "typetag-impl"
+version = "0.2.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac73887f47b9312552aa90ef477927ff014d63d1920ca8037c6c1951eab64bb1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.52",
+]
 
 [[package]]
 name = "unicode-bidi"

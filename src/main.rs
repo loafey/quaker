@@ -8,6 +8,7 @@ use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
     render::texture::ImageAddressMode,
 };
+use bevy_hanabi::HanabiPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
@@ -29,6 +30,7 @@ mod integrity;
 mod mainmenu;
 mod map_gen;
 mod net;
+mod particles;
 mod player;
 mod plugins;
 mod queries;
@@ -53,6 +55,7 @@ fn main() {
         Resources,
         RapierPhysicsPlugin::<NoUserData>::default(),
         RapierDebugRenderPlugin::default().disabled(),
+        HanabiPlugin,
         DefaultPlugins
             .set({
                 let mut plug = ImagePlugin::default_nearest();
@@ -79,6 +82,8 @@ fn main() {
             ClientPlugin,
         ),
     ));
+
+    app.add_systems(Startup, particles::register_particles);
 
     if let Some((steam, single_client)) = try_steam() {
         app.insert_non_send_resource(single_client);
