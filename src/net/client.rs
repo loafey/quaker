@@ -124,7 +124,7 @@ pub fn handle_messages(
                 }
             }
             ServerMessage::HitscanHits { hits } => {
-                hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials)
+                hitscan_hit_gfx(&mut nw.commands, &hits, &nw.particles)
             }
             ServerMessage::Hit { amount } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;

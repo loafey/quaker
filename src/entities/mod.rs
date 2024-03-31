@@ -1,17 +1,15 @@
 use bevy::{
-    asset::Assets,
     ecs::{
         component::Component,
         schedule::{IntoSystemConfigs, SystemConfigs},
         system::{Commands, Query},
     },
-    math::{primitives::Cuboid, Vec3},
-    pbr::{PbrBundle, StandardMaterial},
-    render::{color::Color, mesh::Mesh},
+    math::Vec3,
     transform::components::Transform,
 };
+use bevy_hanabi::{ParticleEffect, ParticleEffectBundle};
 
-use crate::resources::projectiles::Projectile;
+use crate::{particles::ParticleMap, resources::projectiles::Projectile};
 
 pub mod message;
 pub mod pickup;
@@ -36,19 +34,10 @@ impl ProjectileEntity {
     pub fn collision(_query: Query<&ProjectileEntity>) {}
 }
 
-pub fn hitscan_hit_gfx(
-    commands: &mut Commands,
-    poss: &[Vec3],
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
-) {
+pub fn hitscan_hit_gfx(commands: &mut Commands, poss: &[Vec3], particles: &ParticleMap) {
     for pos in poss {
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(0.1, 0.1, 0.1)),
-            material: materials.add(StandardMaterial {
-                base_color: Color::rgb(1.0, 0.0, 0.0),
-                ..Default::default()
-            }),
+        commands.spawn(ParticleEffectBundle {
+            effect: ParticleEffect::new(particles.demo.clone_weak()),
             transform: Transform::from_translation(*pos),
             ..Default::default()
         });

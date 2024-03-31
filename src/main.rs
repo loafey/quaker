@@ -55,7 +55,6 @@ fn main() {
         Resources,
         RapierPhysicsPlugin::<NoUserData>::default(),
         RapierDebugRenderPlugin::default().disabled(),
-        HanabiPlugin,
         DefaultPlugins
             .set({
                 let mut plug = ImagePlugin::default_nearest();
@@ -74,6 +73,7 @@ fn main() {
         ObjPlugin,
         HookPlugin,
         (StartupStage, MainMenuStage, GameStage),
+        HanabiPlugin,
         TextInputPlugin,
         (
             RenetClientPlugin,
