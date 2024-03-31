@@ -90,63 +90,59 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
             cam_rot,
         } => {
             if nw.current_id.0 != client_id {
-                for (_, pl, mut tr) in nw.players.iter_mut() {
-                    if pl.id == client_id {
-                        tr.translation = tr
-                            .translation
-                            .lerp(*position, nw.time.delta_seconds() * 10.0);
-                        tr.rotation = Quat::from_array(*rotation);
+                let player =
+                    option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
+                let (_, pl, mut tr) = error_return!(nw.players.get_mut(player));
 
-                        error_return!(nw.cameras.get_mut(option_return!(pl.children.camera)))
-                            .1
-                            .rotation
-                            .x = *cam_rot;
+                tr.translation = tr
+                    .translation
+                    .lerp(*position, nw.time.delta_seconds() * 10.0);
+                tr.rotation = Quat::from_array(*rotation);
 
-                        break;
-                    }
-                }
+                error_return!(nw.cameras.get_mut(option_return!(pl.children.camera)))
+                    .1
+                    .rotation
+                    .x = *cam_rot;
             }
         }
         ClientMessage::PickupWeapon { weapon } => {
-            for (player_ent, mut player, _) in nw.players.iter_mut() {
-                if player.id == client_id {
-                    if let Some(weapon_data) = nw.weapon_map.0.get(weapon) {
-                        let slot = weapon_data.slot;
-                        let handle = nw
-                            .asset_server
-                            .load(format!("{}#Scene0", weapon_data.model_file));
-                        if player.add_weapon(weapon_data.clone(), slot, handle) {
-                            nw.commands.entity(player_ent).with_children(|c| {
-                                c.spawn(PbrBundle::default()).insert(AudioBundle {
-                                    source: nw.asset_server.load(
-                                        weapon_data.pickup_sound.clone().unwrap_or(
-                                            "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"
-                                                .to_string(),
-                                        ),
-                                    ),
-                                    settings: PlaybackSettings::DESPAWN.with_spatial(true),
-                                });
-                            });
+            let player =
+                option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
 
-                            if player.id == nw.current_id.0 {
-                                player.display_message(
-                                    &mut nw.commands,
-                                    &nw.asset_server,
-                                    format!(
-                                        "{}{}{}",
-                                        weapon_data.pickup_message1,
-                                        weapon_data.fancy_name,
-                                        weapon_data.pickup_message2
-                                    ),
-                                );
-                            }
-                        }
-                    } else {
-                        error!("tried to pickup nonexisting weapon: \"{weapon}\"")
+            let (player_ent, mut player, _) = error_return!(nw.players.get_mut(player));
+
+            if let Some(weapon_data) = nw.weapon_map.0.get(weapon) {
+                let slot = weapon_data.slot;
+                let handle = nw
+                    .asset_server
+                    .load(format!("{}#Scene0", weapon_data.model_file));
+                if player.add_weapon(weapon_data.clone(), slot, handle) {
+                    nw.commands.entity(player_ent).with_children(|c| {
+                        c.spawn(PbrBundle::default()).insert(AudioBundle {
+                            source: nw.asset_server.load(
+                                weapon_data.pickup_sound.clone().unwrap_or(
+                                    "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
+                                ),
+                            ),
+                            settings: PlaybackSettings::DESPAWN.with_spatial(true),
+                        });
+                    });
+
+                    if player.id == nw.current_id.0 {
+                        player.display_message(
+                            &mut nw.commands,
+                            &nw.asset_server,
+                            format!(
+                                "{}{}{}",
+                                weapon_data.pickup_message1,
+                                weapon_data.fancy_name,
+                                weapon_data.pickup_message2
+                            ),
+                        );
                     }
-
-                    break;
                 }
+            } else {
+                error!("tried to pickup nonexisting weapon: \"{weapon}\"")
             }
         }
         ClientMessage::Fire { .. } => {
@@ -154,23 +150,21 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
         }
         ClientMessage::WeaponAnim { anim } => {
             if nw.current_id.0 != client_id {
-                for (_, mut pl, _) in nw.players.iter_mut() {
-                    if pl.id == client_id {
-                        pl.current_weapon_anim = anim.clone();
-                        pl.restart_anim = true;
-                        break;
-                    }
-                }
+                let player =
+                    option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
+
+                let (_, mut pl, _) = error_return!(nw.players.get_mut(player));
+
+                pl.current_weapon_anim = anim.clone();
+                pl.restart_anim = true;
             }
         }
         ClientMessage::SwitchWeapon { slot, row } => {
             if nw.current_id.0 != client_id {
-                for (_, mut pl, _) in nw.players.iter_mut() {
-                    if pl.id == client_id {
-                        pl.current_weapon = Some((*slot, *row));
-                        break;
-                    }
-                }
+                let player =
+                    option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
+                let (_, mut pl, _) = error_return!(nw.players.get_mut(player));
+                pl.current_weapon = Some((*slot, *row));
             }
         }
     }
