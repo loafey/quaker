@@ -1,3 +1,4 @@
+use crate::{particles::ParticleMap, resources::projectiles::Projectile};
 use bevy::{
     ecs::{
         component::Component,
@@ -7,9 +8,6 @@ use bevy::{
     math::Vec3,
     transform::components::Transform,
 };
-use bevy_hanabi::{ParticleEffect, ParticleEffectBundle};
-
-use crate::{particles::ParticleMap, resources::projectiles::Projectile};
 
 pub mod message;
 pub mod pickup;
@@ -36,10 +34,6 @@ impl ProjectileEntity {
 
 pub fn hitscan_hit_gfx(commands: &mut Commands, poss: &[Vec3], particles: &ParticleMap) {
     for pos in poss {
-        commands.spawn(ParticleEffectBundle {
-            effect: ParticleEffect::new(particles.demo.clone_weak()),
-            transform: Transform::from_translation(*pos),
-            ..Default::default()
-        });
+        particles.spawn_bullet_hit(commands, *pos);
     }
 }

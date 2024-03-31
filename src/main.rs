@@ -84,6 +84,7 @@ fn main() {
     ));
 
     app.add_systems(Startup, particles::register_particles);
+    app.add_systems(Update, particles::ParticleLifetime::update);
 
     if let Some((steam, single_client)) = try_steam() {
         app.insert_non_send_resource(single_client);
