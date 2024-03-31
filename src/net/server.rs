@@ -115,7 +115,6 @@ pub fn server_events(
                     ServerChannel::ServerMessages as u8,
                     error_return!(ServerMessage::SetMap(map.0.clone()).bytes()),
                 );
-                nw.lobby.cam_count += 2;
 
                 for (pickup, trans) in &nw.pickups_query {
                     server.send_message(

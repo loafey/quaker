@@ -52,7 +52,6 @@ impl std::ops::DerefMut for SteamClient {
 #[derive(Debug, Resource, Default)]
 pub struct Lobby {
     pub players: BTreeMap<u64, PlayerInfo>,
-    cam_count: isize,
 }
 
 #[derive(Debug, Resource)]
