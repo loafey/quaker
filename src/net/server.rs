@@ -28,7 +28,7 @@ use bevy_renet::renet::{
     },
     ClientId, RenetServer, ServerEvent,
 };
-use macros::{error_continue, error_return, option_continue, option_return};
+use macros::{error_continue, error_return, option_return};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
 };
@@ -187,12 +187,8 @@ pub fn server_events(
                 info!("{message}");
                 messages.push(message);
 
-                nw.lobby.players.remove(client_id);
-
-                for (e, p, _) in &nw.players {
-                    if p.id == client_id.raw() {
-                        nw.commands.entity(e).despawn_recursive();
-                    }
+                if let Some(player_info) = nw.lobby.players.remove(client_id) {
+                    nw.commands.entity(player_info.entity).despawn_recursive();
                 }
 
                 server.broadcast_message(
@@ -259,31 +255,31 @@ pub fn handle_client_message(
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
             let mut hit_ents = Vec::new();
-            let mut attack_weapon = None;
-            for (player_entity, mut player, trans) in &mut nw.players {
-                if player.id == client_id {
-                    let cam = option_continue!(player.children.camera);
-                    let (_, cam_trans) = error_continue!(nw.cameras.get(cam));
-                    let (slot, row) = option_return!(player.current_weapon);
-                    attack_weapon = Some(player.weapons[slot][row].data.id.clone());
-                    let hits = player.attack(
-                        attack,
-                        &mut nw.materials,
-                        player_entity,
-                        &mut nw.commands,
-                        &nw.rapier_context,
-                        cam_trans,
-                        &trans,
-                        &mut nw.game_entropy,
-                        &nw.projectile_map,
-                        &nw.asset_server,
-                    );
-                    for (hit, pos) in hits {
-                        hit_pos.push(pos);
-                        hit_ents.push(hit);
-                    }
-                    break;
-                }
+
+            let player =
+                option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
+            let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
+
+            let cam = option_return!(player.children.camera);
+            let (_, cam_trans) = error_return!(nw.cameras.get(cam));
+
+            let (slot, row) = option_return!(player.current_weapon);
+            let attack_weapon = Some(player.weapons[slot][row].data.id.clone());
+            let hits = player.attack(
+                attack,
+                &mut nw.materials,
+                player_entity,
+                &mut nw.commands,
+                &nw.rapier_context,
+                cam_trans,
+                &trans,
+                &mut nw.game_entropy,
+                &nw.projectile_map,
+                &nw.asset_server,
+            );
+            for (hit, pos) in hits {
+                hit_pos.push(pos);
+                hit_ents.push(hit);
             }
 
             let attack_weapon = error_return!(attack_weapon
