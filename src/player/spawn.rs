@@ -14,7 +14,6 @@ use bevy::{
     render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
 use bevy_rapier3d::prelude::*;
-use bevy_renet::renet::ClientId;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 
 impl Player {
@@ -35,7 +34,7 @@ impl Player {
         );
 
         nw.lobby.players.insert(
-            ClientId::from_raw(nw.current_id.0),
+            nw.current_id.0,
             PlayerInfo::new(
                 entity,
                 steam.map(|s| s.friends().name()).unwrap_or(format!("{id}")),

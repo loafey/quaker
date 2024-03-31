@@ -79,10 +79,10 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
             }
             .bytes()),
         );
-        if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(id)) {
+        if let Some(info) = nw.lobby.players.get_mut(&id) {
             info.deaths += 1;
         }
-        if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(hurter)) {
+        if let Some(info) = nw.lobby.players.get_mut(&hurter) {
             info.kills += 1;
         }
         transmit_message(server, nw, format!("{} GOT FRAGGED BY {}", id, hurter));
@@ -138,7 +138,7 @@ pub fn server_events(
                         ServerChannel::ServerMessages as u8,
                         error_continue!(ServerMessage::SpawnPlayer {
                             name: info.name.clone(),
-                            id: other_id.raw(),
+                            id: *other_id,
                             translation: trans.translation,
                             weapons: pl
                                 .weapons
@@ -166,7 +166,7 @@ pub fn server_events(
                     .unwrap_or(format!("{client_id}"));
                 nw.lobby
                     .players
-                    .insert(*client_id, PlayerInfo::new(entity, name.clone()));
+                    .insert(client_id.raw(), PlayerInfo::new(entity, name.clone()));
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
@@ -187,7 +187,7 @@ pub fn server_events(
                 info!("{message}");
                 messages.push(message);
 
-                if let Some(player_info) = nw.lobby.players.remove(client_id) {
+                if let Some(player_info) = nw.lobby.players.remove(&client_id.raw()) {
                     nw.commands.entity(player_info.entity).despawn_recursive();
                 }
 
@@ -256,8 +256,7 @@ pub fn handle_client_message(
             let mut hit_pos = Vec::new();
             let mut hit_ents = Vec::new();
 
-            let player =
-                option_return!(nw.lobby.players.get(&ClientId::from_raw(client_id))).entity;
+            let player = option_return!(nw.lobby.players.get(&client_id)).entity;
             let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
 
             let cam = option_return!(player.children.camera);

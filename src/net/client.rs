@@ -26,7 +26,7 @@ use bevy::{
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    ClientId, RenetClient,
+    RenetClient,
 };
 use macros::{error_continue, error_return, option_continue};
 use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
@@ -56,20 +56,16 @@ pub fn handle_messages(
             } => {
                 if id != nw.current_id.0 {
                     let entity = Player::spawn(&mut nw, false, translation, id, weapons, None);
-                    nw.lobby
-                        .players
-                        .insert(ClientId::from_raw(id), PlayerInfo::new(entity, name));
+                    nw.lobby.players.insert(id, PlayerInfo::new(entity, name));
                 }
             }
             ServerMessage::DespawnPlayer { id } => {
-                let player = option_continue!(nw.lobby.players.get(&ClientId::from_raw(id))).entity;
+                let player = option_continue!(nw.lobby.players.get(&id)).entity;
                 nw.commands.entity(player).despawn_recursive();
-                nw.lobby.players.remove(&ClientId::from_raw(id));
+                nw.lobby.players.remove(&id);
             }
             ServerMessage::Reset => {
-                let player =
-                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
-                        .entity;
+                let player = option_continue!(nw.lobby.players.get(&nw.current_id.0)).entity;
                 let (_, mut player, mut trans) = error_continue!(nw.players.get_mut(player));
                 player.health = 100.0;
                 player.armour = 0.0;
@@ -92,18 +88,16 @@ pub fn handle_messages(
                 );
             }
             ServerMessage::Message { text } => {
-                let player =
-                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
-                        .entity;
+                let player = option_continue!(nw.lobby.players.get(&nw.current_id.0)).entity;
                 let (_, player, _) = error_continue!(nw.players.get(player));
                 player.display_message(&mut nw.commands, &nw.asset_server, text);
             }
             ServerMessage::KillStat { death, hurter } => {
-                if let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(death)) {
+                if let Some(info) = nw.lobby.players.get_mut(&death) {
                     info.deaths += 1;
                 }
                 if let Some(hurter) = hurter
-                    && let Some(info) = nw.lobby.players.get_mut(&ClientId::from_raw(hurter))
+                    && let Some(info) = nw.lobby.players.get_mut(&hurter)
                 {
                     info.kills += 1;
                 }
@@ -133,9 +127,7 @@ pub fn handle_messages(
                 hitscan_hit_gfx(&mut nw.commands, &hits, &mut nw.meshes, &mut nw.materials)
             }
             ServerMessage::Hit { amount } => {
-                let player =
-                    option_continue!(nw.lobby.players.get(&ClientId::from_raw(nw.current_id.0)))
-                        .entity;
+                let player = option_continue!(nw.lobby.players.get(&nw.current_id.0)).entity;
                 let (_, mut player, _) = error_continue!(nw.players.get_mut(player));
                 player.health -= amount;
             }
