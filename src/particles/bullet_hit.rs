@@ -2,11 +2,13 @@ use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
 // Yoinked from: https://github.com/djeedai/bevy_hanabi
-pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
+pub fn setup(effects: &mut Assets<EffectAsset>, asset_server: &AssetServer) -> Handle<EffectAsset> {
+    let texture_handle = asset_server.load("particles/bullethit.png");
+
     // Define a color gradient from red to transparent black
     let mut gradient = Gradient::new();
-    gradient.add_key(0.0, Vec4::new(1., 0., 0., 1.));
-    gradient.add_key(1.0, Vec4::splat(0.));
+    gradient.add_key(0.0, Vec4::new(0.4, 0.4, 0.4, 1.));
+    gradient.add_key(1.0, Vec4::splat(0.0));
 
     // Create a new expression module
     let mut module = Module::default();
@@ -23,17 +25,17 @@ pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
     // away from the (same) sphere center.
     let init_vel = SetVelocitySphereModifier {
         center: module.lit(Vec3::ZERO),
-        speed: module.lit(Vec3::Y),
+        speed: module.lit(Vec3::Y * 0.1),
     };
 
     // Initialize the total lifetime of the particle, that is
     // the time for which it's simulated and rendered. This modifier
     // is almost always required, otherwise the particles won't show.
-    let lifetime = module.lit(0.6); // literal value "10.0"
+    let lifetime = module.lit(1.0); // literal value "10.0"
     let init_lifetime = SetAttributeModifier::new(Attribute::LIFETIME, lifetime);
 
     // Every frame, add a gravity-like acceleration downward
-    let accel = module.lit(Vec3::new(0., 3.0, 0.));
+    let accel = module.lit(Vec3::new(0.0, 0.1, 0.0));
     let update_accel = AccelModifier::new(accel);
 
     // Create the effect asset
@@ -41,11 +43,11 @@ pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
         // Maximum number of particles alive at a time
         1,
         // Spawn at a rate of 5 particles per second
-        Spawner::rate(5.0.into()),
+        Spawner::rate(100.0.into()),
         // Move the expression module into the asset
         module,
     )
-    .with_name("MyEffect")
+    .with_name("BulletHit")
     .init(init_pos)
     .init(init_vel)
     .init(init_lifetime)
@@ -53,7 +55,19 @@ pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
     // Render the particles with a color gradient over their
     // lifetime. This maps the gradient key 0 to the particle spawn
     // time, and the gradient key 1 to the particle death (10s).
-    .render(ColorOverLifetimeModifier { gradient });
+    .render(ColorOverLifetimeModifier { gradient })
+    .render(ParticleTextureModifier {
+        texture: texture_handle,
+        sample_mapping: ImageSampleMapping::ModulateOpacityFromR,
+    })
+    .render(OrientModifier {
+        mode: OrientMode::FaceCameraPosition,
+        rotation: None,
+    })
+    .render(SizeOverLifetimeModifier {
+        gradient: Gradient::constant([0.2; 2].into()),
+        screen_space_size: false,
+    });
 
     // Insert into the asset system
     effects.add(effect)
