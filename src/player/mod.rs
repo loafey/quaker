@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use bevy::prelude::*;
+use faststr::FastStr;
 
 use crate::{entities::message::Message, map_gen::entities::data::WeaponData};
 
@@ -86,15 +87,15 @@ pub struct Player {
 
     camera_movement: CameraMovement,
 
-    fps_anims: HashMap<String, Handle<AnimationClip>>,
+    fps_anims: HashMap<FastStr, Handle<AnimationClip>>,
 
     pub children: PlayerChildren,
 
     pub weapons: [Vec<WeaponState>; 10],
     pub current_weapon: Option<(usize, usize)>,
     current_weapon_old: Option<(usize, usize)>,
-    pub current_weapon_anim: String,
-    current_weapon_anim_old: String,
+    pub current_weapon_anim: FastStr,
+    current_weapon_anim_old: FastStr,
     pub restart_anim: bool,
 
     half_height: f32,
@@ -125,8 +126,8 @@ impl Default for Player {
             current_weapon: None,
             current_weapon_old: None,
             weapons: Default::default(),
-            current_weapon_anim: String::new(),
-            current_weapon_anim_old: String::new(),
+            current_weapon_anim: Default::default(),
+            current_weapon_anim_old: Default::default(),
             restart_anim: false,
             children: Default::default(),
             fps_anims: Default::default(),

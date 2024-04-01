@@ -1,3 +1,4 @@
+use faststr::FastStr;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -8,11 +9,11 @@ pub enum PickupType {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PickupData {
     pub pickup_type: PickupType,
-    pub classname: String,
-    pub gives: String,
-    pub pickup_model: String,
-    pub pickup_material: String,
-    pub texture_file: String,
+    pub classname: FastStr,
+    pub gives: FastStr,
+    pub pickup_model: FastStr,
+    pub pickup_material: FastStr,
+    pub texture_file: FastStr,
     pub scale: f32,
 }
 
@@ -21,21 +22,21 @@ pub struct PickupData {
 pub enum SoundEffect {
     #[default]
     Silent,
-    Single(String),
-    Random(Vec<String>),
+    Single(FastStr),
+    Random(Vec<FastStr>),
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WeaponData {
     #[serde(default)]
     pub shoot_sfx: SoundEffect,
-    pub id: String,
+    pub id: FastStr,
     #[serde(default)]
     pub slot: usize,
     #[serde(default)]
-    pub texture_file: String,
+    pub texture_file: FastStr,
     #[serde(default)]
-    pub model_file: String,
+    pub model_file: FastStr,
     pub scale: f32,
     #[serde(default)]
     pub animations: WeaponAnimations,
@@ -43,17 +44,17 @@ pub struct WeaponData {
     pub offset: [f32; 3],
     #[serde(default)]
     pub rotation: [f32; 3],
-    pub pickup_sound: Option<String>,
+    pub pickup_sound: Option<FastStr>,
     #[serde(default)]
     pub attack1: Attack,
     #[serde(default)]
     pub attack2: Attack,
     #[serde(default = "default_pickupmessage1")]
-    pub pickup_message1: String,
+    pub pickup_message1: FastStr,
     #[serde(default = "default_pickupmessage2")]
-    pub pickup_message2: String,
+    pub pickup_message2: FastStr,
     #[serde(default = "default_fancyname")]
-    pub fancy_name: String,
+    pub fancy_name: FastStr,
 }
 impl WeaponData {
     fn default_firetime() -> f32 {
@@ -61,16 +62,16 @@ impl WeaponData {
     }
 }
 
-fn default_fancyname() -> String {
-    "UNNAMNED_WEAPON".to_string()
+fn default_fancyname() -> FastStr {
+    FastStr::from("UNNAMNED_WEAPON")
 }
 
-fn default_pickupmessage1() -> String {
-    "PICKED UP: ".to_string()
+fn default_pickupmessage1() -> FastStr {
+    FastStr::from("PICKED UP: ")
 }
 
-fn default_pickupmessage2() -> String {
-    "!".to_string()
+fn default_pickupmessage2() -> FastStr {
+    FastStr::from("!")
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -92,10 +93,10 @@ pub enum Attack {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct WeaponAnimations {
-    pub idle: String,
-    pub shoot1: String,
-    pub shoot2: String,
-    pub reload: Option<String>,
+    pub idle: FastStr,
+    pub shoot1: FastStr,
+    pub shoot2: FastStr,
+    pub reload: Option<FastStr>,
 
     #[serde(default = "WeaponData::default_firetime")]
     pub fire_time1: f32,

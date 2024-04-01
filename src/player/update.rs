@@ -24,6 +24,7 @@ use bevy_rapier3d::{
     plugin::RapierContext,
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
+use faststr::FastStr;
 use macros::{error_continue, option_continue, option_return};
 use std::fmt::Write;
 
@@ -120,7 +121,7 @@ impl Player {
 
             if weapon.timer > 0.0 {
                 if weapon.reload_timer <= 0.0 && weapon.data.animations.reload.is_some() {
-                    player.current_weapon_anim = "reload".to_string();
+                    player.current_weapon_anim = FastStr::from("reload");
                 }
                 return;
             }
@@ -135,7 +136,7 @@ impl Player {
                 player.attack1(&time, &mut client_events);
                 shot = true;
             } else if weapon.anim_time <= 0.0 && player.current_weapon_anim != "idle" {
-                player.current_weapon_anim = "idle".to_string();
+                player.current_weapon_anim = FastStr::from("idle");
             }
 
             if shot {
@@ -154,7 +155,7 @@ impl Player {
                         c.spawn((
                             TransformBundle::IDENTITY,
                             AudioBundle {
-                                source: asset_server.load(sound),
+                                source: asset_server.load(sound.to_string()),
                                 settings: PlaybackSettings::DESPAWN
                                     .with_spatial(true)
                                     .with_volume(Volume::new(0.8)),
@@ -541,7 +542,7 @@ impl Player {
                     let data = &player.weapons[slot][row].data;
 
                     let new_mat = StandardMaterial {
-                        base_color_texture: Some(asset_server.load(&data.texture_file)),
+                        base_color_texture: Some(asset_server.load(data.texture_file.to_string())),
                         perceptual_roughness: 1.0,
                         reflectance: 0.0,
                         ..Default::default()
@@ -580,14 +581,14 @@ impl Player {
                         ),
                     ]
                     .into_iter()
-                    .map(|(a, b)| (a.to_string(), b))
+                    .map(|(a, b)| (FastStr::from(a), b))
                     .collect();
                     if let Some(reload) = player.weapons[slot][row].data.animations.reload.clone() {
                         let asset = asset_server.load(&format!(
                             "{}#{}",
                             player.weapons[slot][row].data.model_file, reload
                         ));
-                        player.fps_anims.insert("reload".to_string(), asset);
+                        player.fps_anims.insert(FastStr::from("reload"), asset);
                     }
 
                     if player.weapons[slot][row].need_to_reload {
@@ -596,7 +597,7 @@ impl Player {
                         player.weapons[slot][row].timer =
                             player.weapons[slot][row].data.animations.reload_time_skip;
                     } else {
-                        player.current_weapon_anim = "idle".to_string();
+                        player.current_weapon_anim = FastStr::from("idle");
                     }
                     player.camera_movement.original_trans = trans.translation;
                     player.camera_movement.switch_offset = -1.0;
@@ -801,7 +802,7 @@ impl Player {
     fn attack1(&mut self, time: &Time, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
-        self.current_weapon_anim = "shoot1".to_string();
+        self.current_weapon_anim = FastStr::from("shoot1");
         Self::set_anim(
             weapon,
             weapon.data.animations.fire_time1,
@@ -816,7 +817,7 @@ impl Player {
     fn attack2(&mut self, time: &Time, client_events: &mut EventWriter<ClientMessage>) {
         let (slot, row) = option_return!(self.current_weapon);
         let weapon = &mut self.weapons[slot][row];
-        self.current_weapon_anim = "shoot2".to_string();
+        self.current_weapon_anim = FastStr::from("shoot2");
         Self::set_anim(
             weapon,
             weapon.data.animations.fire_time2,

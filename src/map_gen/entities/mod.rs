@@ -19,6 +19,7 @@ use bevy_rapier3d::{
     dynamics::Ccd,
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, Sensor},
 };
+use faststr::FastStr;
 use std::collections::HashMap;
 
 use self::data::PickupData;
@@ -51,21 +52,25 @@ pub fn spawn_entity(
     id: u64,
     is_client: bool,
     asset_server: &Res<AssetServer>,
-    attributes: HashMap<String, String>,
+    attributes: HashMap<FastStr, FastStr>,
     commands: &mut Commands,
     player_spawn: &mut ResMut<PlayerSpawnpoint>,
     pickup_map: &PickupMap,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    match attributes.get("classname").as_ref().map(|s| &s[..]) {
+    match attributes
+        .get(&FastStr::from("classname"))
+        .as_ref()
+        .map(|s| &s[..])
+    {
         Some("light") => {
             let light_level = attributes
-                .get("light")
+                .get(&FastStr::from("light"))
                 .and_then(|l| l.parse::<f32>().ok())
                 .unwrap_or(150.0);
 
             let pos = attributes
-                .get("origin")
+                .get(&FastStr::from("origin"))
                 .map(|p| parse_vec(p))
                 .unwrap_or_default();
 
@@ -82,7 +87,7 @@ pub fn spawn_entity(
         }
         Some("directional_light") => {
             let light_level = attributes
-                .get("light")
+                .get(&FastStr::from("light"))
                 .and_then(|l| l.parse::<f32>().ok())
                 .unwrap_or(1000.0);
             let trans =
@@ -101,7 +106,7 @@ pub fn spawn_entity(
         }
         Some("info_player_start") => {
             let mut pos = attributes
-                .get("origin")
+                .get(&FastStr::from("origin"))
                 .map(|p| parse_vec(p))
                 .unwrap_or_default();
 
@@ -109,11 +114,11 @@ pub fn spawn_entity(
 
             player_spawn.0 = pos;
         }
-        Some(x) if pickup_map.0.contains_key(x) && !is_client => {
-            let data = pickup_map.0.get(x).unwrap();
+        Some(x) if pickup_map.0.contains_key(&FastStr::from(x)) && !is_client => {
+            let data = pickup_map.0.get(&FastStr::from(x)).unwrap();
 
             let pos = attributes
-                .get("origin")
+                .get(&FastStr::from("origin"))
                 .map(|p| parse_vec(p))
                 .unwrap_or_default();
 
@@ -139,12 +144,12 @@ pub fn spawn_pickup(
         ..
     } = &data;
 
-    let mesh_handle = asset_server.load(pickup_model);
+    let mesh_handle = asset_server.load(pickup_model.to_string().to_string());
     let mut trans = Transform::from_translation(pos);
     trans.scale = Vec3::splat(*scale);
 
     let mat_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load(texture_file)),
+        base_color_texture: Some(asset_server.load(texture_file.to_string().to_string())),
         diffuse_transmission: 0.64,
         specular_transmission: 0.5,
         perceptual_roughness: 1.0,

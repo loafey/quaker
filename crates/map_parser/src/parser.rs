@@ -1,3 +1,5 @@
+use faststr::FastStr;
+
 use crate::tokenizer::{Symbol, Token};
 use std::{
     collections::HashMap,
@@ -33,7 +35,7 @@ pub struct Plane {
     pub p1: Vector,
     pub p2: Vector,
     pub p3: Vector,
-    pub texture: String,
+    pub texture: FastStr,
     pub x_offset: TextureOffset,
     pub y_offset: TextureOffset,
     pub rotation: f32,
@@ -71,11 +73,11 @@ impl std::fmt::Debug for Vector {
 }
 
 #[derive(Debug, Clone)]
-pub struct Attribute(String, String);
+pub struct Attribute(FastStr, FastStr);
 
 #[derive(Debug, Default)]
 pub struct Entity {
-    pub attributes: HashMap<String, String>,
+    pub attributes: HashMap<FastStr, FastStr>,
     pub brushes: Vec<Brush>,
 }
 
@@ -170,6 +172,7 @@ fn plane(toks: TokenItr<'_>) -> Result<Option<Plane>> {
     else {
         unreachable!()
     };
+    let texture = FastStr::from(texture);
 
     let x_offset = texture_offset(toks)?;
     let y_offset = texture_offset(toks)?;
@@ -196,8 +199,8 @@ fn plane(toks: TokenItr<'_>) -> Result<Option<Plane>> {
 fn entity_attribute(toks: TokenItr<'_>, lhs: String) -> Result<Attribute> {
     match toks.next().ok_or(error_eof())? {
         Token(Symbol::String(rhs), ..) => Ok(Attribute(
-            lhs[1..lhs.len() - 1].to_string(),
-            rhs[1..rhs.len() - 1].to_string(),
+            FastStr::from(lhs[1..lhs.len() - 1].to_string()),
+            FastStr::from(rhs[1..rhs.len() - 1].to_string()),
         )),
         token => error_token("entity attribute", token),
     }
