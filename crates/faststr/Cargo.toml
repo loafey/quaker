@@ -1,0 +1,11 @@
+[package]
+name = "faststr"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+
+[[bin]]
+name = "mem_test"
+path = "src/bin.rs"
