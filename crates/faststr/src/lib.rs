@@ -2,27 +2,20 @@ use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
     hash::Hash,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
+    ops::Deref,
+    sync::Arc,
 };
 
+#[derive(Clone, Default)]
 pub struct FastStr {
-    inner: Arc<Inner>,
+    inner: Arc<String>,
 }
-struct Inner {
-    ptr: *const u8,
-    counter: AtomicUsize,
-    is_static: bool,
-    len: usize,
-}
-unsafe impl Send for Inner {}
-unsafe impl Sync for Inner {}
 
-impl Default for FastStr {
-    fn default() -> Self {
-        Self::from("")
+impl Deref for FastStr {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 
@@ -64,30 +57,6 @@ impl Hash for FastStr {
         self.as_str().hash(state);
     }
 }
-impl Clone for FastStr {
-    fn clone(&self) -> Self {
-        self.inner.counter.fetch_add(1, Ordering::SeqCst);
-        Self {
-            inner: self.inner.clone(),
-        }
-    }
-}
-impl<'a> FastStr {
-    pub fn as_str(&'a self) -> &'a str {
-        unsafe { std::mem::transmute::<_, &str>((self.inner.ptr, self.inner.len)) }
-    }
-}
-
-impl Drop for FastStr {
-    fn drop(&mut self) {
-        let c = self.inner.counter.fetch_sub(1, Ordering::SeqCst) - 1;
-        if !self.inner.is_static && c == 0 {
-            unsafe {
-                Vec::from_raw_parts(self.inner.ptr as *mut u8, self.inner.len, self.inner.len)
-            };
-        }
-    }
-}
 
 impl Debug for FastStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -101,31 +70,18 @@ impl Display for FastStr {
     }
 }
 
-impl From<&'static str> for FastStr {
-    fn from(value: &'static str) -> Self {
-        let len = value.len();
+impl<'a> From<&'a str> for FastStr {
+    fn from(value: &'a str) -> Self {
         Self {
-            inner: Arc::new(Inner {
-                is_static: true,
-                ptr: value.as_ptr(),
-                counter: AtomicUsize::new(1),
-                len,
-            }),
+            inner: Arc::new(value.to_string()),
         }
     }
 }
 
 impl From<String> for FastStr {
     fn from(value: String) -> Self {
-        let len = value.len();
-        let leaked = value.leak();
         Self {
-            inner: Arc::new(Inner {
-                is_static: false,
-                ptr: leaked.as_ptr(),
-                counter: AtomicUsize::new(1),
-                len,
-            }),
+            inner: Arc::new(value),
         }
     }
 }
