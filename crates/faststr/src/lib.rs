@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
     hash::Hash,
@@ -19,13 +20,29 @@ struct Inner {
 unsafe impl Send for Inner {}
 unsafe impl Sync for Inner {}
 
+impl Serialize for FastStr {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.as_str().serialize(serializer)
+    }
+}
+impl<'de> Deserialize<'de> for FastStr {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(Self::from(String::deserialize(deserializer)?))
+    }
+}
+
 impl PartialEq for FastStr {
     fn eq(&self, other: &Self) -> bool {
         self.as_str() == other.as_str()
     }
 }
 impl Eq for FastStr {}
-
 impl PartialOrd for FastStr {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
@@ -41,7 +58,6 @@ impl Hash for FastStr {
         self.as_str().hash(state);
     }
 }
-
 impl Clone for FastStr {
     fn clone(&self) -> Self {
         self.inner.counter.fetch_add(1, Ordering::Acquire);
@@ -50,10 +66,32 @@ impl Clone for FastStr {
         }
     }
 }
-
 impl<'a> FastStr {
     pub fn as_str(&'a self) -> &'a str {
         unsafe { std::mem::transmute::<_, &str>((self.inner.ptr, self.inner.len)) }
+    }
+}
+
+impl Drop for FastStr {
+    fn drop(&mut self) {
+        let c = self.inner.counter.fetch_sub(1, Ordering::Acquire) - 1;
+        if !self.inner.is_static && c == 0 {
+            unsafe {
+                Vec::from_raw_parts(self.inner.ptr as *mut u8, self.inner.len, self.inner.len)
+            };
+        }
+    }
+}
+
+impl Debug for FastStr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.as_str())
+    }
+}
+
+impl Display for FastStr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 
@@ -83,26 +121,6 @@ impl From<String> for FastStr {
                 len,
             }),
         }
-    }
-}
-impl Drop for FastStr {
-    fn drop(&mut self) {
-        let c = self.inner.counter.fetch_sub(1, Ordering::Acquire) - 1;
-        if !self.inner.is_static && c == 0 {
-            unsafe {
-                Vec::from_raw_parts(self.inner.ptr as *mut u8, self.inner.len, self.inner.len)
-            };
-        }
-    }
-}
-impl Debug for FastStr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.as_str())
-    }
-}
-impl Display for FastStr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
     }
 }
 
