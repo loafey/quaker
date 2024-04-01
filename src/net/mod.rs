@@ -83,7 +83,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
 
                 let (_, mut pl, _) = error_return!(nw.players.get_mut(player));
 
-                pl.current_weapon_anim = anim.clone();
+                pl.current_weapon_anim.clone_from(anim);
                 pl.restart_anim = true;
             }
         }

@@ -373,6 +373,7 @@ impl Player {
                     // Got GLTF scene
                     for child in children {
                         if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
+                            #[allow(clippy::assigning_clones)]
                             if player.current_weapon_anim != player.current_weapon_anim_old
                                 || player.restart_anim
                             {

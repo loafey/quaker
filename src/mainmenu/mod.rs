@@ -96,7 +96,7 @@ pub fn update_level_buttons(
 ) {
     for (interaction, button) in &query {
         if matches!(interaction, Interaction::Pressed) {
-            curlevel.0 = button.0.clone();
+            curlevel.0.clone_from(&button.0);
             info!("set level to: {:?}", curlevel.0);
         }
     }

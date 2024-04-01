@@ -12,7 +12,7 @@ use crate::{
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_rapier3d::plugin::RapierContext;
 
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, unused)]
 #[derive(SystemParam)]
 pub struct NetWorld<'w, 's> {
     // Checked

@@ -67,12 +67,14 @@ pub enum MouseKey {
     MouseMiddle,
     MouseBack,
     MouseForward,
+    #[allow(unused)]
     MouseOther(u16),
 }
 
 #[derive(Debug, Deserialize, Copy, Clone)]
 #[repr(u32)]
 pub enum KeyCode {
+    #[allow(unused)]
     Unidentified((u16, u32)),
     Backquote,
     Backslash,

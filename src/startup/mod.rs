@@ -1,7 +1,4 @@
 use crate::resources::CurrentStage;
-use bevy::ecs::prelude::Res;
-use bevy::input::keyboard::KeyCode;
-use bevy::input::ButtonInput;
 use bevy::prelude::*;
 
 #[derive(Component)]
