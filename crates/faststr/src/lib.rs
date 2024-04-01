@@ -20,6 +20,12 @@ struct Inner {
 unsafe impl Send for Inner {}
 unsafe impl Sync for Inner {}
 
+impl Default for FastStr {
+    fn default() -> Self {
+        Self::from("")
+    }
+}
+
 impl Serialize for FastStr {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
