@@ -16,6 +16,11 @@
         overlays = [ fenix.overlays.default ];
         pkgs = import nixpkgs {
           inherit system overlays;
+          config = {
+            permittedInsecurePackages = [
+              "freeimage-unstable-2021-11-01"
+            ];
+          };
         };
 
         trenchbroom-working = pkgs.runCommand "trenchbroom"
