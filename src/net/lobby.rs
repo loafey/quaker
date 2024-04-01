@@ -1,4 +1,5 @@
 use bevy::ecs::{entity::Entity, system::Resource};
+use faststr::FastStr;
 use std::collections::BTreeMap;
 
 type K = u64;
@@ -8,12 +9,12 @@ type InnerLobby = BTreeMap<K, V>;
 #[derive(Debug)]
 pub struct PlayerInfo {
     pub entity: Entity,
-    pub name: String,
+    pub name: FastStr,
     pub kills: u64,
     pub deaths: u64,
 }
 impl PlayerInfo {
-    pub fn new(entity: Entity, name: String) -> Self {
+    pub fn new(entity: Entity, name: FastStr) -> Self {
         Self {
             entity,
             name,

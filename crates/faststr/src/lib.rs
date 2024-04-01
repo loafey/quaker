@@ -12,7 +12,7 @@ pub struct FastStr {
 }
 
 impl Deref for FastStr {
-    type Target = String;
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -24,7 +24,7 @@ impl Serialize for FastStr {
     where
         S: serde::Serializer,
     {
-        self.as_str().serialize(serializer)
+        self.inner.serialize(serializer)
     }
 }
 impl<'de> Deserialize<'de> for FastStr {
@@ -36,9 +36,19 @@ impl<'de> Deserialize<'de> for FastStr {
     }
 }
 
-impl PartialEq for FastStr {
+impl PartialEq<&str> for FastStr {
+    fn eq(&self, other: &&str) -> bool {
+        self.inner.as_str() == *other
+    }
+}
+impl PartialEq<String> for FastStr {
+    fn eq(&self, other: &String) -> bool {
+        self.inner.as_str() == other
+    }
+}
+impl PartialEq<Self> for FastStr {
     fn eq(&self, other: &Self) -> bool {
-        self.as_str() == other.as_str()
+        *self.inner == *other.inner
     }
 }
 impl Eq for FastStr {}
@@ -49,24 +59,24 @@ impl PartialOrd for FastStr {
 }
 impl Ord for FastStr {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.as_str().cmp(other.as_str())
+        self.inner.cmp(&other.inner)
     }
 }
 impl Hash for FastStr {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.as_str().hash(state);
+        state.write(self.inner.as_bytes());
     }
 }
 
 impl Debug for FastStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.as_str())
+        write!(f, "{:?}", &*self.inner)
     }
 }
 
 impl Display for FastStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
+        write!(f, "{}", &*self.inner)
     }
 }
 
@@ -83,6 +93,12 @@ impl From<String> for FastStr {
         Self {
             inner: Arc::new(value),
         }
+    }
+}
+
+impl AsRef<str> for FastStr {
+    fn as_ref(&self) -> &str {
+        &self.inner
     }
 }
 

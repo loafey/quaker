@@ -6,6 +6,7 @@ use bevy::{
     math::{Quat, Vec2, Vec3},
     render::texture::Image,
 };
+use faststr::FastStr;
 use macros::error_return;
 use map_parser::parser::TextureOffset;
 use std::{hint::unreachable_unchecked, ops::Div};
@@ -18,7 +19,7 @@ const RIGHT_VECTOR: Vec3 = Vec3::Y;
 pub struct Poly {
     pub verts: Vec<Vertex>,
     pub plane: Plane,
-    pub texture: Option<String>,
+    pub texture: Option<FastStr>,
     pub x_offset: TextureOffset,
     pub y_offset: TextureOffset,
     pub rotation: f32,

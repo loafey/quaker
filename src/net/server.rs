@@ -28,6 +28,7 @@ use bevy_renet::renet::{
     },
     ClientId, RenetServer, ServerEvent,
 };
+use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
 use renet_steam::{
     bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
@@ -158,11 +159,13 @@ pub fn server_events(
                     Vec::new(),
                     None,
                 );
-                let name = steam
-                    .as_ref()
-                    .map(|s| s.friends().get_friend(SteamId::from_raw(client_id.raw())))
-                    .map(|f| f.name())
-                    .unwrap_or(format!("{client_id}"));
+                let name = FastStr::from(
+                    steam
+                        .as_ref()
+                        .map(|s| s.friends().get_friend(SteamId::from_raw(client_id.raw())))
+                        .map(|f| f.name())
+                        .unwrap_or(format!("{client_id}")),
+                );
                 nw.lobby
                     .insert(client_id.raw(), PlayerInfo::new(entity, name.clone()));
 

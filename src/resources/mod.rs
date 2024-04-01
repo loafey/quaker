@@ -9,6 +9,7 @@ use bevy::{
     math::Vec3,
     render::texture::Image,
 };
+use faststr::FastStr;
 use macros::error_return;
 use std::{collections::HashMap, fs, path::PathBuf};
 
@@ -73,11 +74,11 @@ pub fn if_texture_done_loading(text: Res<TextureLoadingState>) -> bool {
 
 /// A map which provides Path -> Handle for textures
 #[derive(Debug, Resource, Default)]
-pub struct TextureMap(pub HashMap<String, Handle<Image>>);
+pub struct TextureMap(pub HashMap<FastStr, Handle<Image>>);
 
 /// A map with pickup data
 #[derive(Debug, Resource, Default)]
-pub struct PickupMap(pub HashMap<String, PickupData>);
+pub struct PickupMap(pub HashMap<FastStr, PickupData>);
 impl PickupMap {
     pub fn new() -> Self {
         info!("Loading pickups...");
@@ -96,7 +97,7 @@ impl PickupMap {
 
 /// A map with weapon data
 #[derive(Debug, Resource, Default)]
-pub struct WeaponMap(pub HashMap<String, WeaponData>);
+pub struct WeaponMap(pub HashMap<FastStr, WeaponData>);
 impl WeaponMap {
     pub fn new() -> Self {
         info!("Loading pickups...");

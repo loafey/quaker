@@ -2761,6 +2761,9 @@ dependencies = [
 [[package]]
 name = "map_parser"
 version = "0.1.0"
+dependencies = [
+ "faststr",
+]
 
 [[package]]
 name = "matchers"

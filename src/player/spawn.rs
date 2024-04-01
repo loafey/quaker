@@ -18,6 +18,7 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
+use faststr::FastStr;
 
 impl Player {
     pub fn spawn_own_player(
@@ -40,7 +41,7 @@ impl Player {
             nw.current_id.0,
             PlayerInfo::new(
                 entity,
-                steam.map(|s| s.friends().name()).unwrap_or(format!("{id}")),
+                FastStr::from(steam.map(|s| s.friends().name()).unwrap_or(format!("{id}"))),
             ),
         );
     }
@@ -50,7 +51,7 @@ impl Player {
         is_own: bool,
         player_spawn: Vec3,
         current_id: u64,
-        weapons: Vec<Vec<String>>,
+        weapons: Vec<Vec<FastStr>>,
         avatar: Option<&Res<CurrentAvatar>>,
     ) -> Entity {
         let mut camera = None;

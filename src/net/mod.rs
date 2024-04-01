@@ -1,6 +1,7 @@
 use crate::{map_gen::entities::data::PickupData, queries::NetWorld};
 use bevy::prelude::*;
 use bevy_renet::renet::*;
+use faststr::FastStr;
 use macros::{error_return, option_return};
 use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, time::Duration};
@@ -49,9 +50,14 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                     nw.commands.entity(player_ent).with_children(|c| {
                         c.spawn(PbrBundle::default()).insert(AudioBundle {
                             source: nw.asset_server.load(
-                                weapon_data.pickup_sound.clone().unwrap_or(
-                                    "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg".to_string(),
-                                ),
+                                weapon_data
+                                    .pickup_sound
+                                    .as_ref()
+                                    .map(|f| f.to_string())
+                                    .unwrap_or(
+                                        "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"
+                                            .to_string(),
+                                    ),
                             ),
                             settings: PlaybackSettings::DESPAWN.with_spatial(true),
                         });
@@ -141,7 +147,7 @@ pub enum ClientMessage {
     },
 
     PickupWeapon {
-        weapon: String,
+        weapon: FastStr,
     },
 
     Fire {
@@ -154,7 +160,7 @@ pub enum ClientMessage {
     },
 
     WeaponAnim {
-        anim: String,
+        anim: FastStr,
     },
 }
 impl ClientMessage {
@@ -171,7 +177,7 @@ pub enum SimulationEvent {
     PlayerPicksUpPickup {
         id: u64,
         player: u64,
-        pickup: String,
+        pickup: FastStr,
     },
 }
 
@@ -180,9 +186,9 @@ pub enum ServerMessage {
     SetMap(PathBuf),
     SpawnPlayer {
         id: u64,
-        name: String,
+        name: FastStr,
         translation: Vec3,
-        weapons: Vec<Vec<String>>,
+        weapons: Vec<Vec<FastStr>>,
     },
     PlayerUpdate {
         id: u64,
