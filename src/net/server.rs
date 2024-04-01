@@ -80,13 +80,27 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
             }
             .bytes()),
         );
-        if let Some(info) = nw.lobby.get_mut(&id) {
+        let id = if let Some(info) = nw.lobby.get_mut(&id) {
             info.deaths += 1;
-        }
-        if let Some(info) = nw.lobby.get_mut(&hurter) {
+            info.name.clone()
+        } else {
+            format!("{id}").into()
+        };
+        let hurter = if let Some(info) = nw.lobby.get_mut(&hurter) {
             info.kills += 1;
-        }
-        transmit_message(server, nw, format!("{} GOT FRAGGED BY {}", id, hurter));
+            info.name.clone()
+        } else {
+            format!("{hurter}").into()
+        };
+        transmit_message(
+            server,
+            nw,
+            format!(
+                "{} GOT FRAGGED BY {}",
+                id.to_lowercase(),
+                hurter.to_lowercase()
+            ),
+        );
     }
 }
 
@@ -107,10 +121,6 @@ pub fn server_events(
     for event in events.read() {
         match event {
             ServerEvent::ClientConnected { client_id } => {
-                let message = format!("PLAYER {client_id} JOINED");
-                info!("{message}");
-                messages.push(message);
-
                 server.send_message(
                     *client_id,
                     ServerChannel::ServerMessages as u8,
@@ -169,6 +179,10 @@ pub fn server_events(
                 nw.lobby
                     .insert(client_id.raw(), PlayerInfo::new(entity, name.clone()));
 
+                let message = format!("PLAYER {} JOINED", name.to_lowercase());
+                info!("{message}");
+                messages.push(message);
+
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::SpawnPlayer {
@@ -181,15 +195,15 @@ pub fn server_events(
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                let message = format!(
-                    "PLAYER {client_id} LEFT: {}",
-                    format!("{reason}").to_uppercase()
-                );
-                info!("{message}");
-                messages.push(message);
-
                 if let Some(player_info) = nw.lobby.remove(&client_id.raw()) {
                     nw.commands.entity(player_info.entity).despawn_recursive();
+                    let message = format!(
+                        "PLAYER {} LEFT: {}",
+                        player_info.name.to_lowercase(),
+                        format!("{reason}").to_uppercase()
+                    );
+                    info!("{message}");
+                    messages.push(message);
                 }
 
                 server.broadcast_message(
