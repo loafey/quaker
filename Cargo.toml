@@ -13,6 +13,7 @@ bevy = { version = "0.13.*", features = ["bevy_gltf"] }#, features = ["dynamic_l
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
 input_derive = { path = "crates/input_derive" }
+faststr = { path = "crates/faststr" }
 bevy_rapier3d = { version = "0.25.0", features = ["parallel","debug-render-3d","simd-stable"] }
 serde = "1.0.197"
 serde_json = "1.0.114"
