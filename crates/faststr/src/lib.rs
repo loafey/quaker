@@ -1,5 +1,6 @@
 use std::{
     fmt::{Debug, Display},
+    hash::Hash,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -7,23 +8,52 @@ use std::{
 };
 
 pub struct FastStr {
-    inner: *const u8,
-    counter: Arc<AtomicUsize>,
+    inner: Arc<Inner>,
+}
+struct Inner {
+    ptr: *const u8,
+    counter: AtomicUsize,
     is_static: bool,
     len: usize,
 }
-unsafe impl Send for FastStr {}
-unsafe impl Sync for FastStr {}
+unsafe impl Send for Inner {}
+unsafe impl Sync for Inner {}
+
+impl PartialEq for FastStr {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_str() == other.as_str()
+    }
+}
+impl Eq for FastStr {}
+
+impl PartialOrd for FastStr {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for FastStr {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.as_str().cmp(other.as_str())
+    }
+}
+impl Hash for FastStr {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.as_str().hash(state);
+    }
+}
 
 impl Clone for FastStr {
     fn clone(&self) -> Self {
-        self.counter.fetch_add(1, Ordering::Acquire);
+        self.inner.counter.fetch_add(1, Ordering::Acquire);
         Self {
-            inner: self.inner,
-            counter: self.counter.clone(),
-            is_static: self.is_static,
-            len: self.len,
+            inner: self.inner.clone(),
         }
+    }
+}
+
+impl<'a> FastStr {
+    pub fn as_str(&'a self) -> &'a str {
+        unsafe { std::mem::transmute::<_, &str>((self.inner.ptr, self.inner.len)) }
     }
 }
 
@@ -31,10 +61,12 @@ impl From<&'static str> for FastStr {
     fn from(value: &'static str) -> Self {
         let len = value.len();
         Self {
-            is_static: true,
-            inner: value.as_ptr(),
-            counter: Arc::new(AtomicUsize::new(1)),
-            len,
+            inner: Arc::new(Inner {
+                is_static: true,
+                ptr: value.as_ptr(),
+                counter: AtomicUsize::new(1),
+                len,
+            }),
         }
     }
 }
@@ -44,33 +76,33 @@ impl From<String> for FastStr {
         let len = value.len();
         let leaked = value.leak();
         Self {
-            is_static: false,
-            inner: leaked.as_ptr(),
-            counter: Arc::new(AtomicUsize::new(1)),
-            len,
+            inner: Arc::new(Inner {
+                is_static: false,
+                ptr: leaked.as_ptr(),
+                counter: AtomicUsize::new(1),
+                len,
+            }),
         }
     }
 }
 impl Drop for FastStr {
     fn drop(&mut self) {
-        let c = self.counter.fetch_sub(1, Ordering::Acquire) - 1;
-        if !self.is_static && c == 0 {
-            unsafe { Vec::from_raw_parts(self.inner as *mut u8, self.len, self.len) };
+        let c = self.inner.counter.fetch_sub(1, Ordering::Acquire) - 1;
+        if !self.inner.is_static && c == 0 {
+            unsafe {
+                Vec::from_raw_parts(self.inner.ptr as *mut u8, self.inner.len, self.inner.len)
+            };
         }
     }
 }
 impl Debug for FastStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", unsafe {
-            std::mem::transmute::<_, &str>((self.inner, self.len))
-        })
+        write!(f, "{:?}", self.as_str())
     }
 }
 impl Display for FastStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", unsafe {
-            std::mem::transmute::<_, &str>((self.inner, self.len))
-        })
+        write!(f, "{}", self.as_str())
     }
 }
 
