@@ -14,19 +14,19 @@ fn main() {
         let og_string = vec![c; max].into_iter().collect::<String>();
 
         let mut veccy = Vec::new();
-        let time = Instant::now();
         for _ in 0..max {
+            let time = Instant::now();
             veccy.push(og_string.clone());
+            string_total_time += time.elapsed().as_secs_f32();
         }
-        string_total_time += time.elapsed().as_secs_f32();
 
         let mut veccy = Vec::new();
         let fstring = FastStr::from(og_string);
-        let time = Instant::now();
         for _ in 0..max {
+            let time = Instant::now();
             veccy.push(fstring.clone());
+            fstring_total_time += time.elapsed().as_secs_f32();
         }
-        fstring_total_time += time.elapsed().as_secs_f32();
     }
 
     let avg_string = string_total_time / chars as f32;

@@ -60,7 +60,7 @@ impl Hash for FastStr {
 }
 impl Clone for FastStr {
     fn clone(&self) -> Self {
-        self.inner.counter.fetch_add(1, Ordering::Acquire);
+        self.inner.counter.fetch_add(1, Ordering::SeqCst);
         Self {
             inner: self.inner.clone(),
         }
@@ -74,7 +74,7 @@ impl<'a> FastStr {
 
 impl Drop for FastStr {
     fn drop(&mut self) {
-        let c = self.inner.counter.fetch_sub(1, Ordering::Acquire) - 1;
+        let c = self.inner.counter.fetch_sub(1, Ordering::SeqCst) - 1;
         if !self.inner.is_static && c == 0 {
             unsafe {
                 Vec::from_raw_parts(self.inner.ptr as *mut u8, self.inner.len, self.inner.len)
