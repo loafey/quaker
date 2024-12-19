@@ -74,7 +74,7 @@
             export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
               pkgs.lib.makeLibraryPath [
                 pkgs.udev
-                pkgs.alsaLib
+                pkgs.alsa-lib
                 pkgs.vulkan-loader
                 pkgs.libxkbcommon
               ]
