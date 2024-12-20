@@ -51,8 +51,8 @@ fn main() {
     app.add_event::<ClientMessage>()
         .add_event::<SimulationEvent>();
 
+    app.add_plugins(Resources);
     app.add_plugins((
-        Resources,
         RapierPhysicsPlugin::<NoUserData>::default(),
         RapierDebugRenderPlugin::default().disabled(),
         DefaultPlugins
