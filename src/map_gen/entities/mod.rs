@@ -5,6 +5,7 @@ use crate::{
 };
 use bevy::{
     asset::{AssetServer, Assets},
+    color::Color,
     ecs::system::{Commands, Res, ResMut},
     log::error,
     math::{EulerRot, Quat, Vec3},
@@ -12,8 +13,8 @@ use bevy::{
         DirectionalLight, DirectionalLightBundle, PbrBundle, PointLight, PointLightBundle,
         StandardMaterial,
     },
-    render::color::Color,
-    transform::{components::Transform, TransformBundle},
+    prelude::TransformBundle,
+    transform::components::Transform,
 };
 use bevy_rapier3d::{
     dynamics::Ccd,

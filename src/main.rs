@@ -5,8 +5,8 @@ use crate::net::{
     SimulationEvent,
 };
 use bevy::{
-    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
-    render::texture::ImageAddressMode,
+    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, image::ImageAddressMode,
+    log::LogPlugin, prelude::*,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_obj::ObjPlugin;
