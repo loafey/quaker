@@ -144,12 +144,13 @@ pub fn load_map(
             }
 
             if !brush_poly.is_empty() {
-                brush_poly.sort_by(|a, b| {
-                    a.x.total_cmp(&b.x)
-                        .cmp(&a.y.total_cmp(&b.y))
-                        .cmp(&a.z.total_cmp(&b.z))
-                });
-                brush_poly.dedup();
+                // TODO This crashes in rust 1.81, and not being able to dedup leads to complicated collision meshes
+                // brush_poly.sort_by(|a, b| {
+                // a.x.total_cmp(&b.x)
+                // .cmp(&a.y.total_cmp(&b.y))
+                // .cmp(&a.z.total_cmp(&b.z))
+                // });
+                // brush_poly.dedup();
 
                 if let Some(col) = Collider::convex_hull(&brush_poly) {
                     commands.spawn(col);
