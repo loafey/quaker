@@ -9,25 +9,25 @@ edition = "2021"
 [features]
 
 [dependencies]        
-bevy = { version = "0.13.*", features = ["bevy_gltf"] }#, features = ["dynamic_linking"]
+bevy = { version = "0.15.0", features = ["bevy_gltf"] }#, features = ["dynamic_linking"]
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
 input_derive = { path = "crates/input_derive" }
 faststr = { path = "crates/faststr" }
-bevy_rapier3d = { version = "0.25.0", features = ["parallel","debug-render-3d","simd-stable"] }
+bevy_rapier3d = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
 serde = "1.0.197"
 serde_json = "1.0.114"
-bevy_obj = { version = "0.13.0" } #, features = ["scene"] 
-bevy-inspector-egui = "0.23.4"
+bevy_obj = { version = "0.15.0" } #, features = ["scene"] 
+bevy-inspector-egui = "0.28.0"
 bevy-scene-hook = "10.0.0"
-bevy_simple_text_input = "0.5.1"
+bevy_simple_text_input = "0.10.0"
 bincode = "1.3.3"
-bevy_renet = "0.0.11"
-renet_steam = { version = "0.0.1", features = ["bevy"] }
+bevy_renet = "0.0.12"
+renet_steam = { version = "0.0.2", features = ["bevy"] }
 steamworks = "0.11.0"
 sha256 = { version = "1.5.0", default-features = false }
-image = { version = "0.24.8", default-features = false }
-bevy_hanabi = { version = "0.10.0", default-features = false, features = ["3d"] }
+image = { version = "0.25.5", default-features = false }
+bevy_hanabi = { version = "0.14.0", default-features = false, features = ["3d"] }
 
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]

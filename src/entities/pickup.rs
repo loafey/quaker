@@ -51,7 +51,7 @@ impl PickupEntity {
     }
     pub fn update(mut query: Query<(&mut PickupEntity, &mut Transform)>, time: Res<Time>) {
         for (_pe, mut trans) in query.iter_mut() {
-            trans.rotate_y(time.delta_seconds());
+            trans.rotate_y(time.delta_secs());
         }
     }
 }
