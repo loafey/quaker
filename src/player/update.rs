@@ -51,14 +51,13 @@ impl Player {
     }
 
     fn set_anim(weapon: &mut WeaponState, fire_time: f32, anim_time: f32, time: &Time) {
-        weapon.timer = fire_time + time.delta_seconds();
-        weapon.anim_time = anim_time + time.delta_seconds();
+        weapon.timer = fire_time + time.delta_secs();
+        weapon.anim_time = anim_time + time.delta_secs();
         if weapon.data.animations.reload.is_some() {
             weapon.need_to_reload = true;
-            weapon.timer =
-                fire_time + weapon.data.animations.reload_time_skip + time.delta_seconds();
-            weapon.reload_timer = anim_time + time.delta_seconds();
-            weapon.anim_time += weapon.data.animations.reload_time + time.delta_seconds();
+            weapon.timer = fire_time + weapon.data.animations.reload_time_skip + time.delta_secs();
+            weapon.reload_timer = anim_time + time.delta_secs();
+            weapon.anim_time += weapon.data.animations.reload_time + time.delta_secs();
         }
     }
 
@@ -112,11 +111,11 @@ impl Player {
         for (player_ent, mut player, _) in &mut q_players {
             let (slot, row) = option_continue!(player.current_weapon);
             let weapon = &mut player.weapons[slot][row];
-            weapon.timer -= time.delta_seconds();
+            weapon.timer -= time.delta_secs();
             weapon.timer = weapon.timer.max(-1.0);
-            weapon.anim_time -= time.delta_seconds();
+            weapon.anim_time -= time.delta_secs();
             weapon.anim_time = weapon.anim_time.max(-1.0);
-            weapon.reload_timer -= time.delta_seconds();
+            weapon.reload_timer -= time.delta_secs();
             weapon.reload_timer = weapon.reload_timer.max(-1.0);
 
             if weapon.timer > 0.0 {
@@ -176,23 +175,23 @@ impl Player {
         for mut player in q_parent.iter_mut() {
             player.camera_movement.cam_rot_current = player.camera_movement.cam_rot_current.lerp(
                 player.camera_movement.cam_rot_goal,
-                time.delta_seconds() * 10.0,
+                time.delta_secs() * 10.0,
             );
 
             player.camera_movement.backdrift = player.camera_movement.backdrift.lerp(
                 player.camera_movement.backdrift_goal,
-                time.delta_seconds() * 10.0,
+                time.delta_secs() * 10.0,
             );
 
             player.camera_movement.bob_current = player.camera_movement.bob_current.lerp(
                 player.camera_movement.bob_goal.sin(),
-                time.delta_seconds() * 10.0,
+                time.delta_secs() * 10.0,
             );
 
             player.camera_movement.switch_offset = player
                 .camera_movement
                 .switch_offset
-                .lerp(0.0, time.delta_seconds() * 10.0);
+                .lerp(0.0, time.delta_secs() * 10.0);
 
             let (_, mut cam_trans) =
                 error_continue!(q_cam.get_mut(option_continue!(player.children.camera)));
@@ -264,20 +263,20 @@ impl Player {
 
             let hort_speed = player.hort_speed;
             if keys.walk_forward_pressed {
-                player.velocity += forward * hort_speed * time.delta_seconds();
+                player.velocity += forward * hort_speed * time.delta_secs();
                 player.camera_movement.backdrift_goal = player.camera_movement.backdrift_max;
             } else if keys.walk_backward_pressed {
-                player.velocity -= forward * hort_speed * time.delta_seconds();
+                player.velocity -= forward * hort_speed * time.delta_secs();
                 player.camera_movement.backdrift_goal = -player.camera_movement.backdrift_max;
             } else {
                 player.camera_movement.backdrift_goal = 0.0;
             }
 
             if keys.walk_left_pressed {
-                player.velocity -= right * hort_speed * time.delta_seconds();
+                player.velocity -= right * hort_speed * time.delta_secs();
                 player.camera_movement.cam_rot_goal = player.camera_movement.cam_rot_max_goal;
             } else if keys.walk_right_pressed {
-                player.velocity += right * hort_speed * time.delta_seconds();
+                player.velocity += right * hort_speed * time.delta_secs();
                 player.camera_movement.cam_rot_goal = -player.camera_movement.cam_rot_max_goal;
             } else {
                 player.camera_movement.cam_rot_goal = 0.0;
@@ -289,7 +288,7 @@ impl Player {
             //player.velocity.z = player.velocity.z.clamp(-5.0, 5.0);
 
             if player.velocity != Vec3::ZERO {
-                player.camera_movement.bob_goal += time.delta_seconds()
+                player.camera_movement.bob_goal += time.delta_secs()
                     * (Vec3::new(player.velocity.x, 0.0, player.velocity.z)
                         .abs()
                         .length()
@@ -312,8 +311,8 @@ impl Player {
                     player.air_time = Some(std::time::Instant::now())
                 }
             } else {
-                player.velocity.y += time.delta_seconds() * player.jump_timer * player.gravity;
-                player.jump_timer -= time.delta_seconds() * 50.0;
+                player.velocity.y += time.delta_secs() * player.jump_timer * player.gravity;
+                player.jump_timer -= time.delta_secs() * 50.0;
                 player.jump_timer = player.jump_timer.clamp(-0.1, 1.0);
             }
 

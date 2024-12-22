@@ -331,7 +331,7 @@ pub fn handle_client_message(
                 }
             }
 
-            hitscan_hit_gfx(&mut nw.commands, &hit_pos, &nw.particles);
+            hitscan_hit_gfx(&nw.asset_server, &mut nw.commands, &hit_pos, &nw.particles);
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
                 error_return!(ServerMessage::HitscanHits { hits: hit_pos }.bytes()),

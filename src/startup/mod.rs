@@ -52,7 +52,7 @@ pub fn startup_update(
         kill_all = true;
     }
     for (mut sprite, mut state) in &mut query {
-        state.time += time.delta_seconds();
+        state.time += time.delta_secs();
         if state.time > 1.0 && !state.played_sound {
             state.played_sound = true;
             commands

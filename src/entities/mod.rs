@@ -1,5 +1,6 @@
 use crate::{particles::ParticleMap, resources::projectiles::Projectile};
 use bevy::{
+    asset::AssetServer,
     ecs::{
         component::Component,
         schedule::{IntoSystemConfigs, SystemConfigs},
@@ -32,8 +33,13 @@ impl ProjectileEntity {
     pub fn collision(_query: Query<&ProjectileEntity>) {}
 }
 
-pub fn hitscan_hit_gfx(commands: &mut Commands, poss: &[Vec3], particles: &ParticleMap) {
+pub fn hitscan_hit_gfx(
+    asset_server: &AssetServer,
+    commands: &mut Commands,
+    poss: &[Vec3],
+    particles: &ParticleMap,
+) {
     for pos in poss {
-        particles.spawn_bullet_hit(commands, *pos);
+        particles.spawn_bullet_hit(asset_server, commands, *pos);
     }
 }
