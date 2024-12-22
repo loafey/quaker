@@ -179,13 +179,14 @@ impl Player {
     ) {
         if let Some(holder) = self.children.message_holder {
             let message_id = commands
-                .spawn(TextBundle::from_section(
-                    message,
-                    TextStyle {
+                .spawn((
+                    Text::new(message),
+                    TextFont {
                         font: asset_server.load("ui/Color Basic.otf"),
-                        color: Color::rgb(1.0, 0.0, 0.0),
                         font_size: 24.0,
+                        ..default()
                     },
+                    TextColor(Color::rgb(1.0, 0.0, 0.0)),
                 ))
                 .insert(Message::default())
                 .id();
