@@ -21,7 +21,7 @@ use bevy::{
 };
 use bevy_rapier3d::{
     control::KinematicCharacterController, geometry::Collider, pipeline::QueryFilter,
-    plugin::RapierContext,
+    plugin::RapierContext, prelude::ShapeCastOptions,
 };
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use faststr::FastStr;
@@ -73,19 +73,17 @@ impl Player {
 
             let health_hud = option_continue!(player.children.health_hud);
             let (mut health_hud, _) = error_continue!(text.get_mut(health_hud));
-            let health_hud = option_continue!(health_hud.sections.get_mut(0));
-            health_hud.value = format!("HEALTH: {}", player.health.round());
+            health_hud.0 = format!("HEALTH: {}", player.health.round());
 
             let armour_hud = option_continue!(player.children.armour_hud);
             let (mut armour_hud, _) = error_continue!(text.get_mut(armour_hud));
-            let armour_hud = option_continue!(armour_hud.sections.get_mut(0));
-            armour_hud.value = format!("ARMOUR: {}", player.armour.round());
+            armour_hud.0 = format!("ARMOUR: {}", player.armour.round());
 
             let lobby_hud = option_continue!(player.children.lobby_hud);
             let (mut text, mut vis) = error_continue!(text.get_mut(lobby_hud));
             if input.show_lobby_just_pressed {
                 *vis = Visibility::Visible;
-                text.sections[0].value = format!(
+                text.0 = format!(
                     "Players:\n{}",
                     lobby.values().fold(String::new(), |mut output, i| {
                         let _ = writeln!(output, "{}: K={}, D={}", i.name, i.kills, i.deaths);
@@ -152,13 +150,11 @@ impl Player {
 
                     commands.entity(sound_holder).with_children(|c| {
                         c.spawn((
-                            TransformBundle::IDENTITY,
-                            AudioBundle {
-                                source: asset_server.load(sound.to_string()),
-                                settings: PlaybackSettings::DESPAWN
-                                    .with_spatial(true)
-                                    .with_volume(Volume::new(0.8)),
-                            },
+                            Transform::IDENTITY,
+                            AudioPlayer::<AudioSource>(asset_server.load(sound.to_string())),
+                            PlaybackSettings::DESPAWN
+                                .with_spatial(true)
+                                .with_volume(Volume::new(0.8)),
                         ));
                     });
                 }
@@ -513,7 +509,7 @@ impl Player {
         mut q_model: Query<
             (
                 Entity,
-                &mut Handle<Scene>,
+                &mut SceneRoot,
                 &mut Transform,
                 &mut PlayerFpsMaterial,
                 &mut Hook,
@@ -560,7 +556,7 @@ impl Player {
                         data.rotation[2].to_radians(),
                     );
                     trans.translation = Vec3::from(data.offset);
-                    *mesh = new_mesh;
+                    *mesh = SceneRoot(new_mesh);
 
                     player.fps_anims = [
                         (
@@ -626,29 +622,28 @@ impl Player {
             let mut primary_window = q_windows.single_mut();
             if paused.0 {
                 //rapier_context.
-                primary_window.cursor.grab_mode = CursorGrabMode::None;
-                primary_window.cursor.visible = true;
+                primary_window.cursor_options.grab_mode = CursorGrabMode::None;
+                primary_window.cursor_options.visible = true;
                 //time.pause();
             } else {
-                primary_window.cursor.grab_mode = CursorGrabMode::Locked;
-                primary_window.cursor.visible = false;
+                primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
+                primary_window.cursor_options.visible = false;
                 //time.unpause();
             }
         }
     }
 
     pub fn ground_detection(
-        rapier_context: Res<RapierContext>,
-        mut query: Query<(&mut Player, &Transform), With<PlayerController>>,
+        mut query: Query<(&mut Player, &Transform, &RapierContext), With<PlayerController>>,
     ) {
-        for (mut player, trans) in query.iter_mut() {
+        for (mut player, trans, rapier_context) in query.iter_mut() {
             let collider_height = 0.01;
             let shape = Collider::cylinder(collider_height, player.radius);
             let mut shape_pos = trans.translation;
             shape_pos.y -= player.half_height + collider_height * 4.0;
             let shape_rot = Quat::default();
             let shape_vel = Vec3::new(0.0, -0.2, 0.0);
-            let max_toi = 0.0;
+            let max_time_of_impact = 0.0;
             let filter = QueryFilter::default();
             let stop_at_penetration = true;
 
@@ -658,8 +653,11 @@ impl Player {
                     shape_rot,
                     shape_vel,
                     &shape,
-                    max_toi,
-                    stop_at_penetration,
+                    ShapeCastOptions {
+                        max_time_of_impact,
+                        stop_at_penetration,
+                        ..default()
+                    },
                     filter,
                 )
                 .is_some();
@@ -771,17 +769,16 @@ impl Player {
                     trans.rotate_z(proj.rotation[2].to_radians());
 
                     commands
-                        .spawn(PbrBundle {
-                            mesh: asset_server.load(&proj.model_file),
-                            material: materials.add(StandardMaterial {
+                        .spawn((
+                            Mesh3d(asset_server.load(&proj.model_file)),
+                            MeshMaterial3d(materials.add(StandardMaterial {
                                 base_color_texture: Some(asset_server.load(&proj.texture_file)),
                                 perceptual_roughness: 1.0,
                                 reflectance: 0.0,
                                 ..Default::default()
-                            }),
-                            transform: trans,
-                            ..Default::default()
-                        })
+                            })),
+                            trans,
+                        ))
                         .insert(ProjectileEntity {
                             data: proj.clone(),
                             dir,
