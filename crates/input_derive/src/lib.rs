@@ -8,12 +8,9 @@ use syn::{
     PathArguments, PathSegment, Type, TypePath, Visibility,
 };
 
-///
-/// For the sanity of the reader!
-/// Know that this macro is quite bad :)
-/// Beware 💩💩💩
-///
-
+// For the sanity of the reader!
+// Know that this macro is quite bad :)
+// Beware 💩💩💩
 fn create_field(ident: Ident) -> Field {
     let bool = Ident::new("bool", Span::call_site());
     let serde = Ident::new("serde", Span::call_site());
