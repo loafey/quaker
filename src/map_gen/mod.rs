@@ -134,12 +134,11 @@ pub fn load_map(
                     new_mesh.duplicate_vertices();
                     new_mesh.compute_flat_normals();
 
-                    commands.spawn(PbrBundle {
-                        mesh: meshes.add(new_mesh),
-                        material: materials.add(mat),
-                        transform: Transform::default(),
-                        ..default()
-                    });
+                    commands.spawn((
+                        Mesh3d(meshes.add(new_mesh)),
+                        MeshMaterial3d(materials.add(mat)),
+                        Transform::default(),
+                    ));
                 }
             }
 

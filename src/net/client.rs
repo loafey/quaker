@@ -1,3 +1,7 @@
+use super::{
+    connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
+    ServerMessage, SteamClient, PROTOCOL_ID,
+};
 use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
@@ -6,30 +10,25 @@ use crate::{
     queries::NetWorld,
     resources::{CurrentMap, CurrentStage},
 };
-
-use super::{
-    connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
-    ServerMessage, SteamClient, PROTOCOL_ID,
-};
 use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
-        schedule::{
-            common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
-        },
+        schedule::{common_conditions::resource_exists, IntoSystemConfigs, SystemConfigs},
         system::{Query, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
+    prelude::NextState,
 };
-use bevy_renet::renet::{
-    transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    RenetClient,
+use bevy_renet::{
+    netcode::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
+    renet::RenetClient,
+    steam::SteamTransportError,
 };
 use macros::{error_continue, error_return, option_continue};
-use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
+use renet_steam::SteamClientTransport;
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
@@ -66,7 +65,7 @@ pub fn handle_messages(
             }
             ServerMessage::Reset => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, mut player, mut trans) = error_continue!(nw.players.get_mut(player));
+                let (_, mut player, mut trans, _) = error_continue!(nw.players.get_mut(player));
                 player.health = 100.0;
                 player.armour = 0.0;
                 player.last_hurter = 0;
@@ -89,7 +88,7 @@ pub fn handle_messages(
             }
             ServerMessage::Message { text } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, player, _) = error_continue!(nw.players.get(player));
+                let (_, player, _, _) = error_continue!(nw.players.get(player));
                 player.display_message(&mut nw.commands, &nw.asset_server, text);
             }
             ServerMessage::KillStat { death, hurter } => {
@@ -128,7 +127,7 @@ pub fn handle_messages(
             }
             ServerMessage::Hit { amount } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, mut player, _) = error_continue!(nw.players.get_mut(player));
+                let (_, mut player, _, _) = error_continue!(nw.players.get_mut(player));
                 player.health -= amount;
             }
             x => {

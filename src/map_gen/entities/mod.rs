@@ -10,10 +10,10 @@ use bevy::{
     log::error,
     math::{EulerRot, Quat, Vec3},
     pbr::{
-        DirectionalLight, DirectionalLightBundle, PbrBundle, PointLight, PointLightBundle,
-        StandardMaterial,
+        DirectionalLight, DirectionalLightBundle, MeshMaterial3d, PbrBundle, PointLight,
+        PointLightBundle, StandardMaterial,
     },
-    prelude::TransformBundle,
+    prelude::{Mesh3d, TransformBundle},
     transform::components::Transform,
 };
 use bevy_rapier3d::{
@@ -164,23 +164,21 @@ pub fn spawn_pickup(
         pickup
             .insert(Sensor)
             .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(TransformBundle::from(Transform::from_translation(pos)))
+            .insert(Transform::from(Transform::from_translation(pos)))
             .insert(ActiveCollisionTypes::all())
             .insert(Ccd::enabled())
-            .insert(PbrBundle {
-                mesh: mesh_handle,
-                material: mat_handle,
-                transform: trans,
-                ..Default::default()
-            });
+            .insert((
+                Mesh3d(mesh_handle),
+                MeshMaterial3d(mat_handle),
+                Transform::from(trans),
+            ));
         pickup
     } else {
-        commands.spawn(PbrBundle {
-            mesh: mesh_handle,
-            material: mat_handle,
-            transform: trans,
-            ..Default::default()
-        })
+        commands.spawn((
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(mat_handle),
+            Transform::from(trans),
+        ))
     };
     pickup
         .insert(PointLightBundle {

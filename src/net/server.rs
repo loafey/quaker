@@ -13,31 +13,27 @@ use crate::{
 use bevy::{
     ecs::{
         event::EventReader,
-        schedule::{
-            common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
-        },
+        schedule::{common_conditions::resource_exists, IntoSystemConfigs, SystemConfigs},
         system::{Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
+    prelude::NextState,
 };
-use bevy_renet::renet::{
-    transport::{
-        NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig,
-    },
-    ClientId, RenetServer, ServerEvent,
+use bevy_renet::{
+    netcode::{NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig},
+    renet::{ClientId, RenetServer, ServerEvent},
+    steam::SteamTransportError,
 };
 use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
-use renet_steam::{
-    bevy::SteamTransportError, AccessPermission, SteamServerConfig, SteamServerTransport,
-};
+use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
-    for (_, player, _) in &nw.players {
+    for (_, player, _, _) in &nw.players {
         if player.id == nw.current_id.0 {
             player.display_message(&mut nw.commands, &nw.asset_server, text.clone());
             break;
@@ -51,7 +47,7 @@ fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
 
 fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
     let mut frags = Vec::new();
-    for (_, mut player, mut trans) in &mut nw.players {
+    for (_, mut player, mut trans, _) in &mut nw.players {
         if player.health <= 0.0 {
             player.health = 100.0;
             player.armour = 0.0;
@@ -60,7 +56,7 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
                 trans.translation = nw.player_spawn.0;
             } else {
                 server.send_message(
-                    ClientId::from_raw(player.id),
+                    player.id,
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::Reset.bytes()),
                 );
@@ -142,7 +138,7 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, info) in &nw.lobby {
-                    let (_, pl, trans) = error_continue!(nw.players.get(info.entity));
+                    let (_, pl, trans, _) = error_continue!(nw.players.get(info.entity));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -161,23 +157,17 @@ pub fn server_events(
                 }
 
                 let spawn_point = nw.player_spawn.0;
-                let entity = Player::spawn(
-                    &mut nw,
-                    false,
-                    spawn_point,
-                    client_id.raw(),
-                    Vec::new(),
-                    None,
-                );
+                let entity =
+                    Player::spawn(&mut nw, false, spawn_point, *client_id, Vec::new(), None);
                 let name = FastStr::from(
                     steam
                         .as_ref()
-                        .map(|s| s.friends().get_friend(SteamId::from_raw(client_id.raw())))
+                        .map(|s| s.friends().get_friend(SteamId::from_raw(*client_id)))
                         .map(|f| f.name())
                         .unwrap_or(format!("{client_id}")),
                 );
                 nw.lobby
-                    .insert(client_id.raw(), PlayerInfo::new(entity, name.clone()));
+                    .insert(*client_id, PlayerInfo::new(entity, name.clone()));
 
                 let message = format!("PLAYER {} JOINED", name.to_lowercase());
                 info!("{message}");
@@ -186,7 +176,7 @@ pub fn server_events(
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
                     error_continue!(ServerMessage::SpawnPlayer {
-                        id: client_id.raw(),
+                        id: *client_id,
                         translation: spawn_point,
                         weapons: Vec::new(),
                         name
@@ -195,7 +185,7 @@ pub fn server_events(
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                if let Some(player_info) = nw.lobby.remove(&client_id.raw()) {
+                if let Some(player_info) = nw.lobby.remove(&client_id) {
                     nw.commands.entity(player_info.entity).despawn_recursive();
                     let message = format!(
                         "PLAYER {} LEFT: {}",
@@ -208,10 +198,7 @@ pub fn server_events(
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
-                    error_continue!(ServerMessage::DespawnPlayer {
-                        id: client_id.raw(),
-                    }
-                    .bytes()),
+                    error_continue!(ServerMessage::DespawnPlayer { id: *client_id }.bytes()),
                 )
             }
         }
@@ -250,12 +237,12 @@ pub fn server_events(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(&mut server, client_id.raw(), message, &mut nw);
+            handle_client_message(&mut server, client_id, message, &mut nw);
         }
 
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command as u8) {
             let message = error_continue!(ClientMessage::from_bytes(&message));
-            handle_client_message(&mut server, client_id.raw(), message, &mut nw);
+            handle_client_message(&mut server, client_id, message, &mut nw);
         }
     }
 }
@@ -272,7 +259,8 @@ pub fn handle_client_message(
             let mut hit_ents = Vec::new();
 
             let player = option_return!(nw.lobby.get(&client_id)).entity;
-            let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
+            let (player_entity, mut player, trans, rapier_context) =
+                error_return!(nw.players.get_mut(player));
 
             let cam = option_return!(player.children.camera);
             let (_, cam_trans) = error_return!(nw.cameras.get(cam));
@@ -284,7 +272,7 @@ pub fn handle_client_message(
                 &mut nw.materials,
                 player_entity,
                 &mut nw.commands,
-                &nw.rapier_context,
+                &rapier_context,
                 cam_trans,
                 &trans,
                 &mut nw.game_entropy,
@@ -304,7 +292,7 @@ pub fn handle_client_message(
                 .get(&attack_weapon)
                 .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
             for ent in hit_ents {
-                if let Ok((_, mut hit_player, _)) = nw.players.get_mut(ent) {
+                if let Ok((_, mut hit_player, _, _)) = nw.players.get_mut(ent) {
                     hit_player.last_hurter = client_id;
                     let damage = if attack == 1 {
                         if let Attack::RayCast {
@@ -328,12 +316,12 @@ pub fn handle_client_message(
                     hit_player.health -= damage;
                     if hit_player.id != nw.current_id.0 {
                         server.send_message(
-                            ClientId::from_raw(hit_player.id),
+                            hit_player.id,
                             ServerChannel::NetworkedEntities as u8,
                             error_continue!(ServerMessage::Hit { amount: damage }.bytes()),
                         )
                     } else {
-                        for (_, mut player, _) in &mut nw.players {
+                        for (_, mut player, _, _) in &mut nw.players {
                             if player.id == nw.current_id.0 {
                                 player.health -= damage;
                                 break;
