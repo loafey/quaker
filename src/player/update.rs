@@ -381,11 +381,12 @@ impl Player {
 
                             // now we have the animation player
                             if let Some(clip) = player.fps_anims.get(&player.current_weapon_anim) {
-                                if player.restart_anim {
-                                    anim_player.play(clip.clone()).replay();
-                                } else if !anim_player.is_playing_clip(clip) {
-                                    anim_player.play(clip.clone()).repeat();
-                                }
+                                error!("broken animation!");
+                                // if player.restart_anim {
+                                //     anim_player.play(clip.clone()).replay();
+                                // } else if !anim_player.is_playing_animation(clip) {
+                                //     anim_player.play(clip.clone()).repeat();
+                                // }
                                 player.restart_anim = false;
                             }
                         }

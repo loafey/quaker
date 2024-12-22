@@ -11,21 +11,17 @@ pub struct StartUpState {
 }
 pub fn startup_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn(Camera2dBundle {
-            camera: Camera {
+        .spawn((
+            Camera2d::default(),
+            Camera {
                 clear_color: ClearColorConfig::Custom(Color::BLACK),
                 ..Default::default()
             },
-            ..Default::default()
-        })
+        ))
         .insert(StartupEnt);
     commands
-        .spawn(SpriteBundle {
-            texture: asset_server.load("ui/splash.png"),
-            sprite: Sprite {
-                color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-                ..Default::default()
-            },
+        .spawn(Sprite {
+            image: asset_server.load("ui/splash.png"),
             ..Default::default()
         })
         .insert(StartUpState::default())
@@ -56,10 +52,9 @@ pub fn startup_update(
         if state.time > 1.0 && !state.played_sound {
             state.played_sound = true;
             commands
-                .spawn(AudioBundle {
-                    source: asset_server.load("sounds/splip.ogg"),
-                    ..Default::default()
-                })
+                .spawn(AudioPlayer::<AudioSource>(
+                    asset_server.load("sounds/splip.ogg"),
+                ))
                 .insert(StartupEnt);
         }
 
