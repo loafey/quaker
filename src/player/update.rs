@@ -381,7 +381,7 @@ impl Player {
 
                             // now we have the animation player
                             if let Some(_clip) = player.fps_anims.get(&player.current_weapon_anim) {
-                                error!("broken animation!");
+                                // error!("broken animation!");
                                 // if player.restart_anim {
                                 //     anim_player.play(clip.clone()).replay();
                                 // } else if !anim_player.is_playing_animation(clip) {
@@ -635,9 +635,11 @@ impl Player {
     }
 
     pub fn ground_detection(
-        mut query: Query<(&mut Player, &Transform, &RapierContext), With<PlayerController>>,
+        mut query: Query<(&mut Player, &Transform), With<PlayerController>>,
+        rapier_context: Query<&RapierContext>,
     ) {
-        for (mut player, trans, rapier_context) in query.iter_mut() {
+        let rapier_context = rapier_context.single();
+        for (mut player, trans) in query.iter_mut() {
             let collider_height = 0.01;
             let shape = Collider::cylinder(collider_height, player.radius);
             let mut shape_pos = trans.translation;

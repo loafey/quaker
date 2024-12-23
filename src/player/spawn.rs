@@ -7,11 +7,7 @@ use crate::{
     queries::NetWorld,
     resources::PlayerSpawnpoint,
 };
-use bevy::{
-    core_pipeline::prepass::{DepthPrepass, MotionVectorPrepass},
-    prelude::*,
-    render::{camera::TemporalJitter, view::NoFrustumCulling},
-};
+use bevy::{prelude::*, render::view::NoFrustumCulling};
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 use faststr::FastStr;
@@ -85,7 +81,7 @@ impl Player {
                     ))
                     // .insert(ScreenSpaceAmbientOcclusion::default())
                     // .insert(Msaa::Off)
-                    .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
+                    // .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
                     // .insert(TemporalAntiAliasing::default())
                     .insert(Name::new("player camera"))
                     .with_children(|c| {

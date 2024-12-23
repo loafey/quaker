@@ -9,7 +9,7 @@ edition = "2021"
 [features]
 
 [dependencies]        
-bevy = { version = "0.15.0", features = ["bevy_gltf"] }#, features = ["dynamic_linking"]
+bevy = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }#, features = ["dynamic_linking"]
 map_parser = { path = "crates/map_parser" }
 macros = { path = "crates/macros" }
 input_derive = { path = "crates/input_derive" }
