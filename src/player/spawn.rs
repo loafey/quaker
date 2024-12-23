@@ -67,6 +67,7 @@ impl Player {
 
         let player_commands = entity
             .insert(ActiveEvents::COLLISION_EVENTS)
+            // .insert(bundle)
             .queue(move |mut c: EntityWorldMut| {
                 let trans = Transform::from_translation(player_spawn);
 
@@ -91,9 +92,10 @@ impl Player {
                             ..Default::default()
                         },
                     ))
-                    .insert(ScreenSpaceAmbientOcclusion::default())
+                    // .insert(ScreenSpaceAmbientOcclusion::default())
+                    // .insert(Msaa::Off)
                     .insert((DepthPrepass, MotionVectorPrepass, TemporalJitter::default()))
-                    .insert(TemporalAntiAliasing::default())
+                    // .insert(TemporalAntiAliasing::default())
                     .insert(Name::new("player camera"))
                     .with_children(|c| {
                         let new_fps_model = c

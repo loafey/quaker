@@ -47,13 +47,6 @@ fn main() {
     println!("Running with asset hash: {}", integrity::get_asset_hash());
 
     let mut app = App::new();
-
-    app.add_event::<ClientMessage>()
-        .add_event::<SimulationEvent>();
-
-    app.add_plugins(Resources);
-    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
-    app.add_plugins(RapierDebugRenderPlugin::default().disabled());
     app.add_plugins(
         DefaultPlugins
             .set({
@@ -70,6 +63,13 @@ fn main() {
             }),
         //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
     );
+
+    app.add_event::<ClientMessage>()
+        .add_event::<SimulationEvent>();
+
+    app.add_plugins(Resources);
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+    app.add_plugins(RapierDebugRenderPlugin::default().disabled());
     app.add_plugins(TemporalAntiAliasPlugin);
     app.add_plugins(ObjPlugin);
     app.add_plugins(HookPlugin);
