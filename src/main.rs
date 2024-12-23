@@ -6,7 +6,7 @@ use crate::net::{
 };
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, image::ImageAddressMode,
-    log::LogPlugin, prelude::*,
+    log::LogPlugin, prelude::*, window::WindowMode,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_obj::ObjPlugin;
@@ -59,6 +59,13 @@ fn main() {
             .set(LogPlugin {
                 filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
                 level: bevy::log::Level::INFO,
+                ..default()
+            })
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                    ..default()
+                }),
                 ..default()
             }),
         //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
