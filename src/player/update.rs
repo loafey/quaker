@@ -1,3 +1,5 @@
+#![allow(clippy::missing_transmute_annotations)]
+
 use super::{
     Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel, WeaponState,
     ARMOR_GLYPH, HEALTH_GLYPH,
@@ -27,7 +29,7 @@ use bevy_rapier3d::{
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use faststr::FastStr;
 use macros::{error_continue, option_continue, option_return};
-use std::fmt::Write;
+use std::{fmt::Write, mem::transmute};
 
 enum SwitchDirection {
     Back,
@@ -344,13 +346,13 @@ impl Player {
     pub fn weapon_animations(
         mut commands: Commands,
         mut players: Query<&mut Player>,
-        q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
+        q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &AnimationGraphHandle, &Children)>,
         q_scenes: Query<&Children>,
         mut q_anim_players: Query<&mut AnimationPlayer>,
         mut client_events: EventWriter<ClientMessage>,
     ) {
         for mut player in &mut players {
-            let (ent, _, children) = option_continue!(q_player_fps_anims
+            let (ent, _, anim_handle, children) = option_continue!(q_player_fps_anims
                 .get(option_continue!(player.children.fps_model))
                 .ok());
 
@@ -369,7 +371,7 @@ impl Player {
                 if let Ok(children) = q_scenes.get(*child) {
                     // Got GLTF scene
                     for child in children {
-                        if let Ok(_anim_player) = q_anim_players.get_mut(*child) {
+                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
                             #[allow(clippy::assigning_clones)]
                             if player.current_weapon_anim != player.current_weapon_anim_old
                                 || player.restart_anim
@@ -381,13 +383,18 @@ impl Player {
                             }
 
                             // now we have the animation player
-                            if let Some(_clip) = player.fps_anims.get(&player.current_weapon_anim) {
+                            if let Some(clip) = player.fps_anims.get(&player.current_weapon_anim) {
+                                // println!("play animation");
+                                let clip = unsafe { transmute(*clip) };
                                 // error!("broken animation!");
-                                // if player.restart_anim {
-                                //     anim_player.play(clip.clone()).replay();
-                                // } else if !anim_player.is_playing_animation(clip) {
-                                //     anim_player.play(clip.clone()).repeat();
-                                // }
+                                println!("{:?}", anim_player.is_playing_animation(clip));
+                                if player.restart_anim {
+                                    println!("restart");
+                                    anim_player.play(clip).replay();
+                                } else if !anim_player.is_playing_animation(clip) {
+                                    println!("repeat");
+                                    anim_player.play(clip).repeat();
+                                }
                                 player.restart_anim = false;
                             }
                         }
@@ -520,6 +527,7 @@ impl Player {
         >,
         mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,
+        mut graphs: ResMut<Assets<AnimationGraph>>,
     ) {
         for mut player in query.iter_mut() {
             if player.current_weapon == player.current_weapon_old {
@@ -558,35 +566,43 @@ impl Player {
                         data.rotation[2].to_radians(),
                     );
                     trans.translation = Vec3::from(data.offset);
-                    *mesh = SceneRoot(new_mesh);
+
+                    let path = new_mesh.path().unwrap();
+                    let (mut graph, node_indices) = AnimationGraph::from_clips([
+                        asset_server.load(GltfAssetLabel::Animation(0).from_asset(path)),
+                        asset_server.load(GltfAssetLabel::Animation(1).from_asset(path)),
+                        asset_server.load(GltfAssetLabel::Animation(2).from_asset(path)),
+                    ]);
 
                     player.fps_anims = [
-                        (
-                            "idle",
-                            asset_server
-                                .load(format!("{}#{}", data.model_file, data.animations.idle)),
-                        ),
-                        (
-                            "shoot1",
-                            asset_server
-                                .load(format!("{}#{}", data.model_file, data.animations.shoot1)),
-                        ),
-                        (
-                            "shoot2",
-                            asset_server
-                                .load(format!("{}#{}", data.model_file, data.animations.shoot2)),
-                        ),
+                        ("idle", unsafe { transmute(node_indices[0]) }),
+                        ("shoot1", unsafe { transmute(node_indices[1]) }),
+                        ("shoot2", unsafe { transmute(node_indices[2]) }),
                     ]
                     .into_iter()
                     .map(|(a, b)| (FastStr::from(a), b))
                     .collect();
-                    if let Some(reload) = player.weapons[slot][row].data.animations.reload.clone() {
-                        let asset = asset_server.load(format!(
-                            "{}#{}",
-                            player.weapons[slot][row].data.model_file, reload
-                        ));
-                        player.fps_anims.insert(FastStr::from("reload"), asset);
+                    if player.weapons[slot][row]
+                        .data
+                        .animations
+                        .reload
+                        .clone()
+                        .is_some()
+                    {
+                        let r = graph.add_clip(
+                            asset_server.load(GltfAssetLabel::Animation(3).from_asset(path)),
+                            0.0,
+                            node_indices[0],
+                        );
+                        // node_indices.push(r);
+                        player
+                            .fps_anims
+                            .insert(FastStr::from("reload"), unsafe { transmute(r) });
                     }
+
+                    commands
+                        .entity(ent)
+                        .insert(AnimationGraphHandle(graphs.add(graph)));
 
                     if player.weapons[slot][row].need_to_reload {
                         player.weapons[slot][row].anim_time =
@@ -598,6 +614,7 @@ impl Player {
                     }
                     player.camera_movement.original_trans = trans.translation;
                     player.camera_movement.switch_offset = -1.0;
+                    *mesh = SceneRoot(new_mesh);
                     hook.state = HookState::MustReload;
                 }
             }

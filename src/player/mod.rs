@@ -87,7 +87,7 @@ pub struct Player {
 
     camera_movement: CameraMovement,
 
-    fps_anims: HashMap<FastStr, Handle<AnimationClip>>,
+    fps_anims: HashMap<FastStr, u32>,
 
     pub children: PlayerChildren,
 
