@@ -8,11 +8,7 @@ use crate::{
     resources::PlayerSpawnpoint,
 };
 use bevy::{
-    core_pipeline::{
-        experimental::taa::TemporalAntiAliasing,
-        prepass::{DepthPrepass, MotionVectorPrepass},
-    },
-    pbr::ScreenSpaceAmbientOcclusion,
+    core_pipeline::prepass::{DepthPrepass, MotionVectorPrepass},
     prelude::*,
     render::{camera::TemporalJitter, view::NoFrustumCulling},
 };
@@ -84,7 +80,7 @@ impl Player {
                         Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
                         Camera {
                             is_active: is_own,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     // .insert(ScreenSpaceAmbientOcclusion::default())
@@ -131,7 +127,7 @@ impl Player {
                             order: 2,
                             clear_color: ClearColorConfig::None,
                             is_active: is_own,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     .insert(IsDefaultUiCamera);
@@ -158,7 +154,7 @@ impl Player {
                         ),
                         perceptual_roughness: 1.0,
                         reflectance: 0.0,
-                        ..Default::default()
+                        ..default()
                     })),
                     trans,
                 ))
@@ -229,7 +225,7 @@ impl Player {
                         .id(),
                     );
 
-                    let text_color = Color::rgb(0.921, 0.682, 0.203);
+                    let text_color = Color::srgb(0.921, 0.682, 0.203);
 
                     c.spawn(Node {
                         position_type: PositionType::Absolute,
@@ -321,12 +317,10 @@ impl Player {
                         ..default()
                     })
                     .with_children(|c| {
-                        let mut bundle = Text::new("yo");
-
                         debug_hud = Some(
                             c.spawn((
                                 Visibility::Hidden,
-                                bundle,
+                                Text::new("debug"),
                                 TextFont {
                                     font_size: 16.0,
                                     ..default()
@@ -353,7 +347,7 @@ impl Player {
                 shoot_sound_holder,
                 lobby_hud,
             },
-            ..Default::default()
+            ..default()
         };
 
         for (slot, list) in weapons.into_iter().enumerate() {

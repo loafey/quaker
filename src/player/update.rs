@@ -368,7 +368,7 @@ impl Player {
                 if let Ok(children) = q_scenes.get(*child) {
                     // Got GLTF scene
                     for child in children {
-                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
+                        if let Ok(_anim_player) = q_anim_players.get_mut(*child) {
                             #[allow(clippy::assigning_clones)]
                             if player.current_weapon_anim != player.current_weapon_anim_old
                                 || player.restart_anim
@@ -380,7 +380,7 @@ impl Player {
                             }
 
                             // now we have the animation player
-                            if let Some(clip) = player.fps_anims.get(&player.current_weapon_anim) {
+                            if let Some(_clip) = player.fps_anims.get(&player.current_weapon_anim) {
                                 error!("broken animation!");
                                 // if player.restart_anim {
                                 //     anim_player.play(clip.clone()).replay();
@@ -541,7 +541,7 @@ impl Player {
                         base_color_texture: Some(asset_server.load(data.texture_file.to_string())),
                         perceptual_roughness: 1.0,
                         reflectance: 0.0,
-                        ..Default::default()
+                        ..default()
                     };
                     materials.remove(mat.0.id());
                     mat.0 = materials.add(new_mat);
@@ -563,24 +563,24 @@ impl Player {
                         (
                             "idle",
                             asset_server
-                                .load(&format!("{}#{}", data.model_file, data.animations.idle)),
+                                .load(format!("{}#{}", data.model_file, data.animations.idle)),
                         ),
                         (
                             "shoot1",
                             asset_server
-                                .load(&format!("{}#{}", data.model_file, data.animations.shoot1)),
+                                .load(format!("{}#{}", data.model_file, data.animations.shoot1)),
                         ),
                         (
                             "shoot2",
                             asset_server
-                                .load(&format!("{}#{}", data.model_file, data.animations.shoot2)),
+                                .load(format!("{}#{}", data.model_file, data.animations.shoot2)),
                         ),
                     ]
                     .into_iter()
                     .map(|(a, b)| (FastStr::from(a), b))
                     .collect();
                     if let Some(reload) = player.weapons[slot][row].data.animations.reload.clone() {
-                        let asset = asset_server.load(&format!(
+                        let asset = asset_server.load(format!(
                             "{}#{}",
                             player.weapons[slot][row].data.model_file, reload
                         ));
@@ -743,7 +743,7 @@ impl Player {
 
                     let filter = QueryFilter {
                         exclude_collider: Some(player_entity),
-                        ..Default::default()
+                        ..default()
                     };
                     let res = rapier_context.cast_ray(origin, dir, *range, false, filter);
                     if let Some((ent, distance)) = res {
@@ -776,7 +776,7 @@ impl Player {
                                 base_color_texture: Some(asset_server.load(&proj.texture_file)),
                                 perceptual_roughness: 1.0,
                                 reflectance: 0.0,
-                                ..Default::default()
+                                ..default()
                             })),
                             trans,
                         ))

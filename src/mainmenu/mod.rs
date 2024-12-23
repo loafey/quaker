@@ -133,7 +133,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
         })
         .unwrap_or_default();
 
-    commands.spawn(Camera2d::default()).insert(MainMenuEnt);
+    commands.spawn(Camera2d).insert(MainMenuEnt);
 
     commands
         .spawn(Node {
@@ -162,7 +162,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                     TextLayout::new_with_justify(JustifyText::Center),
                     Label,
                 ));
-                c.spawn(Button::default())
+                c.spawn(Button)
                     .insert((
                         Text::new("Solo"),
                         TextFont {
@@ -172,7 +172,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                     ))
                     .insert(ButtonEvent::Solo);
 
-                c.spawn(Button::default())
+                c.spawn(Button)
                     .insert((
                         Text::new("Start MP"),
                         TextFont {
@@ -200,7 +200,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                         Text::new("Join IP"),
                         TextFont {
                             font_size: 32.0,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     .insert(ButtonEvent::JoinMp);
@@ -221,7 +221,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                     Text::new("Maps:".to_string()),
                     TextFont {
                         font_size: 32.0,
-                        ..Default::default()
+                        ..default()
                     },
                 ));
 
@@ -230,13 +230,13 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                         Button, /*{
                                    border: UiRect::all(Val::Px(5.0)),
                                    border_color: BorderColor(Color::BLACK),
-                                   ..Default::default()
+                                   ..default()
                                }*/
                     )
                     .insert(Text::new(format!("{map:?}")))
                     .insert(TextFont {
                         font_size: 16.0,
-                        ..Default::default()
+                        ..default()
                     })
                     .insert(LevelButton(map.clone()));
                 }
@@ -245,7 +245,7 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                     Text::new("Friends:".to_string()),
                     TextFont {
                         font_size: 32.0,
-                        ..Default::default()
+                        ..default()
                     },
                 ));
                 for friend in friends {
@@ -253,16 +253,16 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
                         Button, /*{
                                    style: Style {
                                        border: UiRect::all(Val::Px(5.0)),
-                                       ..Default::default()
+                                       ..default()
                                    },
                                    border_color: BorderColor(Color::BLACK),
-                                   ..Default::default()
+                                   ..default()
                                }*/
                     )
                     .insert(Text::new(friend.name()))
                     .insert(TextFont {
                         font_size: 16.0,
-                        ..Default::default()
+                        ..default()
                     })
                     .insert(FriendButton(friend.id().raw()));
                 }

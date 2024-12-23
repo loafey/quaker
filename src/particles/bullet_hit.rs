@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
 // Yoinked from: https://github.com/djeedai/bevy_hanabi
-pub fn setup(effects: &mut Assets<EffectAsset>, asset_server: &AssetServer) -> Handle<EffectAsset> {
+pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
     // Define a color gradient from red to transparent black
     let mut gradient = Gradient::new();
     gradient.add_key(0.0, Vec4::new(0.4, 0.4, 0.4, 1.));

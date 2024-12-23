@@ -77,8 +77,7 @@ impl Plugin for ClientPlugin {
         )
         .add_systems(
             PreUpdate,
-            net::send_messages
-                .run_if(in_state(NetState::Server).or_else(in_state(NetState::Client))),
+            net::send_messages.run_if(in_state(NetState::Server).or(in_state(NetState::Client))),
         );
     }
 }

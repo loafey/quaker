@@ -186,7 +186,7 @@ impl Player {
                         font_size: 24.0,
                         ..default()
                     },
-                    TextColor(Color::rgb(1.0, 0.0, 0.0)),
+                    TextColor(Color::srgb(1.0, 0.0, 0.0)),
                 ))
                 .insert(Message::default())
                 .id();

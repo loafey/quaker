@@ -12,17 +12,17 @@ pub struct StartUpState {
 pub fn startup_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
-            Camera2d::default(),
+            Camera2d,
             Camera {
                 clear_color: ClearColorConfig::Custom(Color::BLACK),
-                ..Default::default()
+                ..default()
             },
         ))
         .insert(StartupEnt);
     commands
         .spawn(Sprite {
             image: asset_server.load("ui/splash.png"),
-            ..Default::default()
+            ..default()
         })
         .insert(StartUpState::default())
         .insert(StartupEnt);
@@ -59,9 +59,9 @@ pub fn startup_update(
         }
 
         if state.time < 2.4 {
-            sprite.color = Color::rgba(1.0, 1.0, 1.0, ((state.time - 1.0) / 2.0).clamp(0.0, 1.0));
+            sprite.color = Color::srgba(1.0, 1.0, 1.0, ((state.time - 1.0) / 2.0).clamp(0.0, 1.0));
         } else {
-            sprite.color = Color::rgba(1.0, 1.0, 1.0, (2.0 - (state.time / 2.0)).clamp(0.0, 1.0));
+            sprite.color = Color::srgba(1.0, 1.0, 1.0, (2.0 - (state.time / 2.0)).clamp(0.0, 1.0));
         }
 
         if state.time > 5.0 {

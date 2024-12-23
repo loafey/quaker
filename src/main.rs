@@ -59,7 +59,7 @@ fn main() {
             .set(LogPlugin {
                 filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
                 level: bevy::log::Level::INFO,
-                ..Default::default()
+                ..default()
             }),
         //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
     );

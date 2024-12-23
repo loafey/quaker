@@ -23,7 +23,7 @@ use bevy::{
 };
 use bevy_renet::{
     netcode::{NetcodeServerTransport, NetcodeTransportError, ServerAuthentication, ServerConfig},
-    renet::{ClientId, RenetServer, ServerEvent},
+    renet::{RenetServer, ServerEvent},
     steam::SteamTransportError,
 };
 use faststr::FastStr;
@@ -185,7 +185,7 @@ pub fn server_events(
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                if let Some(player_info) = nw.lobby.remove(&client_id) {
+                if let Some(player_info) = nw.lobby.remove(client_id) {
                     nw.commands.entity(player_info.entity).despawn_recursive();
                     let message = format!(
                         "PLAYER {} LEFT: {}",

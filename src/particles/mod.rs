@@ -75,11 +75,11 @@ impl ParticleLifetime {
 pub fn register_particles(
     mut commands: Commands,
     mut effects: ResMut<Assets<EffectAsset>>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     let map = ParticleMap {
         demo: demo::setup(&mut effects),
-        bullet_hit: bullet_hit::setup(&mut effects, &asset_server),
+        bullet_hit: bullet_hit::setup(&mut effects),
     };
 
     commands.insert_resource(map);
