@@ -23,7 +23,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
         } => {
             if nw.current_id.0 != client_id {
                 let player = option_return!(nw.lobby.get(&client_id)).entity;
-                let (_, pl, mut tr, _) = error_return!(nw.players.get_mut(player));
+                let (_, pl, mut tr) = error_return!(nw.players.get_mut(player));
 
                 tr.translation = tr.translation.lerp(*position, nw.time.delta_secs() * 10.0);
                 tr.rotation = Quat::from_array(*rotation);
@@ -37,7 +37,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
         ClientMessage::PickupWeapon { weapon } => {
             let player = option_return!(nw.lobby.get(&client_id)).entity;
 
-            let (player_ent, mut player, _, _) = error_return!(nw.players.get_mut(player));
+            let (player_ent, mut player, _) = error_return!(nw.players.get_mut(player));
 
             if let Some(weapon_data) = nw.weapon_map.0.get(weapon) {
                 let slot = weapon_data.slot;
@@ -87,7 +87,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
             if nw.current_id.0 != client_id {
                 let player = option_return!(nw.lobby.get(&client_id)).entity;
 
-                let (_, mut pl, _, _) = error_return!(nw.players.get_mut(player));
+                let (_, mut pl, _) = error_return!(nw.players.get_mut(player));
 
                 pl.current_weapon_anim.clone_from(anim);
                 pl.restart_anim = true;
@@ -96,7 +96,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
         ClientMessage::SwitchWeapon { slot, row } => {
             if nw.current_id.0 != client_id {
                 let player = option_return!(nw.lobby.get(&client_id)).entity;
-                let (_, mut pl, _, _) = error_return!(nw.players.get_mut(player));
+                let (_, mut pl, _) = error_return!(nw.players.get_mut(player));
                 pl.current_weapon = Some((*slot, *row));
             }
         }

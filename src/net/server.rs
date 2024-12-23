@@ -33,7 +33,7 @@ use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
-    for (_, player, _, _) in &nw.players {
+    for (_, player, _) in &nw.players {
         if player.id == nw.current_id.0 {
             player.display_message(&mut nw.commands, &nw.asset_server, text.clone());
             break;
@@ -47,7 +47,7 @@ fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
 
 fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
     let mut frags = Vec::new();
-    for (_, mut player, mut trans, _) in &mut nw.players {
+    for (_, mut player, mut trans) in &mut nw.players {
         if player.health <= 0.0 {
             player.health = 100.0;
             player.armour = 0.0;
@@ -138,7 +138,7 @@ pub fn server_events(
 
                 // Spawn players for newly joined client
                 for (other_id, info) in &nw.lobby {
-                    let (_, pl, trans, _) = error_continue!(nw.players.get(info.entity));
+                    let (_, pl, trans) = error_continue!(nw.players.get(info.entity));
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
@@ -253,14 +253,14 @@ pub fn handle_client_message(
     message: ClientMessage,
     nw: &mut NetWorld,
 ) {
+    let rapier_context = nw.rapier_context.single();
     match message {
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
             let mut hit_ents = Vec::new();
 
             let player = option_return!(nw.lobby.get(&client_id)).entity;
-            let (player_entity, mut player, trans, rapier_context) =
-                error_return!(nw.players.get_mut(player));
+            let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
 
             let cam = option_return!(player.children.camera);
             let (_, cam_trans) = error_return!(nw.cameras.get(cam));
@@ -272,7 +272,7 @@ pub fn handle_client_message(
                 &mut nw.materials,
                 player_entity,
                 &mut nw.commands,
-                &rapier_context,
+                rapier_context,
                 cam_trans,
                 &trans,
                 &mut nw.game_entropy,
@@ -292,7 +292,7 @@ pub fn handle_client_message(
                 .get(&attack_weapon)
                 .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
             for ent in hit_ents {
-                if let Ok((_, mut hit_player, _, _)) = nw.players.get_mut(ent) {
+                if let Ok((_, mut hit_player, _)) = nw.players.get_mut(ent) {
                     hit_player.last_hurter = client_id;
                     let damage = if attack == 1 {
                         if let Attack::RayCast {
@@ -321,7 +321,7 @@ pub fn handle_client_message(
                             error_continue!(ServerMessage::Hit { amount: damage }.bytes()),
                         )
                     } else {
-                        for (_, mut player, _, _) in &mut nw.players {
+                        for (_, mut player, _) in &mut nw.players {
                             if player.id == nw.current_id.0 {
                                 player.health -= damage;
                                 break;

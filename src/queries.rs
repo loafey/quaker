@@ -17,17 +17,8 @@ use bevy_rapier3d::plugin::RapierContext;
 pub struct NetWorld<'w, 's> {
     // Checked
     pub commands: Commands<'w, 's>,
-    pub players: Query<
-        'w,
-        's,
-        (
-            Entity,
-            &'static mut Player,
-            &'static mut Transform,
-            &'static RapierContext,
-        ),
-        Without<Camera3d>,
-    >,
+    pub players:
+        Query<'w, 's, (Entity, &'static mut Player, &'static mut Transform), Without<Camera3d>>,
     pub cameras: Query<'w, 's, (&'static Camera3d, &'static mut Transform), Without<Player>>,
     pub pickups_query: Query<
         'w,
@@ -35,6 +26,7 @@ pub struct NetWorld<'w, 's> {
         (&'static PickupEntity, &'static Transform),
         (Without<Player>, Without<Camera3d>),
     >,
+    pub rapier_context: Query<'w, 's, &'static RapierContext>,
     pub asset_server: Res<'w, AssetServer>,
     pub weapon_map: Res<'w, WeaponMap>,
     pub materials: ResMut<'w, Assets<StandardMaterial>>,

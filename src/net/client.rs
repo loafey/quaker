@@ -65,7 +65,7 @@ pub fn handle_messages(
             }
             ServerMessage::Reset => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, mut player, mut trans, _) = error_continue!(nw.players.get_mut(player));
+                let (_, mut player, mut trans) = error_continue!(nw.players.get_mut(player));
                 player.health = 100.0;
                 player.armour = 0.0;
                 player.last_hurter = 0;
@@ -88,7 +88,7 @@ pub fn handle_messages(
             }
             ServerMessage::Message { text } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, player, _, _) = error_continue!(nw.players.get(player));
+                let (_, player, _) = error_continue!(nw.players.get(player));
                 player.display_message(&mut nw.commands, &nw.asset_server, text);
             }
             ServerMessage::KillStat { death, hurter } => {
@@ -127,7 +127,7 @@ pub fn handle_messages(
             }
             ServerMessage::Hit { amount } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;
-                let (_, mut player, _, _) = error_continue!(nw.players.get_mut(player));
+                let (_, mut player, _) = error_continue!(nw.players.get_mut(player));
                 player.health -= amount;
             }
             x => {
