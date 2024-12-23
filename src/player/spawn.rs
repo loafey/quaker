@@ -67,17 +67,12 @@ impl Player {
 
         let player_commands = entity
             .insert(ActiveEvents::COLLISION_EVENTS)
-            // .insert(bundle)
-            .queue(move |mut c: EntityWorldMut| {
-                let trans = Transform::from_translation(player_spawn);
-
-                c.insert(KinematicCharacterController::default())
-                    .insert(Restitution::coefficient(0.0))
-                    .insert(LockedAxes::ROTATION_LOCKED)
-                    .insert(GlobalTransform::default())
-                    .insert(trans)
-                    .insert(Ccd::enabled());
-            })
+            .insert(Transform::from_translation(player_spawn))
+            .insert(KinematicCharacterController::default())
+            .insert(Restitution::coefficient(0.0))
+            .insert(LockedAxes::ROTATION_LOCKED)
+            .insert(GlobalTransform::default())
+            .insert(Ccd::enabled())
             .with_children(|c| {
                 let new_camera_id = c
                     .spawn((
