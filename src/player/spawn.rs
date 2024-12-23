@@ -1,4 +1,7 @@
-use super::{Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel};
+use super::{
+    Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel, ARMOR_GLYPH,
+    HEALTH_GLYPH,
+};
 use crate::{
     net::{
         steam::{CurrentAvatar, SteamClient},
@@ -7,7 +10,7 @@ use crate::{
     queries::NetWorld,
     resources::PlayerSpawnpoint,
 };
-use bevy::{prelude::*, render::view::NoFrustumCulling};
+use bevy::{prelude::*, render::view::NoFrustumCulling, text::FontSmoothing};
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 use faststr::FastStr;
@@ -184,6 +187,17 @@ impl Player {
                         },
                     ));
 
+                    message_holder = Some(
+                        c.spawn(Node {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(10.0),
+                            top: Val::Px(10.0),
+                            flex_direction: FlexDirection::Column,
+                            ..default()
+                        })
+                        .id(),
+                    );
+
                     c.spawn(Node {
                         position_type: PositionType::Absolute,
                         left: Val::Px(0.0),
@@ -197,10 +211,10 @@ impl Player {
                     .with_children(|c| {
                         lobby_hud = Some(
                             c.spawn((
-                                Text::new("HEALTH: 100"),
+                                Text::new("LOBBY DATA"),
                                 TextFont {
-                                    font_size: 32.0,
-                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    font: nw.asset_server.load("ui/Color Basic.otf"),
+                                    font_smoothing: FontSmoothing::None,
                                     ..default()
                                 },
                                 TextColor(Color::WHITE),
@@ -209,17 +223,6 @@ impl Player {
                             .id(),
                         );
                     });
-
-                    message_holder = Some(
-                        c.spawn(Node {
-                            position_type: PositionType::Absolute,
-                            left: Val::Px(10.0),
-                            top: Val::Px(10.0),
-                            flex_direction: FlexDirection::Column,
-                            ..default()
-                        })
-                        .id(),
-                    );
 
                     let text_color = Color::srgb(0.921, 0.682, 0.203);
 
@@ -232,10 +235,10 @@ impl Player {
                     .with_children(|c| {
                         health_hud = Some(
                             c.spawn((
-                                Text::new("HEALTH: 100"),
+                                Text::new(format!("{HEALTH_GLYPH}100")),
                                 TextFont {
-                                    font_size: 32.0,
-                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    font: nw.asset_server.load("ui/Color Basic.otf"),
+                                    font_smoothing: FontSmoothing::None,
                                     ..default()
                                 },
                                 TextColor(text_color),
@@ -253,10 +256,10 @@ impl Player {
                     .with_children(|c| {
                         armour_hud = Some(
                             c.spawn((
-                                Text::new("ARMOUR: 100"),
+                                Text::new(format!("{ARMOR_GLYPH}100")),
                                 TextFont {
-                                    font_size: 32.0,
-                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    font: nw.asset_server.load("ui/Color Basic.otf"),
+                                    font_smoothing: FontSmoothing::None,
                                     ..default()
                                 },
                                 TextColor(text_color),
@@ -267,8 +270,8 @@ impl Player {
 
                     c.spawn(Node {
                         position_type: PositionType::Absolute,
-                        left: Val::Px(269.0),
-                        bottom: Val::Px(4.0),
+                        left: Val::Px(255.0),
+                        bottom: Val::Px(10.0),
                         ..default()
                     })
                     .with_children(|c| {
@@ -276,8 +279,8 @@ impl Player {
                             c.spawn((
                                 Text::new("100\nCRUTONS"),
                                 TextFont {
-                                    font_size: 32.0,
-                                    font: nw.asset_server.load("ui/Pixeled.ttf"),
+                                    font: nw.asset_server.load("ui/Color Basic.otf"),
+                                    font_smoothing: FontSmoothing::None,
                                     ..default()
                                 },
                                 TextColor(text_color),

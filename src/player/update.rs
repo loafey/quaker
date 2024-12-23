@@ -1,5 +1,6 @@
 use super::{
     Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel, WeaponState,
+    ARMOR_GLYPH, HEALTH_GLYPH,
 };
 use crate::{
     entities::ProjectileEntity,
@@ -73,11 +74,11 @@ impl Player {
 
             let health_hud = option_continue!(player.children.health_hud);
             let (mut health_hud, _) = error_continue!(text.get_mut(health_hud));
-            health_hud.0 = format!("HEALTH: {}", player.health.round());
+            health_hud.0 = format!("{HEALTH_GLYPH}{}", player.health.round());
 
             let armour_hud = option_continue!(player.children.armour_hud);
             let (mut armour_hud, _) = error_continue!(text.get_mut(armour_hud));
-            armour_hud.0 = format!("ARMOUR: {}", player.armour.round());
+            armour_hud.0 = format!("{ARMOR_GLYPH}{}", player.armour.round());
 
             let lobby_hud = option_continue!(player.children.lobby_hud);
             let (mut text, mut vis) = error_continue!(text.get_mut(lobby_hud));

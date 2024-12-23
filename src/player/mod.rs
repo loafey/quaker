@@ -196,3 +196,6 @@ impl Player {
         }
     }
 }
+
+const HEALTH_GLYPH: &str = "+";
+const ARMOR_GLYPH: &str = "Δ";
