@@ -112,6 +112,10 @@ impl Plugin for MainMenuStage {
             Update,
             mainmenu::buttons.run_if(in_state(CurrentStage::MainMenu)),
         )
+        .add_systems(
+            Update,
+            mainmenu::update_point_light.run_if(in_state(CurrentStage::MainMenu)),
+        )
         .add_systems(OnExit(CurrentStage::MainMenu), mainmenu::clear);
     }
 }

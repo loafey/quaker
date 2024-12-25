@@ -87,6 +87,7 @@ pub fn clear(query: Query<(Entity, &MainMenuEnt)>, mut commands: Commands) {
     for (ent, _) in &query {
         commands.entity(ent).despawn_recursive();
     }
+    commands.insert_resource(AmbientLight::default());
 }
 
 #[allow(clippy::type_complexity)]
@@ -116,7 +117,27 @@ pub fn update_id_buttons(
     }
 }
 
-pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
+pub fn update_point_light(mut query: Query<&mut PointLight>) {
+    for mut light in query.iter_mut() {
+        light.intensity += 0.1;
+        light.intensity *= 1.02;
+        light.intensity = light.intensity.min(65000.0);
+    }
+}
+
+pub fn setup(
+    mut commands: Commands,
+    steam_client: Option<Res<SteamClient>>,
+
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
+    commands.insert_resource(AmbientLight {
+        brightness: 0.0,
+        ..default()
+    });
+
     let map_files = error_return!(get_mapfiles("assets/maps"));
     let friends = steam_client
         .as_ref()
@@ -133,7 +154,53 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
         })
         .unwrap_or_default();
 
-    commands.spawn(Camera2d).insert(MainMenuEnt);
+    commands
+        .spawn(Camera2d)
+        .insert(Camera {
+            order: 2,
+            clear_color: ClearColorConfig::None,
+            is_active: true,
+            ..default()
+        })
+        .insert(MainMenuEnt);
+    let material = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load("ui/main_menu.png")),
+        alpha_mode: AlphaMode::Add,
+        ..default()
+    });
+    // cube
+    let scale = 0.5;
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(16.0 * scale, 9.0 * scale, 1.0))),
+        MeshMaterial3d(material),
+        Transform::from_xyz(0.0, 0.6, 0.0),
+        MainMenuEnt,
+    ));
+    // light
+    for x in -1..=1 {
+        commands.spawn((
+            PointLight {
+                color: Color::srgb(1.0, 0.6, 0.6),
+                shadows_enabled: false,
+                intensity: 1000.0,
+                range: 1000.0,
+                ..default()
+            },
+            Transform::from_xyz(x as f32 * 2.0, 0.0, -9.0),
+            MainMenuEnt,
+        ));
+    }
+
+    // camera
+    commands.spawn((
+        Camera3d::default(),
+        Camera {
+            clear_color: ClearColorConfig::Custom(Color::BLACK),
+            ..default()
+        },
+        Transform::from_xyz(0.0, 0.0, -9.0).looking_at(Vec3::ZERO, Vec3::Y),
+        MainMenuEnt,
+    ));
 
     commands
         .spawn(Node {
@@ -145,23 +212,16 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
         .with_children(|c| {
             c.spawn(Node {
                 position_type: PositionType::Absolute,
-                width: Val::Px(400.0),
+                width: Val::Vw(100.0),
                 border: UiRect::all(Val::Px(2.0)),
-                height: Val::Vh(100.0),
                 left: Val::Px(0.0),
+                bottom: Val::Px(76.0),
                 flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             })
             .with_children(|c| {
-                c.spawn((
-                    Text::new("Quaker!"),
-                    TextFont {
-                        font_size: 100.0,
-                        ..default()
-                    },
-                    TextLayout::new_with_justify(JustifyText::Center),
-                    Label,
-                ));
                 c.spawn(Button)
                     .insert((
                         Text::new("Solo"),
