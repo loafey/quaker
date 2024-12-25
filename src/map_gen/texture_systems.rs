@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset::LoadState, prelude::*};
 use macros::error_return;
 use std::collections::HashMap;
 
@@ -49,10 +49,15 @@ pub fn texture_waiter(
     asset_server: Res<AssetServer>,
     mut loading_state: ResMut<TextureLoadingState>,
 ) {
-    use bevy::asset::LoadState::*;
     let mut to_remove = Vec::new();
     for (i, tex) in textures_loading.0.iter().enumerate() {
-        if let Some(Loaded | Failed) = asset_server.get_load_state(tex.id()) {
+        let g = asset_server.get_load_state(tex.id());
+        if let Some(LoadState::Failed(e)) = g {
+            error!("texture loading error: {e}");
+            to_remove.push(i)
+        } else if let Some(LoadState::Loaded | LoadState::Failed(_)) =
+            asset_server.get_load_state(tex.id())
+        {
             to_remove.push(i)
         }
     }

@@ -1,13 +1,11 @@
 use crate::map_gen::entities::data::{PickupData, WeaponData};
 use bevy::{
     asset::{Handle, UntypedHandle},
-    ecs::{
-        schedule::States,
-        system::{Res, Resource},
-    },
+    ecs::system::{Res, Resource},
+    image::Image,
     log::info,
     math::Vec3,
-    render::texture::Image,
+    prelude::States,
 };
 use faststr::FastStr;
 use macros::error_return;

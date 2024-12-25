@@ -77,8 +77,7 @@ impl Plugin for ClientPlugin {
         )
         .add_systems(
             PreUpdate,
-            net::send_messages
-                .run_if(in_state(NetState::Server).or_else(in_state(NetState::Client))),
+            net::send_messages.run_if(in_state(NetState::Server).or(in_state(NetState::Client))),
         );
     }
 }
@@ -131,7 +130,7 @@ impl Plugin for GameStage {
                 Update,
                 load_map
                     .run_if(in_state(CurrentStage::InGame))
-                    .run_if(if_texture_done_loading.and_then(run_once())),
+                    .run_if(if_texture_done_loading.and(run_once)),
             )
             .add_systems(
                 PreUpdate,
@@ -141,7 +140,7 @@ impl Plugin for GameStage {
                 Update,
                 Player::spawn_own_player
                     .run_if(in_state(CurrentStage::InGame))
-                    .run_if(if_map_done_loading.and_then(run_once())),
+                    .run_if(if_map_done_loading.and(run_once)),
             )
             .add_systems(
                 Update,

@@ -3,8 +3,8 @@ use crate::resources::TextureMap;
 use bevy::{
     asset::Assets,
     ecs::system::Res,
+    image::Image,
     math::{Quat, Vec2, Vec3},
-    render::texture::Image,
 };
 use faststr::FastStr;
 use macros::error_return;

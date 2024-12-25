@@ -5,8 +5,8 @@ use crate::net::{
     SimulationEvent,
 };
 use bevy::{
-    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, log::LogPlugin, prelude::*,
-    render::texture::ImageAddressMode,
+    core_pipeline::experimental::taa::TemporalAntiAliasPlugin, image::ImageAddressMode,
+    log::LogPlugin, prelude::*, window::WindowMode,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_obj::ObjPlugin;
@@ -15,14 +15,14 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_renet::{
-    transport::{NetcodeClientPlugin, NetcodeServerPlugin},
+    netcode::{NetcodeClientPlugin, NetcodeServerPlugin},
+    steam::{SteamClientPlugin, SteamServerPlugin},
     RenetClientPlugin, RenetServerPlugin,
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;
 use net::ClientMessage;
 use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, StartupStage};
-use renet_steam::bevy::{SteamClientPlugin, SteamServerPlugin};
 use steamworks::{AppId, SingleClient};
 
 mod entities;
@@ -47,14 +47,7 @@ fn main() {
     println!("Running with asset hash: {}", integrity::get_asset_hash());
 
     let mut app = App::new();
-
-    app.add_event::<ClientMessage>()
-        .add_event::<SimulationEvent>();
-
-    app.add_plugins((
-        Resources,
-        RapierPhysicsPlugin::<NoUserData>::default(),
-        RapierDebugRenderPlugin::default().disabled(),
+    app.add_plugins(
         DefaultPlugins
             .set({
                 let mut plug = ImagePlugin::default_nearest();
@@ -66,22 +59,35 @@ fn main() {
             .set(LogPlugin {
                 filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
                 level: bevy::log::Level::INFO,
-                ..Default::default()
-            }),
-        //bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
-        TemporalAntiAliasPlugin,
-        ObjPlugin,
-        HookPlugin,
-        (StartupStage, MainMenuStage, GameStage),
-        HanabiPlugin,
-        TextInputPlugin,
-        (
-            RenetClientPlugin,
-            RenetServerPlugin,
-            ServerPlugin,
-            ClientPlugin,
-        ),
-    ));
+                ..default()
+            }), // .set(WindowPlugin {
+                // primary_window: Some(Window {
+                // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                // ..default()
+                // }),
+                // ..default()
+                // }),
+    );
+
+    // app.add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
+
+    app.add_event::<ClientMessage>()
+        .add_event::<SimulationEvent>();
+
+    app.add_plugins(Resources);
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+    app.add_plugins(RapierDebugRenderPlugin::default().disabled());
+    app.add_plugins(TemporalAntiAliasPlugin);
+    app.add_plugins(ObjPlugin);
+    app.add_plugins(HookPlugin);
+    app.add_plugins((StartupStage, MainMenuStage, GameStage));
+    app.add_plugins(HanabiPlugin);
+    app.add_plugins(TextInputPlugin);
+    // MP
+    app.add_plugins(RenetClientPlugin);
+    app.add_plugins(RenetServerPlugin);
+    app.add_plugins(ServerPlugin);
+    app.add_plugins(ClientPlugin);
 
     app.add_systems(Startup, particles::register_particles);
     app.add_systems(Update, particles::ParticleLifetime::update);

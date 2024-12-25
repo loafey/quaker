@@ -1,3 +1,7 @@
+use super::{
+    connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
+    ServerMessage, SteamClient, PROTOCOL_ID,
+};
 use crate::{
     entities::{hitscan_hit_gfx, pickup::PickupEntity},
     map_gen,
@@ -6,30 +10,25 @@ use crate::{
     queries::NetWorld,
     resources::{CurrentMap, CurrentStage},
 };
-
-use super::{
-    connection_config, update_world, CurrentClientId, IsSteam, NetState, ServerChannel,
-    ServerMessage, SteamClient, PROTOCOL_ID,
-};
 use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
-        schedule::{
-            common_conditions::resource_exists, IntoSystemConfigs, NextState, SystemConfigs,
-        },
+        schedule::{common_conditions::resource_exists, IntoSystemConfigs, SystemConfigs},
         system::{Query, Res, ResMut},
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
     log::{error, info},
+    prelude::NextState,
 };
-use bevy_renet::renet::{
-    transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-    RenetClient,
+use bevy_renet::{
+    netcode::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
+    renet::RenetClient,
+    steam::SteamTransportError,
 };
 use macros::{error_continue, error_return, option_continue};
-use renet_steam::{bevy::SteamTransportError, SteamClientTransport};
+use renet_steam::SteamClientTransport;
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
@@ -124,7 +123,7 @@ pub fn handle_messages(
                 }
             }
             ServerMessage::HitscanHits { hits } => {
-                hitscan_hit_gfx(&mut nw.commands, &hits, &nw.particles)
+                hitscan_hit_gfx(&nw.asset_server, &mut nw.commands, &hits, &nw.particles)
             }
             ServerMessage::Hit { amount } => {
                 let player = option_continue!(nw.lobby.get(&nw.current_id.0)).entity;

@@ -2,9 +2,7 @@ use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
 // Yoinked from: https://github.com/djeedai/bevy_hanabi
-pub fn setup(effects: &mut Assets<EffectAsset>, asset_server: &AssetServer) -> Handle<EffectAsset> {
-    let texture_handle = asset_server.load("particles/bullethit.png");
-
+pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
     // Define a color gradient from red to transparent black
     let mut gradient = Gradient::new();
     gradient.add_key(0.0, Vec4::new(0.4, 0.4, 0.4, 1.));
@@ -38,36 +36,32 @@ pub fn setup(effects: &mut Assets<EffectAsset>, asset_server: &AssetServer) -> H
     let accel = module.lit(Vec3::new(0.0, 0.1, 0.0));
     let update_accel = AccelModifier::new(accel);
 
+    let texture_slot = module.lit(0u32);
+    module.add_texture_slot("color");
+
     // Create the effect asset
-    let effect = EffectAsset::new(
-        // Maximum number of particles alive at a time
-        1,
-        // Spawn at a rate of 5 particles per second
-        Spawner::rate(100.0.into()),
-        // Move the expression module into the asset
-        module,
-    )
-    .with_name("BulletHit")
-    .init(init_pos)
-    .init(init_vel)
-    .init(init_lifetime)
-    .update(update_accel)
-    // Render the particles with a color gradient over their
-    // lifetime. This maps the gradient key 0 to the particle spawn
-    // time, and the gradient key 1 to the particle death (10s).
-    .render(ColorOverLifetimeModifier { gradient })
-    .render(ParticleTextureModifier {
-        texture: texture_handle,
-        sample_mapping: ImageSampleMapping::ModulateOpacityFromR,
-    })
-    .render(OrientModifier {
-        mode: OrientMode::FaceCameraPosition,
-        rotation: None,
-    })
-    .render(SizeOverLifetimeModifier {
-        gradient: Gradient::constant([0.2; 2].into()),
-        screen_space_size: false,
-    });
+    let effect = EffectAsset::new(1, Spawner::rate(100.0.into()), module)
+        .with_name("BulletHit")
+        .init(init_pos)
+        .init(init_vel)
+        .init(init_lifetime)
+        .update(update_accel)
+        // Render the particles with a color gradient over their
+        // lifetime. This maps the gradient key 0 to the particle spawn
+        // time, and the gradient key 1 to the particle death (10s).
+        .render(ColorOverLifetimeModifier { gradient })
+        .render(ParticleTextureModifier {
+            texture_slot,
+            sample_mapping: ImageSampleMapping::ModulateOpacityFromR,
+        })
+        .render(OrientModifier {
+            mode: OrientMode::FaceCameraPosition,
+            rotation: None,
+        })
+        .render(SizeOverLifetimeModifier {
+            gradient: Gradient::constant([0.2; 3].into()),
+            screen_space_size: false,
+        });
 
     // Insert into the asset system
     effects.add(effect)

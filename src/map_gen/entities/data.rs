@@ -93,10 +93,10 @@ pub enum Attack {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct WeaponAnimations {
-    pub idle: FastStr,
-    pub shoot1: FastStr,
-    pub shoot2: FastStr,
-    pub reload: Option<FastStr>,
+    pub idle: usize,
+    pub shoot1: usize,
+    pub shoot2: usize,
+    pub reload: Option<usize>,
 
     #[serde(default = "WeaponData::default_firetime")]
     pub fire_time1: f32,

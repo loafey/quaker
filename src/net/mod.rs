@@ -25,9 +25,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                 let player = option_return!(nw.lobby.get(&client_id)).entity;
                 let (_, pl, mut tr) = error_return!(nw.players.get_mut(player));
 
-                tr.translation = tr
-                    .translation
-                    .lerp(*position, nw.time.delta_seconds() * 10.0);
+                tr.translation = tr.translation.lerp(*position, nw.time.delta_secs() * 10.0);
                 tr.rotation = Quat::from_array(*rotation);
 
                 error_return!(nw.cameras.get_mut(option_return!(pl.children.camera)))
@@ -48,19 +46,21 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                     .load(format!("{}#Scene0", weapon_data.model_file));
                 if player.add_weapon(weapon_data.clone(), slot, handle) {
                     nw.commands.entity(player_ent).with_children(|c| {
-                        c.spawn(PbrBundle::default()).insert(AudioBundle {
-                            source: nw.asset_server.load(
-                                weapon_data
-                                    .pickup_sound
-                                    .as_ref()
-                                    .map(|f| f.to_string())
-                                    .unwrap_or(
-                                        "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"
-                                            .to_string(),
-                                    ),
+                        c.spawn(Mesh3d::default()).insert((
+                            AudioPlayer::<AudioSource>(
+                                nw.asset_server.load(
+                                    weapon_data
+                                        .pickup_sound
+                                        .as_ref()
+                                        .map(|f| f.to_string())
+                                        .unwrap_or(
+                                            "sounds/Player/Guns/SuperShotgun/shotgunCock.ogg"
+                                                .to_string(),
+                                        ),
+                                ),
                             ),
-                            settings: PlaybackSettings::DESPAWN.with_spatial(true),
-                        });
+                            PlaybackSettings::DESPAWN.with_spatial(true),
+                        ));
                     });
 
                     if player.id == nw.current_id.0 {

@@ -24,7 +24,7 @@ impl Message {
         time: Res<Time>,
     ) {
         for (ent, mut mesg) in &mut query {
-            mesg.time -= time.delta_seconds();
+            mesg.time -= time.delta_secs();
             if mesg.time <= 0.0 {
                 commands.entity(ent).despawn_recursive();
             }

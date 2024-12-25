@@ -4,7 +4,7 @@ use crate::{
     APP_ID,
 };
 use bevy::{ecs::system::SystemState, prelude::*};
-use bevy_simple_text_input::{TextInputBundle, TextInputSettings, TextInputValue};
+use bevy_simple_text_input::{TextInput, TextInputSettings, TextInputTextFont, TextInputValue};
 use macros::{error_continue, error_return};
 use std::{
     fs, io,
@@ -133,155 +133,137 @@ pub fn setup(mut commands: Commands, steam_client: Option<Res<SteamClient>>) {
         })
         .unwrap_or_default();
 
-    commands
-        .spawn(Camera2dBundle::default())
-        .insert(MainMenuEnt);
+    commands.spawn(Camera2d).insert(MainMenuEnt);
 
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::SpaceBetween,
-                ..default()
-            },
+        .spawn(Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::SpaceBetween,
             ..default()
         })
         .with_children(|c| {
-            c.spawn(NodeBundle {
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    width: Val::Px(400.0),
-                    border: UiRect::all(Val::Px(2.0)),
-                    height: Val::Vh(100.0),
-                    left: Val::Px(0.0),
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
+            c.spawn(Node {
+                position_type: PositionType::Absolute,
+                width: Val::Px(400.0),
+                border: UiRect::all(Val::Px(2.0)),
+                height: Val::Vh(100.0),
+                left: Val::Px(0.0),
+                flex_direction: FlexDirection::Column,
                 ..default()
             })
             .with_children(|c| {
                 c.spawn((
-                    TextBundle::from_section(
-                        "Quaker!",
-                        TextStyle {
-                            font_size: 100.0,
-                            ..default()
-                        },
-                    )
-                    .with_text_justify(JustifyText::Center)
-                    .with_style(Style { ..default() }),
+                    Text::new("Quaker!"),
+                    TextFont {
+                        font_size: 100.0,
+                        ..default()
+                    },
+                    TextLayout::new_with_justify(JustifyText::Center),
                     Label,
                 ));
-                c.spawn(ButtonBundle::default())
-                    .insert(TextBundle::from_section(
-                        "Solo",
-                        TextStyle {
+                c.spawn(Button)
+                    .insert((
+                        Text::new("Solo"),
+                        TextFont {
                             font_size: 32.0,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     .insert(ButtonEvent::Solo);
 
-                c.spawn(ButtonBundle::default())
-                    .insert(TextBundle::from_section(
-                        "Start MP",
-                        TextStyle {
+                c.spawn(Button)
+                    .insert((
+                        Text::new("Start MP"),
+                        TextFont {
                             font_size: 32.0,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     .insert(ButtonEvent::StartMp);
 
-                c.spawn(NodeBundle::default()).insert(
-                    TextInputBundle {
-                        settings: TextInputSettings {
-                            retain_on_submit: true,
-                        },
-                        value: TextInputValue("127.0.0.1:8000".to_string()),
-                        ..Default::default()
-                    }
-                    .with_text_style(TextStyle {
+                c.spawn(Node::default()).insert((
+                    TextInput,
+                    TextInputValue("127.0.0.1:8000".to_string()),
+                    TextInputSettings {
+                        retain_on_submit: true,
+                        ..default()
+                    },
+                    TextInputTextFont(TextFont {
                         font_size: 32.0,
-                        ..Default::default()
+                        ..default()
                     }),
-                );
+                ));
 
-                c.spawn(ButtonBundle::default())
-                    .insert(TextBundle::from_section(
-                        "Join IP",
-                        TextStyle {
+                c.spawn(Button)
+                    .insert((
+                        Text::new("Join IP"),
+                        TextFont {
                             font_size: 32.0,
-                            ..Default::default()
+                            ..default()
                         },
                     ))
                     .insert(ButtonEvent::JoinMp);
             });
 
-            c.spawn(NodeBundle {
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    width: Val::Px(400.0),
-                    border: UiRect::all(Val::Px(2.0)),
-                    height: Val::Vh(100.0),
-                    right: Val::Px(0.0),
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
-                background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+            c.spawn(Node {
+                position_type: PositionType::Absolute,
+                width: Val::Px(400.0),
+                border: UiRect::all(Val::Px(2.0)),
+                height: Val::Vh(100.0),
+                right: Val::Px(0.0),
+                flex_direction: FlexDirection::Column,
+                // background_color: Color::rgb(0.65, 0.65, 0.65).into(),
                 ..default()
             })
             .with_children(|c| {
-                c.spawn(TextBundle::from_section(
-                    "Maps:".to_string(),
-                    TextStyle {
+                c.spawn((
+                    Text::new("Maps:".to_string()),
+                    TextFont {
                         font_size: 32.0,
-                        ..Default::default()
+                        ..default()
                     },
                 ));
 
                 for map in map_files {
-                    c.spawn(ButtonBundle {
-                        style: Style {
-                            border: UiRect::all(Val::Px(5.0)),
-                            ..Default::default()
-                        },
-                        border_color: BorderColor(Color::BLACK),
-                        ..Default::default()
+                    c.spawn(
+                        Button, /*{
+                                   border: UiRect::all(Val::Px(5.0)),
+                                   border_color: BorderColor(Color::BLACK),
+                                   ..default()
+                               }*/
+                    )
+                    .insert(Text::new(format!("{map:?}")))
+                    .insert(TextFont {
+                        font_size: 16.0,
+                        ..default()
                     })
-                    .insert(TextBundle::from_section(
-                        format!("{map:?}"),
-                        TextStyle {
-                            font_size: 16.0,
-                            ..Default::default()
-                        },
-                    ))
                     .insert(LevelButton(map.clone()));
                 }
 
-                c.spawn(TextBundle::from_section(
-                    "Friends:".to_string(),
-                    TextStyle {
+                c.spawn((
+                    Text::new("Friends:".to_string()),
+                    TextFont {
                         font_size: 32.0,
-                        ..Default::default()
+                        ..default()
                     },
                 ));
                 for friend in friends {
-                    c.spawn(ButtonBundle {
-                        style: Style {
-                            border: UiRect::all(Val::Px(5.0)),
-                            ..Default::default()
-                        },
-                        border_color: BorderColor(Color::BLACK),
-                        ..Default::default()
+                    c.spawn(
+                        Button, /*{
+                                   style: Style {
+                                       border: UiRect::all(Val::Px(5.0)),
+                                       ..default()
+                                   },
+                                   border_color: BorderColor(Color::BLACK),
+                                   ..default()
+                               }*/
+                    )
+                    .insert(Text::new(friend.name()))
+                    .insert(TextFont {
+                        font_size: 16.0,
+                        ..default()
                     })
-                    .insert(TextBundle::from_section(
-                        friend.name(),
-                        TextStyle {
-                            font_size: 16.0,
-                            ..Default::default()
-                        },
-                    ))
                     .insert(FriendButton(friend.id().raw()));
                 }
             });

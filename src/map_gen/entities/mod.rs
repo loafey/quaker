@@ -5,15 +5,13 @@ use crate::{
 };
 use bevy::{
     asset::{AssetServer, Assets},
+    color::Color,
     ecs::system::{Commands, Res, ResMut},
     log::error,
     math::{EulerRot, Quat, Vec3},
-    pbr::{
-        DirectionalLight, DirectionalLightBundle, PbrBundle, PointLight, PointLightBundle,
-        StandardMaterial,
-    },
-    render::color::Color,
-    transform::{components::Transform, TransformBundle},
+    pbr::{DirectionalLight, MeshMaterial3d, PointLight, StandardMaterial},
+    prelude::Mesh3d,
+    transform::components::Transform,
 };
 use bevy_rapier3d::{
     dynamics::Ccd,
@@ -74,16 +72,15 @@ pub fn spawn_entity(
                 .map(|p| parse_vec(p))
                 .unwrap_or_default();
 
-            commands.spawn(PointLightBundle {
-                transform: Transform::from_translation(pos),
-                point_light: PointLight {
+            commands.spawn((
+                PointLight {
                     intensity: light_level * 100.0,
                     range: light_level * 100.0,
                     shadows_enabled: false,
                     ..Default::default()
                 },
-                ..Default::default()
-            });
+                Transform::from_translation(pos),
+            ));
         }
         Some("directional_light") => {
             let light_level = attributes
@@ -93,16 +90,15 @@ pub fn spawn_entity(
             let trans =
                 Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -45.0, -45.0, -45.0));
 
-            commands.spawn(DirectionalLightBundle {
-                directional_light: DirectionalLight {
+            commands.spawn((
+                DirectionalLight {
                     color: Color::WHITE,
                     illuminance: light_level,
                     shadows_enabled: true,
                     ..Default::default()
                 },
-                transform: trans,
-                ..Default::default()
-            });
+                trans,
+            ));
         }
         Some("info_player_start") => {
             let mut pos = attributes
@@ -163,34 +159,23 @@ pub fn spawn_pickup(
         pickup
             .insert(Sensor)
             .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(TransformBundle::from(Transform::from_translation(pos)))
+            .insert(Transform::from_translation(pos))
             .insert(ActiveCollisionTypes::all())
             .insert(Ccd::enabled())
-            .insert(PbrBundle {
-                mesh: mesh_handle,
-                material: mat_handle,
-                transform: trans,
-                ..Default::default()
-            });
+            .insert((Mesh3d(mesh_handle), MeshMaterial3d(mat_handle), trans));
         pickup
     } else {
-        commands.spawn(PbrBundle {
-            mesh: mesh_handle,
-            material: mat_handle,
-            transform: trans,
-            ..Default::default()
-        })
+        commands.spawn((Mesh3d(mesh_handle), MeshMaterial3d(mat_handle), trans))
     };
     pickup
-        .insert(PointLightBundle {
-            transform: trans,
-            point_light: PointLight {
-                color: Color::rgba(1.0, 1.0, 1.0, 0.5),
+        .insert((
+            PointLight {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.5),
                 intensity: 200.0,
                 radius: 4.0,
                 ..Default::default()
             },
-            ..Default::default()
-        })
+            trans,
+        ))
         .insert(PickupEntity::new(id, data.clone()));
 }

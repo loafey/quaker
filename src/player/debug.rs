@@ -24,7 +24,7 @@ impl Player {
             }
 
             if debug.enabled {
-                hud.sections[0].value = format!("{:#?}", player.debug_info);
+                hud.0 = format!("{:#?}", player.debug_info);
             }
         }
     }
