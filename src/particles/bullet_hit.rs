@@ -36,38 +36,32 @@ pub fn setup(effects: &mut Assets<EffectAsset>) -> Handle<EffectAsset> {
     let accel = module.lit(Vec3::new(0.0, 0.1, 0.0));
     let update_accel = AccelModifier::new(accel);
 
-    let texture_slot = module.lit(0);
+    let texture_slot = module.lit(0u32);
+    module.add_texture_slot("color");
 
     // Create the effect asset
-    let effect = EffectAsset::new(
-        // Maximum number of particles alive at a time
-        1,
-        // Spawn at a rate of 5 particles per second
-        Spawner::rate(100.0.into()),
-        // Move the expression module into the asset
-        module,
-    )
-    .with_name("BulletHit")
-    .init(init_pos)
-    .init(init_vel)
-    .init(init_lifetime)
-    .update(update_accel)
-    // Render the particles with a color gradient over their
-    // lifetime. This maps the gradient key 0 to the particle spawn
-    // time, and the gradient key 1 to the particle death (10s).
-    .render(ColorOverLifetimeModifier { gradient })
-    .render(ParticleTextureModifier {
-        texture_slot,
-        sample_mapping: ImageSampleMapping::ModulateOpacityFromR,
-    })
-    .render(OrientModifier {
-        mode: OrientMode::FaceCameraPosition,
-        rotation: None,
-    })
-    .render(SizeOverLifetimeModifier {
-        gradient: Gradient::constant([0.2; 3].into()),
-        screen_space_size: false,
-    });
+    let effect = EffectAsset::new(1, Spawner::rate(100.0.into()), module)
+        .with_name("BulletHit")
+        .init(init_pos)
+        .init(init_vel)
+        .init(init_lifetime)
+        .update(update_accel)
+        // Render the particles with a color gradient over their
+        // lifetime. This maps the gradient key 0 to the particle spawn
+        // time, and the gradient key 1 to the particle death (10s).
+        .render(ColorOverLifetimeModifier { gradient })
+        .render(ParticleTextureModifier {
+            texture_slot,
+            sample_mapping: ImageSampleMapping::ModulateOpacityFromR,
+        })
+        .render(OrientModifier {
+            mode: OrientMode::FaceCameraPosition,
+            rotation: None,
+        })
+        .render(SizeOverLifetimeModifier {
+            gradient: Gradient::constant([0.2; 3].into()),
+            screen_space_size: false,
+        });
 
     // Insert into the asset system
     effects.add(effect)

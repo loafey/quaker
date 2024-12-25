@@ -27,7 +27,7 @@ renet_steam = { git = "https://github.com/lucaspoffo/renet.git", features = ["be
 steamworks = "0.11.0"
 sha256 = { version = "1.5.0", default-features = false }
 image = { version = "0.25.5", default-features = false }
-bevy_hanabi = { version = "0.14.0", default-features = false, features = ["3d"] }
+bevy_hanabi = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
 
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]
