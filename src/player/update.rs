@@ -346,13 +346,18 @@ impl Player {
     pub fn weapon_animations(
         mut commands: Commands,
         mut players: Query<&mut Player>,
-        q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &AnimationGraphHandle, &Children)>,
+        q_player_fps_anims: Query<(Entity, &PlayerFpsModel, &Children)>,
         q_scenes: Query<&Children>,
-        mut q_anim_players: Query<&mut AnimationPlayer>,
+        mut q_anim_players: Query<(
+            Entity,
+            &mut AnimationPlayer,
+            Option<&mut AnimationGraphHandle>,
+        )>,
         mut client_events: EventWriter<ClientMessage>,
+        mut graphs: ResMut<Assets<AnimationGraph>>,
     ) {
         for mut player in &mut players {
-            let (ent, _, anim_handle, children) = option_continue!(q_player_fps_anims
+            let (ent, _, children) = option_continue!(q_player_fps_anims
                 .get(option_continue!(player.children.fps_model))
                 .ok());
 
@@ -371,7 +376,20 @@ impl Player {
                 if let Ok(children) = q_scenes.get(*child) {
                     // Got GLTF scene
                     for child in children {
-                        if let Ok(mut anim_player) = q_anim_players.get_mut(*child) {
+                        if let Ok((par, mut anim_player, anim_graph)) =
+                            q_anim_players.get_mut(*child)
+                        {
+                            if let Some(p) = &player.fps_anim_graph {
+                                commands
+                                    .entity(par)
+                                    .try_insert(AnimationGraphHandle(graphs.add(p.clone())));
+                                player.fps_anim_graph_insert_count =
+                                    player.fps_anim_graph_insert_count.wrapping_add(1);
+                            }
+                            if anim_graph.is_some() && player.fps_anim_graph_insert_count > 1 {
+                                player.fps_anim_graph = None;
+                            }
+
                             #[allow(clippy::assigning_clones)]
                             if player.current_weapon_anim != player.current_weapon_anim_old
                                 || player.restart_anim
@@ -387,12 +405,12 @@ impl Player {
                                 // println!("play animation");
                                 let clip = unsafe { transmute(*clip) };
                                 // error!("broken animation!");
-                                println!("{:?}", anim_player.is_playing_animation(clip));
+                                // println!("{:?}", anim_player.is_playing_animation(clip));
                                 if player.restart_anim {
-                                    println!("restart");
+                                    // println!("restart");
                                     anim_player.play(clip).replay();
                                 } else if !anim_player.is_playing_animation(clip) {
-                                    println!("repeat");
+                                    // println!("repeat");
                                     anim_player.play(clip).repeat();
                                 }
                                 player.restart_anim = false;
@@ -527,7 +545,6 @@ impl Player {
         >,
         mut materials: ResMut<Assets<StandardMaterial>>,
         asset_server: Res<AssetServer>,
-        mut graphs: ResMut<Assets<AnimationGraph>>,
     ) {
         for mut player in query.iter_mut() {
             if player.current_weapon == player.current_weapon_old {
@@ -569,9 +586,14 @@ impl Player {
 
                     let path = new_mesh.path().unwrap();
                     let (mut graph, node_indices) = AnimationGraph::from_clips([
-                        asset_server.load(GltfAssetLabel::Animation(0).from_asset(path)),
-                        asset_server.load(GltfAssetLabel::Animation(1).from_asset(path)),
-                        asset_server.load(GltfAssetLabel::Animation(2).from_asset(path)),
+                        asset_server
+                            .load(GltfAssetLabel::Animation(data.animations.idle).from_asset(path)),
+                        asset_server.load(
+                            GltfAssetLabel::Animation(data.animations.shoot1).from_asset(path),
+                        ),
+                        asset_server.load(
+                            GltfAssetLabel::Animation(data.animations.shoot2).from_asset(path),
+                        ),
                     ]);
 
                     player.fps_anims = [
@@ -582,15 +604,9 @@ impl Player {
                     .into_iter()
                     .map(|(a, b)| (FastStr::from(a), b))
                     .collect();
-                    if player.weapons[slot][row]
-                        .data
-                        .animations
-                        .reload
-                        .clone()
-                        .is_some()
-                    {
+                    if let Some(r) = player.weapons[slot][row].data.animations.reload {
                         let r = graph.add_clip(
-                            asset_server.load(GltfAssetLabel::Animation(3).from_asset(path)),
+                            asset_server.load(GltfAssetLabel::Animation(r).from_asset(path)),
                             0.0,
                             node_indices[0],
                         );
@@ -600,9 +616,8 @@ impl Player {
                             .insert(FastStr::from("reload"), unsafe { transmute(r) });
                     }
 
-                    commands
-                        .entity(ent)
-                        .insert(AnimationGraphHandle(graphs.add(graph)));
+                    player.fps_anim_graph = Some(graph);
+                    player.fps_anim_graph_insert_count = 0;
 
                     if player.weapons[slot][row].need_to_reload {
                         player.weapons[slot][row].anim_time =
@@ -615,6 +630,7 @@ impl Player {
                     player.camera_movement.original_trans = trans.translation;
                     player.camera_movement.switch_offset = -1.0;
                     *mesh = SceneRoot(new_mesh);
+                    // commands.entity(ent).insert(SceneRoot(new_mesh));
                     hook.state = HookState::MustReload;
                 }
             }

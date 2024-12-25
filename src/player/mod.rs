@@ -70,6 +70,19 @@ pub struct PlayerFpsMaterial(Handle<StandardMaterial>);
 
 #[derive(Component, Debug)]
 pub struct Player {
+    // stupid hack needed because GLTF scences do not spawn with
+    // animation graphs, which *are* needed to play animations.
+    // basically; the first thing the animation system tries to do
+    // is insert this next to the animation player in the entity tree.
+    fps_anim_graph: Option<AnimationGraph>,
+    // even stupider hack: when switching weapons the fps model entity
+    // is invalidated, and because bevy has no way to check if an
+    // insertion failed or not (outside of using the panicing method)
+    // we simply have to try inserting the graph two times, because
+    // the first one *might* fail
+    fps_anim_graph_insert_count: u8,
+    fps_anims: HashMap<FastStr, u32>,
+
     pub id: u64,
     pub last_hurter: u64,
 
@@ -86,8 +99,6 @@ pub struct Player {
     on_ground: bool,
 
     camera_movement: CameraMovement,
-
-    fps_anims: HashMap<FastStr, u32>,
 
     pub children: PlayerChildren,
 
@@ -131,6 +142,8 @@ impl Default for Player {
             restart_anim: false,
             children: Default::default(),
             fps_anims: Default::default(),
+            fps_anim_graph: None,
+            fps_anim_graph_insert_count: 0,
             camera_movement: CameraMovement {
                 backdrift: 0.0,
                 backdrift_goal: 0.0,
