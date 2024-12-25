@@ -6,7 +6,7 @@ use crate::net::{
 };
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, image::ImageAddressMode,
-    log::LogPlugin, prelude::*, window::WindowMode,
+    log::LogPlugin, prelude::*,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_obj::ObjPlugin;

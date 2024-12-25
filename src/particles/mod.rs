@@ -7,7 +7,6 @@ use bevy::{
     },
     hierarchy::DespawnRecursiveExt,
     math::Vec3,
-    prelude::Mesh3d,
     time::Time,
     transform::components::Transform,
 };
