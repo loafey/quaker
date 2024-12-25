@@ -21,7 +21,7 @@ pub fn startup_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(StartupEnt);
     commands
         .spawn(Sprite {
-            image: asset_server.load("ui/splash.png"),
+            image: asset_server.load("ui/splash3.png"),
             ..default()
         })
         .insert(StartUpState::default())
