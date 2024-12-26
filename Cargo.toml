@@ -27,6 +27,7 @@ steamworks             = { workspace = true }
 sha256                 = { workspace = true }
 image                  = { workspace = true }
 bevy_hanabi            = { workspace = true }
+integrity              = { workspace = true }
 
 [workspace]
 members = [ "crates/*"]
@@ -57,6 +58,7 @@ map_parser             = { path = "crates/map_parser" }
 macros                 = { path = "crates/macros" }
 input_derive           = { path = "crates/input_derive" }
 faststr                = { path = "crates/faststr" }
+integrity              = { path = "crates/integrity" }
 
 [profile.dev.package."*"]
 opt-level = 3

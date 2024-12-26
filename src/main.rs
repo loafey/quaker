@@ -26,7 +26,6 @@ use plugins::{ClientPlugin, GameStage, MainMenuStage, Resources, ServerPlugin, S
 use steamworks::{AppId, SingleClient};
 
 mod entities;
-mod integrity;
 mod mainmenu;
 mod map_gen;
 mod net;

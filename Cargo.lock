@@ -3023,6 +3023,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "integrity"
+version = "0.1.0"
+dependencies = [
+ "sha256",
+]
+
+[[package]]
 name = "io-kit-sys"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4105,6 +4112,7 @@ dependencies = [
  "faststr",
  "image",
  "input_derive",
+ "integrity",
  "macros",
  "map_parser",
  "renet_steam",

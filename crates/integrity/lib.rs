@@ -1,6 +1,5 @@
-use std::{fs::File, io::Read, path::Path};
-
 use sha256::digest;
+use std::{fs::File, io::Read, path::Path};
 
 pub fn get_asset_hash() -> String {
     recurse("assets").unwrap()
