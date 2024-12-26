@@ -1,4 +1,3 @@
-workspace = { members = [ "crates/input_derive", "crates/macros","crates/map_parser", "crates/randomgen"] }
 [package]
 name = "quaker"
 version = "0.1.0"
@@ -9,26 +8,55 @@ edition = "2021"
 [features]
 
 [dependencies]        
-bevy = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }#, features = ["dynamic_linking"]
-map_parser = { path = "crates/map_parser" }
-macros = { path = "crates/macros" }
-input_derive = { path = "crates/input_derive" }
-faststr = { path = "crates/faststr" }
-bevy_rapier3d = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
-serde = "1.0.216"
-serde_json = "1.0.134"
-bevy_obj = { version = "0.15.0" } #, features = ["scene"] 
-bevy-inspector-egui = "0.28.0"
-bevy-scene-hook = { git = "https://github.com/AlephCubed/bevy-scene-hook.git" }
-bevy_simple_text_input = "0.10.0"
-bincode = "1.3.3"
-bevy_renet = { git = "https://github.com/lucaspoffo/renet.git", features = ["steam"] }
-renet_steam = { git = "https://github.com/lucaspoffo/renet.git", features = ["bevy"] }
-steamworks = "0.11.0"
-sha256 = { version = "1.5.0", default-features = false }
-image = { version = "0.25.5", default-features = false }
-bevy_hanabi = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
+bevy                   = { workspace = true }
+map_parser             = { workspace = true }
+macros                 = { workspace = true }
+input_derive           = { workspace = true }
+faststr                = { workspace = true }
+bevy_rapier3d          = { workspace = true }
+serde                  = { workspace = true }
+serde_json             = { workspace = true }
+bevy_obj               = { workspace = true }
+bevy-inspector-egui    = { workspace = true }
+bevy-scene-hook        = { workspace = true }
+bevy_simple_text_input = { workspace = true }
+bincode                = { workspace = true }
+bevy_renet             = { workspace = true }
+renet_steam            = { workspace = true }
+steamworks             = { workspace = true }
+sha256                 = { workspace = true }
+image                  = { workspace = true }
+bevy_hanabi            = { workspace = true }
 
-# Enable max optimizations for dependencies, but not for our code:
+[workspace]
+members = [ "crates/*"]
+
+[workspace.dependencies]
+bevy                   = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }
+bevy_rapier3d          = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
+serde                  = { version = "1.0.216" }
+serde_json             = { version = "1.0.134" }
+bevy_obj               = { version = "0.15.0" } #, features = ["scene"] 
+bevy-inspector-egui    = { version = "0.28.0" }
+bevy_simple_text_input = { version = "0.10.0" }
+bincode                = { version = "1.3.3" }
+steamworks             = { version = "0.11.0" }
+sha256                 = { version = "1.5.0", default-features = false }
+image                  = { version = "0.25.5", default-features = false }
+proc-macro2            = { version = "1.0.92" }
+quote                  = { version = "1.0.38" }
+syn                    = { version = "2.0.91" }
+rand                   = { version = "0.8.5" }
+# Git crates, once these versions are published on crates.io, they should be removed from this section 
+bevy-scene-hook        = { git = "https://github.com/AlephCubed/bevy-scene-hook.git" }
+bevy_hanabi            = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
+bevy_renet             = { git = "https://github.com/lucaspoffo/renet.git", features = ["steam"] }
+renet_steam            = { git = "https://github.com/lucaspoffo/renet.git", features = ["bevy"] }
+# Custom crates
+map_parser             = { path = "crates/map_parser" }
+macros                 = { path = "crates/macros" }
+input_derive           = { path = "crates/input_derive" }
+faststr                = { path = "crates/faststr" }
+
 [profile.dev.package."*"]
 opt-level = 3

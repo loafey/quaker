@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-proc-macro2 = "1.0.79"
-quote = "1.0.35"
-syn = "2.0.52"
+proc-macro2 = { workspace = true }
+quote       = { workspace = true }
+syn         = { workspace = true }
 
 [lib]
 proc-macro = true
