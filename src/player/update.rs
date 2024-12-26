@@ -6,14 +6,7 @@ use super::{
 };
 use crate::{
     entities::ProjectileEntity,
-    map_gen::entities::data::{Attack, SoundEffect},
     net::{ClientMessage, Lobby},
-    resources::{
-        entropy::{EGame, EMisc, Entropy},
-        inputs::PlayerInput,
-        projectiles::Projectiles,
-        Paused,
-    },
 };
 use bevy::{
     audio::Volume,
@@ -29,6 +22,12 @@ use bevy_rapier3d::{
 use bevy_scene_hook::reload::{Hook, State as HookState};
 use faststr::FastStr;
 use macros::{error_continue, option_continue, option_return};
+use resources::{
+    data::{Attack, Projectiles, SoundEffect},
+    entropy::{EGame, EMisc, Entropy},
+    inputs::PlayerInput,
+    Paused,
+};
 use std::{fmt::Write, mem::transmute};
 
 enum SwitchDirection {

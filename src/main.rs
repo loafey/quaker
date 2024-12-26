@@ -33,7 +33,6 @@ mod particles;
 mod player;
 mod plugins;
 mod queries;
-mod resources;
 mod startup;
 
 const APP_ID: AppId = AppId(480);

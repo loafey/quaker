@@ -3,14 +3,14 @@ use crate::{
     net::{CurrentClientId, Lobby},
     particles::ParticleMap,
     player::Player,
-    resources::{
-        entropy::{EGame, Entropy},
-        projectiles::Projectiles,
-        PlayerSpawnpoint, WeaponMap,
-    },
 };
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_rapier3d::plugin::RapierContext;
+use resources::{
+    data::Projectiles,
+    entropy::{EGame, Entropy},
+    PlayerSpawnpoint, WeaponMap,
+};
 
 #[allow(clippy::type_complexity, unused)]
 #[derive(SystemParam)]

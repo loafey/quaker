@@ -8,12 +8,12 @@ use crate::{
         PlayerInfo,
     },
     queries::NetWorld,
-    resources::PlayerSpawnpoint,
 };
 use bevy::{prelude::*, render::view::NoFrustumCulling, text::FontSmoothing};
 use bevy_rapier3d::prelude::*;
 use bevy_scene_hook::reload::{Hook, SceneBundle as HookedSceneBundle};
 use faststr::FastStr;
+use resources::PlayerSpawnpoint;
 
 impl Player {
     pub fn spawn_own_player(

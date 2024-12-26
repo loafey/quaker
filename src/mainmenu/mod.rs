@@ -1,11 +1,11 @@
 use crate::{
     net::{self, steam::SteamClient, NetState},
-    resources::{CurrentMap, CurrentStage},
     APP_ID,
 };
 use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_simple_text_input::{TextInput, TextInputSettings, TextInputTextFont, TextInputValue};
 use macros::{error_continue, error_return};
+use resources::{CurrentMap, CurrentStage};
 use std::{
     fs, io,
     path::{Path, PathBuf},

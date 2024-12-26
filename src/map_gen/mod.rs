@@ -3,7 +3,6 @@ use self::{
     poly::Poly,
     vertex::Vertex,
 };
-use crate::resources::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
 use bevy::{
     prelude::*,
     render::{
@@ -17,6 +16,7 @@ use bevy_renet::renet::RenetClient;
 use entities::spawn_entity;
 use macros::error_return;
 use map_parser::parser::Brush;
+use resources::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
 
 pub mod entities;
 mod plane;

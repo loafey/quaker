@@ -1,4 +1,3 @@
-use crate::map_gen::entities::data::{PickupData, WeaponData};
 use bevy::{
     asset::{Handle, UntypedHandle},
     ecs::system::{Res, Resource},
@@ -7,13 +6,14 @@ use bevy::{
     math::Vec3,
     prelude::States,
 };
+use data::{PickupData, WeaponData};
 use faststr::FastStr;
 use macros::error_return;
 use std::{collections::HashMap, fs, path::PathBuf};
 
+pub mod data;
 pub mod entropy;
 pub mod inputs;
-pub mod projectiles;
 
 /// Represents the current game stage
 #[derive(Debug, Resource, PartialEq, Eq, States, Default, Hash, Clone, Copy)]

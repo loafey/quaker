@@ -2,8 +2,9 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 use faststr::FastStr;
+use resources::data::WeaponData;
 
-use crate::{entities::message::Message, map_gen::entities::data::WeaponData};
+use crate::entities::message::Message;
 
 mod debug;
 mod spawn;

@@ -1,5 +1,27 @@
+use bevy::{ecs::system::Resource, utils::HashMap};
 use faststr::FastStr;
 use serde::{Deserialize, Serialize};
+use std::fs::read_to_string;
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Projectile {
+    pub id: String,
+    pub model_file: String,
+    pub texture_file: String,
+    pub scale: f32,
+    pub rotation: [f32; 3],
+    pub speed: f32,
+}
+
+#[derive(Debug, Resource)]
+pub struct Projectiles(pub HashMap<String, Projectile>);
+impl Default for Projectiles {
+    fn default() -> Self {
+        let input = read_to_string("assets/projectiles.json").unwrap();
+        let json = serde_json::from_str::<Vec<Projectile>>(&input).unwrap();
+        Projectiles(json.into_iter().map(|p| (p.id.clone(), p)).collect())
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum PickupType {

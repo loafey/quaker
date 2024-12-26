@@ -1,8 +1,9 @@
-use crate::{map_gen::entities::data::PickupData, queries::NetWorld};
+use crate::queries::NetWorld;
 use bevy::prelude::*;
 use bevy_renet::renet::*;
 use faststr::FastStr;
 use macros::{error_return, option_return};
+use resources::data::PickupData;
 use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, time::Duration};
 

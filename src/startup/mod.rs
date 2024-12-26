@@ -1,5 +1,5 @@
-use crate::resources::CurrentStage;
 use bevy::prelude::*;
+use resources::CurrentStage;
 
 #[derive(Component)]
 pub struct StartupEnt;

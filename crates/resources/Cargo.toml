@@ -1,0 +1,15 @@
+[package]
+name = "resources"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+input_derive = { workspace = true }
+serde        = { workspace = true }
+serde_json   = { workspace = true }
+faststr      = { workspace = true }
+macros       = { workspace = true }
+bevy         = { workspace = true }

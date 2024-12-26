@@ -1,8 +1,4 @@
-use crate::{
-    entities::pickup::PickupEntity,
-    map_gen::SCALE_FIX,
-    resources::{PickupMap, PlayerSpawnpoint},
-};
+use crate::{entities::pickup::PickupEntity, map_gen::SCALE_FIX};
 use bevy::{
     asset::{AssetServer, Assets},
     color::Color,
@@ -18,11 +14,8 @@ use bevy_rapier3d::{
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, Sensor},
 };
 use faststr::FastStr;
+use resources::{data::PickupData, PickupMap, PlayerSpawnpoint};
 use std::collections::HashMap;
-
-use self::data::PickupData;
-
-pub mod data;
 
 fn parse_vec(str: &str) -> Vec3 {
     let mut splat = str.split_whitespace();

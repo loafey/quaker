@@ -8,7 +8,6 @@ use crate::{
     net::{Lobby, PlayerInfo},
     player::Player,
     queries::NetWorld,
-    resources::{CurrentMap, CurrentStage},
 };
 use bevy::{
     ecs::{
@@ -29,6 +28,7 @@ use bevy_renet::{
 };
 use macros::{error_continue, error_return, option_continue};
 use renet_steam::SteamClientTransport;
+use resources::{CurrentMap, CurrentStage};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 

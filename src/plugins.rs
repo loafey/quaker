@@ -5,14 +5,14 @@ use crate::entities::{pickup::PickupEntity, ProjectileEntity};
 use crate::map_gen::{load_map, texture_systems::*};
 use crate::net::{self, NetState};
 use crate::player::Player;
-use crate::resources::{
-    entropy::{entropy_game, entropy_misc},
-    inputs::PlayerInput,
-    projectiles::Projectiles,
-    *,
-};
 use crate::{mainmenu, startup};
 use bevy::prelude::*;
+use data::Projectiles;
+use resources::{
+    entropy::{entropy_game, entropy_misc},
+    inputs::PlayerInput,
+    *,
+};
 
 pub struct Resources;
 impl Resources {
@@ -41,10 +41,10 @@ impl Plugin for Resources {
             .insert_resource(Paused(true))
             .insert_resource(PickupMap::new())
             .insert_resource(WeaponMap::new())
-            .insert_resource(PlayerInput::new())
+            .insert_resource(PlayerInput::default())
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
-            .insert_resource(Projectiles::new());
+            .insert_resource(Projectiles::default());
     }
 }
 

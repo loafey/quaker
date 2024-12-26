@@ -1,4 +1,4 @@
-use crate::{particles::ParticleMap, resources::projectiles::Projectile};
+use crate::particles::ParticleMap;
 use bevy::{
     asset::AssetServer,
     ecs::{
@@ -9,6 +9,7 @@ use bevy::{
     math::Vec3,
     transform::components::Transform,
 };
+use resources::data::Projectile;
 
 pub mod message;
 pub mod pickup;

@@ -1,4 +1,4 @@
-use crate::{map_gen::entities::data::PickupData, net::SimulationEvent, player::Player};
+use crate::{net::SimulationEvent, player::Player};
 use bevy::{
     ecs::{
         component::Component,
@@ -10,6 +10,7 @@ use bevy::{
     transform::components::Transform,
 };
 use bevy_rapier3d::{pipeline::CollisionEvent, rapier::geometry::CollisionEventFlags};
+use resources::data::PickupData;
 
 #[derive(Debug, Component)]
 pub struct PickupEntity {

@@ -31,8 +31,8 @@ pub struct PlayerInput {
     weapon_slot10: Key,
     show_lobby: Key,
 }
-impl PlayerInput {
-    pub fn new() -> Self {
+impl Default for PlayerInput {
+    fn default() -> Self {
         serde_json::from_str(&std::fs::read_to_string("assets/inputs.json").unwrap()).unwrap()
     }
 }

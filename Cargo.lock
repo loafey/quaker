@@ -4116,6 +4116,7 @@ dependencies = [
  "macros",
  "map_parser",
  "renet_steam",
+ "resources",
  "serde",
  "serde_json",
  "sha256",
@@ -4395,6 +4396,18 @@ source = "git+https://github.com/lucaspoffo/renet.git#aafeee251f8d15fac102c8bebf
 dependencies = [
  "chacha20poly1305",
  "log",
+]
+
+[[package]]
+name = "resources"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "faststr",
+ "input_derive",
+ "macros",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

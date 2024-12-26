@@ -4,11 +4,9 @@ use super::{
 };
 use crate::{
     entities::hitscan_hit_gfx,
-    map_gen::entities::data::Attack,
     net::{CurrentClientId, IsSteam, Lobby, PlayerInfo, ServerChannel, ServerMessage},
     player::Player,
     queries::NetWorld,
-    resources::CurrentMap,
 };
 use bevy::{
     ecs::{
@@ -29,6 +27,7 @@ use bevy_renet::{
 use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
 use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
+use resources::{data::Attack, CurrentMap};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
