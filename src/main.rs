@@ -60,14 +60,13 @@ fn main() {
                 filter: "bevy_ecs=error,wgpu=error,naga=warn,present_frames=warn".into(),
                 level: bevy::log::Level::INFO,
                 ..default()
-            })
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    mode: bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
-                    ..default()
-                }),
-                ..default()
-            }),
+            }), // .set(WindowPlugin {
+                //     primary_window: Some(Window {
+                //         mode: bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                //         ..default()
+                //     }),
+                //     ..default()
+                // }),
     );
 
     // app.add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
