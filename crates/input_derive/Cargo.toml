@@ -10,4 +10,4 @@ syn = "2.0.52"
 
 [lib]
 proc-macro = true
-
+path = "lib.rs"

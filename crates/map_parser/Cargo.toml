@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 faststr = { path = "../faststr" }
+
+[lib]
+path = "lib.rs"

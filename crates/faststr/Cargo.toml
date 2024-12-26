@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 serde = "1.0.197"
 
+[lib]
+path = "lib.rs"
+
 [[bin]]
 name = "mem_test"
-path = "src/bin.rs"
+path = "bin.rs"
