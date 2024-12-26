@@ -4111,7 +4111,6 @@ dependencies = [
  "bincode",
  "faststr",
  "image",
- "input_derive",
  "integrity",
  "macros",
  "map_parser",
