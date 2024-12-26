@@ -168,14 +168,6 @@ pub fn spawn_pickup(
         commands.spawn((Mesh3d(mesh_handle), MeshMaterial3d(mat_handle), trans))
     };
     pickup
-        .insert((
-            PointLight {
-                color: Color::srgba(1.0, 1.0, 1.0, 0.5),
-                intensity: 200.0,
-                radius: 4.0,
-                ..Default::default()
-            },
-            trans,
-        ))
+        .insert(trans)
         .insert(PickupEntity::new(id, data.clone()));
 }
