@@ -1,7 +1,7 @@
 [package]
 name = "quaker"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -14,16 +14,13 @@ macros                 = { workspace = true }
 faststr                = { workspace = true }
 bevy_rapier3d          = { workspace = true }
 serde                  = { workspace = true }
-serde_json             = { workspace = true }
 bevy_obj               = { workspace = true }
-bevy-inspector-egui    = { workspace = true }
 bevy-scene-hook        = { workspace = true }
 bevy_simple_text_input = { workspace = true }
 bincode                = { workspace = true }
 bevy_renet             = { workspace = true }
 renet_steam            = { workspace = true }
 steamworks             = { workspace = true }
-sha256                 = { workspace = true }
 image                  = { workspace = true }
 bevy_hanabi            = { workspace = true }
 integrity              = { workspace = true }
@@ -33,13 +30,8 @@ resources              = { workspace = true }
 members = [ "crates/*"]
 
 [workspace.dependencies]
-bevy                   = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }
-bevy_rapier3d          = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
 serde                  = { version = "1.0.216" }
 serde_json             = { version = "1.0.134" }
-bevy_obj               = { version = "0.15.0" } #, features = ["scene"] 
-bevy-inspector-egui    = { version = "0.28.0" }
-bevy_simple_text_input = { version = "0.10.0" }
 bincode                = { version = "1.3.3" }
 steamworks             = { version = "0.11.0" }
 sha256                 = { version = "1.5.0", default-features = false }
@@ -48,7 +40,12 @@ proc-macro2            = { version = "1.0.92" }
 quote                  = { version = "1.0.38" }
 syn                    = { version = "2.0.91" }
 rand                   = { version = "0.8.5" }
-# Git crates, once these versions are published on crates.io, they should be removed from this section 
+# Bevy dependencies
+bevy                   = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }
+bevy_rapier3d          = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
+bevy_obj               = { version = "0.15.0" }
+bevy-inspector-egui    = { version = "0.28.0" }
+bevy_simple_text_input = { version = "0.10.0" }
 bevy-scene-hook        = { git = "https://github.com/AlephCubed/bevy-scene-hook.git" }
 bevy_hanabi            = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
 bevy_renet             = { git = "https://github.com/lucaspoffo/renet.git", features = ["steam"] }

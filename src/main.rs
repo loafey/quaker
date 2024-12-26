@@ -1,8 +1,8 @@
 #![feature(let_chains)]
 extern crate macros;
 use crate::net::{
-    steam::{try_steam, SteamClient},
     SimulationEvent,
+    steam::{SteamClient, try_steam},
 };
 use bevy::{
     core_pipeline::experimental::taa::TemporalAntiAliasPlugin, image::ImageAddressMode,
@@ -15,9 +15,9 @@ use bevy_rapier3d::{
     render::RapierDebugRenderPlugin,
 };
 use bevy_renet::{
+    RenetClientPlugin, RenetServerPlugin,
     netcode::{NetcodeClientPlugin, NetcodeServerPlugin},
     steam::{SteamClientPlugin, SteamServerPlugin},
-    RenetClientPlugin, RenetServerPlugin,
 };
 use bevy_scene_hook::reload::Plugin as HookPlugin;
 use bevy_simple_text_input::TextInputPlugin;

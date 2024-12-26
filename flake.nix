@@ -48,6 +48,7 @@
           vulkan-headers
           vulkan-loader
           vulkan-validation-layers
+          cargo-udeps
 
           trenchbroom-working
           libxkbcommon
