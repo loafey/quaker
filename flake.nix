@@ -69,6 +69,7 @@
           rustc = toolchain;
         }).buildPackage {
           src = ./.;
+          mode = "fmt";
           dontPatchELF = true;
           nativeBuildInputs = with pkgs; [ ] ++ min-pkgs;
           shellHook = ''
