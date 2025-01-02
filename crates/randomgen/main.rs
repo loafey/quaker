@@ -1,10 +1,10 @@
 use std::{
     collections::BTreeMap as Map,
     env::args,
-    io::{self, stdout, Write},
+    io::{self, Write, stdout},
 };
 
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
 
 fn main() -> io::Result<()> {
     let mut args = args().skip(1);
@@ -26,14 +26,14 @@ fn main() -> io::Result<()> {
     let mut final_bytes = Vec::new();
     let mut final_distribution = Map::new();
 
+    let mut rng = thread_rng();
     for _ in 0..tries {
         let mut distribution = Map::new();
         let mut bytes = Vec::new();
 
-        let mut rng = thread_rng();
         for _ in 0..amount {
             let rand = loop {
-                let val = rng.gen::<u8>();
+                let val = rng.r#gen::<u8>();
                 if val != u8::MAX {
                     break val;
                 }

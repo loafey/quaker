@@ -30,7 +30,7 @@ resources              = { workspace = true }
 members = [ "crates/*"]
 
 [workspace.dependencies]
-serde                  = { version = "1.0.216" }
+serde                  = { version = "1.0.217" }
 serde_json             = { version = "1.0.134" }
 bincode                = { version = "1.3.3" }
 steamworks             = { version = "0.11.0" }
