@@ -27,7 +27,7 @@ integrity              = { workspace = true }
 resources              = { workspace = true }
 
 [workspace]
-members = [ "crates/*", "extensions", "extensions/*" ]
+members = [ "crates/*", "extensions", "extensions/qwak_macro", "extensions/qwak_shared" ]
 
 [workspace.dependencies]
 serde                  = { version = "1.0.217" }
