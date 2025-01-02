@@ -27,7 +27,7 @@ integrity              = { workspace = true }
 resources              = { workspace = true }
 
 [workspace]
-members = [ "crates/*"]
+members = [ "crates/*", "extensions", "extensions/*" ]
 
 [workspace.dependencies]
 serde                  = { version = "1.0.217" }
@@ -38,14 +38,16 @@ sha256                 = { version = "1.5.0", default-features = false }
 image                  = { version = "0.25.5", default-features = false }
 proc-macro2            = { version = "1.0.92" }
 quote                  = { version = "1.0.38" }
-syn                    = { version = "2.0.91" }
+syn                    = { version = "2.0.94" }
 rand                   = { version = "0.8.5" }
+extism                 = { version = "1.9.1", default-features = false }
+
 # Bevy dependencies
 bevy                   = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }
 bevy_rapier3d          = { version = "0.28.0", features = ["parallel","debug-render-3d","simd-stable"] }
 bevy_obj               = { version = "0.15.0" }
 bevy-inspector-egui    = { version = "0.28.0" }
-bevy_simple_text_input = { version = "0.10.0" }
+bevy_simple_text_input = { version = "0.10.1" }
 bevy-scene-hook        = { git = "https://github.com/AlephCubed/bevy-scene-hook.git" }
 bevy_hanabi            = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
 bevy_renet             = { git = "https://github.com/lucaspoffo/renet.git", features = ["steam"] }
@@ -57,6 +59,9 @@ input_derive           = { path = "crates/input_derive" }
 faststr                = { path = "crates/faststr" }
 integrity              = { path = "crates/integrity" }
 resources              = { path = "crates/resources" }
+qwak_shared            = { path = "extensions/qwak_shared" }
+qwak_macro             = { path = "extensions/qwak_macro" }
+
 
 [profile.dev.package."*"]
 opt-level = 3

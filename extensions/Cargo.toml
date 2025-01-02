@@ -1,0 +1,15 @@
+[package]
+name = "qwak"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+qwak_shared = { workspace = true }
+extism      = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[[bin]]
+name = "qwak-test"
+path = "bin.rs"
