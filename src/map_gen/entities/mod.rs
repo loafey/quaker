@@ -158,7 +158,7 @@ pub fn spawn_pickup(
     });
 
     let mut pickup = if host {
-        let mut pickup = commands.spawn(Collider::cylinder(1.0, 10.0));
+        let mut pickup = commands.spawn(Collider::cylinder(5.0, 10.0));
         pickup
             .insert(Sensor)
             .insert(ActiveEvents::COLLISION_EVENTS)
