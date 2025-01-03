@@ -81,9 +81,6 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                 error!("tried to pickup nonexisting weapon: \"{weapon}\"")
             }
         }
-        ClientMessage::Fire { .. } => {
-            error!("got a fire event! This is wrong!");
-        }
         ClientMessage::WeaponAnim { anim } => {
             if nw.current_id.0 != client_id {
                 let player = option_return!(nw.lobby.get(&client_id)).entity;
@@ -101,9 +98,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                 pl.current_weapon = Some((*slot, *row));
             }
         }
-        ClientMessage::Interact => {
-            error!("unhandled interact event from player: {client_id}")
-        }
+        x => error!("got event {x:?} from server, this was most likely a bug"),
     }
 }
 

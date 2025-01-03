@@ -1,6 +1,6 @@
 use super::{
-    connection_config, update_world, ClientChannel, ClientMessage, NetState, SimulationEvent,
-    SteamClient, PROTOCOL_ID,
+    ClientChannel, ClientMessage, NetState, PROTOCOL_ID, SimulationEvent, SteamClient,
+    connection_config, update_world,
 };
 use crate::{
     entities::hitscan_hit_gfx,
@@ -11,7 +11,7 @@ use crate::{
 use bevy::{
     ecs::{
         event::EventReader,
-        schedule::{common_conditions::resource_exists, IntoSystemConfigs, SystemConfigs},
+        schedule::{IntoSystemConfigs, SystemConfigs, common_conditions::resource_exists},
         system::{Res, ResMut},
         world::World,
     },
@@ -27,7 +27,7 @@ use bevy_renet::{
 use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
 use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
-use resources::{data::Attack, CurrentMap};
+use resources::{CurrentMap, data::Attack};
 use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
@@ -69,11 +69,13 @@ fn frag_checker(server: &mut RenetServer, nw: &mut NetWorld) {
     for (id, hurter) in frags {
         server.broadcast_message(
             ServerChannel::ServerMessages as u8,
-            error_continue!(ServerMessage::KillStat {
-                death: id,
-                hurter: (hurter != 0).then_some(hurter)
-            }
-            .bytes()),
+            error_continue!(
+                ServerMessage::KillStat {
+                    death: id,
+                    hurter: (hurter != 0).then_some(hurter)
+                }
+                .bytes()
+            ),
         );
         let id = if let Some(info) = nw.lobby.get_mut(&id) {
             info.deaths += 1;
@@ -126,12 +128,14 @@ pub fn server_events(
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
-                        error_continue!(ServerMessage::SpawnPickup {
-                            id: pickup.id,
-                            translation: trans.translation,
-                            data: pickup.data.clone()
-                        }
-                        .bytes()),
+                        error_continue!(
+                            ServerMessage::SpawnPickup {
+                                id: pickup.id,
+                                translation: trans.translation,
+                                data: pickup.data.clone()
+                            }
+                            .bytes()
+                        ),
                     )
                 }
 
@@ -141,17 +145,19 @@ pub fn server_events(
                     server.send_message(
                         *client_id,
                         ServerChannel::ServerMessages as u8,
-                        error_continue!(ServerMessage::SpawnPlayer {
-                            name: info.name.clone(),
-                            id: *other_id,
-                            translation: trans.translation,
-                            weapons: pl
-                                .weapons
-                                .iter()
-                                .map(|v| v.iter().map(|w| w.data.id.clone()).collect())
-                                .collect()
-                        }
-                        .bytes()),
+                        error_continue!(
+                            ServerMessage::SpawnPlayer {
+                                name: info.name.clone(),
+                                id: *other_id,
+                                translation: trans.translation,
+                                weapons: pl
+                                    .weapons
+                                    .iter()
+                                    .map(|v| v.iter().map(|w| w.data.id.clone()).collect())
+                                    .collect()
+                            }
+                            .bytes()
+                        ),
                     );
                 }
 
@@ -174,13 +180,15 @@ pub fn server_events(
 
                 server.broadcast_message(
                     ServerChannel::ServerMessages as u8,
-                    error_continue!(ServerMessage::SpawnPlayer {
-                        id: *client_id,
-                        translation: spawn_point,
-                        weapons: Vec::new(),
-                        name
-                    }
-                    .bytes()),
+                    error_continue!(
+                        ServerMessage::SpawnPlayer {
+                            id: *client_id,
+                            translation: spawn_point,
+                            weapons: Vec::new(),
+                            name
+                        }
+                        .bytes()
+                    ),
                 )
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
@@ -254,6 +262,9 @@ pub fn handle_client_message(
 ) {
     let rapier_context = nw.rapier_context.single();
     match message {
+        ClientMessage::Interact => {
+            error!("unhandled interact event from player: {client_id}")
+        }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
             let mut hit_ents = Vec::new();
@@ -283,13 +294,16 @@ pub fn handle_client_message(
                 hit_ents.push(hit);
             }
 
-            let attack_weapon = error_return!(attack_weapon
-                .ok_or_else(|| format!("player {} attacked without holding weapon", client_id)));
-            let attack_weapon = error_return!(nw
-                .weapon_map
-                .0
-                .get(&attack_weapon)
-                .ok_or_else(|| format!("failed to find weapon {attack_weapon}")));
+            let attack_weapon = error_return!(
+                attack_weapon
+                    .ok_or_else(|| format!("player {} attacked without holding weapon", client_id))
+            );
+            let attack_weapon = error_return!(
+                nw.weapon_map
+                    .0
+                    .get(&attack_weapon)
+                    .ok_or_else(|| format!("failed to find weapon {attack_weapon}"))
+            );
             for ent in hit_ents {
                 if let Ok((_, mut hit_player, _)) = nw.players.get_mut(ent) {
                     hit_player.last_hurter = client_id;
@@ -340,11 +354,13 @@ pub fn handle_client_message(
             update_world(client_id, &message, nw);
             server.broadcast_message(
                 ServerChannel::NetworkedEntities as u8,
-                error_return!(ServerMessage::PlayerUpdate {
-                    id: client_id,
-                    message,
-                }
-                .bytes()),
+                error_return!(
+                    ServerMessage::PlayerUpdate {
+                        id: client_id,
+                        message,
+                    }
+                    .bytes()
+                ),
             )
         }
     }
