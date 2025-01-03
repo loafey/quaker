@@ -3,6 +3,7 @@
     "weapon_shoot2": "MouseRight",
     "weapon_next": "Wheel1",
     "weapon_previous": "Wheel2",
+    "interact": "KeyE",
     "walk_forward": "KeyW",
     "walk_backward": "KeyS",
     "walk_left": "KeyA",

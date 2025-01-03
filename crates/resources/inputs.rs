@@ -10,6 +10,7 @@ pub struct PlayerInput {
     weapon_shoot2: Key,
     weapon_next: Key,
     weapon_previous: Key,
+    interact: Key,
     walk_forward: Key,
     walk_backward: Key,
     walk_left: Key,
