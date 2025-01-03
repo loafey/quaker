@@ -28,10 +28,7 @@ resources              = { workspace = true }
 qwak                   = { workspace = true }
 
 [workspace]
-members = [ 
-    "crates/*", 
-    "extensions/default"
-]
+members = [ "crates/*", "qwaks/*" ]
 
 [workspace.dependencies]
 serde                  = { version = "1.0.217" }
