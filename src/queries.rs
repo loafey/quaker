@@ -1,5 +1,6 @@
 use crate::{
     entities::pickup::PickupEntity,
+    map_gen::Interactable,
     net::{CurrentClientId, Lobby},
     particles::ParticleMap,
     player::Player,
@@ -20,6 +21,7 @@ pub struct NetWorld<'w, 's> {
     pub players:
         Query<'w, 's, (Entity, &'static mut Player, &'static mut Transform), Without<Camera3d>>,
     pub cameras: Query<'w, 's, (&'static Camera3d, &'static mut Transform), Without<Player>>,
+    pub interactables: Query<'w, 's, (Entity, &'static Interactable)>,
     pub pickups_query: Query<
         'w,
         's,

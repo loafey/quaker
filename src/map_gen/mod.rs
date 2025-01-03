@@ -136,14 +136,11 @@ pub fn load_map(
                     new_mesh.duplicate_vertices();
                     new_mesh.compute_flat_normals();
 
-                    let mut com = commands.spawn((
+                    commands.spawn((
                         Mesh3d(meshes.add(new_mesh)),
                         MeshMaterial3d(materials.add(mat)),
                         Transform::default(),
                     ));
-                    if let Some(interactable) = &interactable {
-                        com.insert((*interactable).clone());
-                    }
                 }
             }
 
@@ -157,7 +154,10 @@ pub fn load_map(
                 // brush_poly.dedup();
 
                 if let Some(col) = Collider::convex_hull(&brush_poly) {
-                    commands.spawn(col);
+                    let mut com = commands.spawn(col);
+                    if let Some(interactable) = &interactable {
+                        com.insert((*interactable).clone());
+                    }
                 } else {
                     error!("failed to create collider!!");
                 }

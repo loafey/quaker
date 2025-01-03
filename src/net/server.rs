@@ -269,8 +269,11 @@ pub fn handle_client_message(
             let cam = option_return!(player.children.camera);
             let (_, cam_trans) = error_return!(nw.cameras.get(cam));
 
-            let attack = player.interact(player_entity, rapier_context, cam_trans, &trans);
-            error!("unhandled interact event from player: {client_id} ({attack:?})")
+            let (int, _) =
+                option_return!(player.interact(player_entity, rapier_context, cam_trans, &trans));
+            println!("Interacted with entity: {int}");
+            let int = error_return!(nw.interactables.get(int));
+            println!("Got interactable: {int:?}")
         }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
