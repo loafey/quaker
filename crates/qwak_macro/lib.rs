@@ -148,11 +148,11 @@ fn get_plugin_calls(item: TS) -> TS {
                         inner: std::sync::Arc<std::sync::Mutex<extism::Plugin>>
                     }
                     impl QwakPlugin {
-                        pub fn new(path: impl AsRef<std::path::Path>) -> Result<Self, String> {
+                        pub fn new(path: impl AsRef<std::path::Path>, functions: impl IntoIterator<Item = extism::Function>) -> Result<Self, String> {
                             let wasm = extism::Wasm::file(path);
                             let manifest = extism::Manifest::new([wasm]);
                             let plug = Arc::new(Mutex::new(
-                                extism::Plugin::new(&manifest, Vec::new(), true)
+                                extism::Plugin::new(&manifest, functions, true)
                                     .map_err(|e| format!("{e}"))?,
                             ));
                             Ok(QwakPlugin { inner: plug })

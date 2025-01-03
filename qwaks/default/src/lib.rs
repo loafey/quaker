@@ -1,5 +1,11 @@
 use qwak_shared::QwakPlugin;
 qwak_shared::plugin_gen!(Plugin);
+
+#[extism_pdk::host_fn]
+unsafe extern "ExtismHost" {
+    unsafe fn debug_log(val: String);
+}
+
 struct Plugin;
 impl QwakPlugin for Plugin {
     fn plugin_init() {}
@@ -14,9 +20,7 @@ impl QwakPlugin for Plugin {
 
     fn map_interact(arg: String) {
         match &*arg {
-            "debug_log" => {
-                println!("yo")
-            }
+            "debug_log" => unsafe { debug_log("ondth plugin whoo!!".to_string()).unwrap() },
             _ => panic!("unknown interaction: {arg}"),
         }
     }
