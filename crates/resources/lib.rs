@@ -28,6 +28,7 @@ impl Default for Qwaks {
             Ok(o) => o,
             Err(e) => panic!("failed loading default qwak: {e}"),
         };
+        default.plugin_init().unwrap();
 
         info!("Done loading qwaks...");
         Self { default }
