@@ -4234,6 +4234,7 @@ dependencies = [
  "integrity",
  "macros",
  "map_parser",
+ "qwak",
  "renet_steam",
  "resources",
  "serde",

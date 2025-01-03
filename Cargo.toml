@@ -25,6 +25,7 @@ image                  = { workspace = true }
 bevy_hanabi            = { workspace = true }
 integrity              = { workspace = true }
 resources              = { workspace = true }
+qwak                   = { workspace = true }
 
 [workspace]
 members = [ 
@@ -59,6 +60,7 @@ bevy-scene-hook        = { git = "https://github.com/AlephCubed/bevy-scene-hook.
 bevy_hanabi            = { git = "https://github.com/djeedai/bevy_hanabi.git", default-features = false, features = ["3d"] }
 bevy_renet             = { git = "https://github.com/lucaspoffo/renet.git", features = ["steam"] }
 renet_steam            = { git = "https://github.com/lucaspoffo/renet.git", features = ["bevy"] }
+
 # Custom crates
 map_parser             = { path = "crates/map_parser" }
 macros                 = { path = "crates/macros" }
@@ -66,6 +68,7 @@ input_derive           = { path = "crates/input_derive" }
 faststr                = { path = "crates/faststr" }
 integrity              = { path = "crates/integrity" }
 resources              = { path = "crates/resources" }
+qwak                   = { path = "extensions" }
 qwak_shared            = { path = "extensions/qwak_shared" }
 qwak_macro             = { path = "extensions/qwak_macro" }
 
