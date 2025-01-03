@@ -4,11 +4,12 @@ use crate::{
     net::{CurrentClientId, Lobby},
     particles::ParticleMap,
     player::Player,
+    plugins::Qwaks,
 };
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_rapier3d::plugin::RapierContext;
 use resources::{
-    PlayerSpawnpoint, Qwaks, WeaponMap,
+    PlayerSpawnpoint, WeaponMap,
     data::Projectiles,
     entropy::{EGame, Entropy},
 };

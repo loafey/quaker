@@ -13,5 +13,3 @@ serde_json        = { workspace = true }
 faststr           = { workspace = true }
 macros            = { workspace = true }
 bevy              = { workspace = true }
-qwak              = { workspace = true }
-qwak_helper_types = { workspace = true }

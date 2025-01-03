@@ -26,10 +26,9 @@ use bevy_renet::{
 };
 use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
-use qwak_helper_types::*;
 use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use resources::{CurrentMap, data::Attack};
-use std::{net::UdpSocket, time::SystemTime};
+use std::{net::UdpSocket, sync::RwLock, time::SystemTime};
 use steamworks::SteamId;
 
 fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
@@ -255,6 +254,8 @@ pub fn server_events(
     }
 }
 
+pub static NW_PTR: RwLock<Option<&'static mut NetWorld>> = RwLock::new(None);
+#[allow(mutable_transmutes)]
 pub fn handle_client_message(
     server: &mut RenetServer,
     client_id: u64,
@@ -275,11 +276,9 @@ pub fn handle_client_message(
             let (_, int) = error_return!(nw.interactables.get(int));
 
             warn!("TODO: add broadcast of interaction");
-            error_return!(
-                nw.plugins
-                    .default
-                    .map_interact(MapInteraction(NetWorldPtr::new(nw), int.script.to_string()))
-            );
+            *NW_PTR.write().unwrap() =
+                Some(unsafe { std::mem::transmute::<&NetWorld, &'static mut NetWorld>(&*nw) });
+            error_return!(nw.plugins.default.map_interact(int.script.to_string()));
         }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();

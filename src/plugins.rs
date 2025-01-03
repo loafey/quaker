@@ -5,14 +5,34 @@ use crate::entities::{ProjectileEntity, pickup::PickupEntity};
 use crate::map_gen::{load_map, texture_systems::*};
 use crate::net::{self, NetState};
 use crate::player::Player;
+use crate::qwak_host_functions::qwak_functions;
 use crate::{mainmenu, startup};
 use bevy::prelude::*;
 use data::Projectiles;
+use qwak::*;
 use resources::{
     entropy::{entropy_game, entropy_misc},
     inputs::PlayerInput,
     *,
 };
+
+#[derive(Debug, Resource)]
+pub struct Qwaks {
+    pub default: QwakPlugin,
+}
+impl Qwaks {
+    fn new(functions: impl IntoIterator<Item = qwak::Function>) -> Self {
+        info!("Loading qwaks...");
+        let default = match QwakPlugin::new("assets/qwaks/default.wasm", functions) {
+            Ok(o) => o,
+            Err(e) => panic!("failed loading default qwak: {e}"),
+        };
+        default.plugin_init().unwrap();
+
+        info!("Done loading qwaks...");
+        Self { default }
+    }
+}
 
 pub struct Resources;
 impl Resources {
@@ -45,7 +65,7 @@ impl Plugin for Resources {
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
             .insert_resource(Projectiles::default())
-            .insert_resource(Qwaks::default());
+            .insert_resource(Qwaks::new(qwak_functions()));
     }
 }
 

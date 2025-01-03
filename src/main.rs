@@ -33,6 +33,7 @@ mod particles;
 mod player;
 mod plugins;
 mod queries;
+mod qwak_host_functions;
 mod startup;
 
 const APP_ID: AppId = AppId(480);

@@ -26,6 +26,7 @@ bevy_hanabi            = { workspace = true }
 integrity              = { workspace = true }
 resources              = { workspace = true }
 qwak_helper_types      = { workspace = true }
+qwak                   = { workspace = true }
 
 [workspace]
 members = [ "crates/*", "qwaks/*" ]

@@ -4235,6 +4235,7 @@ dependencies = [
  "integrity",
  "macros",
  "map_parser",
+ "qwak",
  "qwak_helper_types",
  "renet_steam",
  "resources",
@@ -4890,8 +4891,6 @@ dependencies = [
  "faststr",
  "input_derive",
  "macros",
- "qwak",
- "qwak_helper_types",
  "serde",
  "serde_json",
 ]

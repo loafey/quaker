@@ -9,42 +9,11 @@ use bevy::{
 use data::{PickupData, WeaponData};
 use faststr::FastStr;
 use macros::error_return;
-use qwak::{Function, PTR, QwakPlugin, UserData};
 use std::{collections::HashMap, fs, path::PathBuf};
 
 pub mod data;
 pub mod entropy;
 pub mod inputs;
-
-qwak::host_fn!(debug_log(value: String) {
-    println!("{value}");
-    Ok(())
-});
-
-#[derive(Debug, Resource)]
-pub struct Qwaks {
-    pub default: QwakPlugin,
-    // pub other: HashMap<FastStr, QwakPlugin>,
-}
-impl Default for Qwaks {
-    fn default() -> Self {
-        info!("Loading qwaks...");
-        let default = match QwakPlugin::new("assets/qwaks/default.wasm", [Function::new(
-            "debug_log",
-            [PTR],
-            [],
-            UserData::Rust(std::sync::Mutex::new(()).into()),
-            debug_log,
-        )]) {
-            Ok(o) => o,
-            Err(e) => panic!("failed loading default qwak: {e}"),
-        };
-        default.plugin_init().unwrap();
-
-        info!("Done loading qwaks...");
-        Self { default }
-    }
-}
 
 /// Represents the current game stage
 #[derive(Debug, Resource, PartialEq, Eq, States, Default, Hash, Clone, Copy)]
