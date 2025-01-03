@@ -764,7 +764,7 @@ impl Player {
             exclude_collider: Some(player_entity),
             ..default()
         };
-        let res = rapier_context.cast_ray(origin, dir, 5.0, false, filter);
+        let res = rapier_context.cast_ray(origin, dir, 1.5, false, filter);
         if let Some((ent, distance)) = res {
             let pos = origin + dir * distance;
             Some((ent, pos))
