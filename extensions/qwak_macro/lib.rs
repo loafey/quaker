@@ -2,9 +2,8 @@ use proc_macro::TokenStream as TS;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{
-    FnArg, Ident, ItemTrait, Pat, PatIdent, PatType, ReturnType, Type, TypePath, parse_macro_input,
-    punctuated::Punctuated,
-    token::{Colon, Comma},
+    FnArg, Ident, ItemTrait, Pat, PatIdent, ReturnType, parse_macro_input, punctuated::Punctuated,
+    token::Comma,
 };
 
 fn get_export_functions(item: TS) -> TS {
@@ -24,10 +23,8 @@ fn get_export_functions(item: TS) -> TS {
                 panic!("expected return type!")
             };
             let og = *ty.clone();
-            let Type::Path(p) = &mut **ty else {
-                panic!("expected PluginResult type")
-            };
-            *p = syn::parse::<TypePath>(quote!(extism_pdk::FnResult<#og>).into()).unwrap();
+            *ty =
+                syn::parse(quote!(extism_pdk::FnResult<extism_pdk::Msgpack<#og>>).into()).unwrap();
 
             let params = sig
                 .inputs
@@ -58,7 +55,7 @@ fn get_export_functions(item: TS) -> TS {
 
             #[extism_pdk::plugin_fn]
             pub #macro_sig {
-                Ok($name::#call(#args))
+                Ok(extism_pdk::Msgpack($name::#call(#args)))
             }
         };
     }
@@ -84,20 +81,18 @@ fn get_plugin_calls(item: TS) -> TS {
     }) {
         let sig = &item.sig;
         let mut args: Punctuated<_, Comma> = Punctuated::new();
-        let macro_sig = {
+        let (macro_sig, rt) = {
             let mut sig = sig.clone();
             sig.ident = Ident::new(&format!("{}", sig.ident), Span::call_site());
+
             let ReturnType::Type(rl, mut ty) = sig.output else {
                 panic!("expected return type!")
             };
             let copy = *ty.clone();
-            let Type::Path(p) = &mut *ty else {
-                panic!("expected PluginResult type")
-            };
-            *p = syn::parse(quote!(Result<#copy, extism::Error>).into()).unwrap();
+            *ty = syn::parse(quote!(Result<#copy, extism::Error>).into()).unwrap();
             sig.output = ReturnType::Type(rl, ty);
 
-            let mut params = sig
+            let params = sig
                 .inputs
                 .into_iter()
                 .enumerate()
@@ -117,28 +112,10 @@ fn get_plugin_calls(item: TS) -> TS {
                     FnArg::Typed(pat)
                 })
                 .collect::<Punctuated<_, Comma>>();
-            params.insert(
-                0,
-                FnArg::Typed(PatType {
-                    attrs: Vec::new(),
-                    ty: Box::new(
-                        syn::parse_str("&std::sync::Arc<std::sync::Mutex<extism::Plugin>>")
-                            .unwrap(),
-                    ),
-                    pat: Box::new(Pat::Ident(PatIdent {
-                        attrs: Vec::new(),
-                        by_ref: None,
-                        mutability: None,
-                        ident: Ident::new("__plugin__", Span::call_site()),
-                        subpat: None,
-                    })),
-                    colon_token: Colon {
-                        spans: [Span::call_site()],
-                    },
-                }),
-            );
             sig.inputs = params;
-            sig
+            sig.inputs
+                .insert(0, syn::parse(quote! {&mut self}.into()).unwrap());
+            (sig, copy)
         };
         let args = if args.len() == 1 {
             quote! {#args}
@@ -150,11 +127,11 @@ fn get_plugin_calls(item: TS) -> TS {
             #res
 
             pub #macro_sig {
-                let res = match __plugin__.lock() {
+                let res: extism_pdk::Msgpack<#rt> = match self.inner.lock() {
                     Ok(mut o) => o.call(#call, #args)?,
                     Err(e) => e.into_inner().call(#call, #args)?
                 };
-                Ok(res)
+                Ok(res.into_inner())
             }
         };
     }
@@ -166,8 +143,22 @@ fn get_plugin_calls(item: TS) -> TS {
                 mod calls {
                     use extism::{*, convert::*};
                     use std::sync::{Arc, Mutex};
-                    use super::*;
-                    #res
+                    pub struct QwakPlugin {
+                        inner: std::sync::Arc<std::sync::Mutex<extism::Plugin>>
+                    }
+                    impl QwakPlugin {
+                        pub fn new(path: impl AsRef<std::path::Path>) -> Result<Self, String> {
+                            let wasm = extism::Wasm::file(path);
+                            let manifest = extism::Manifest::new([wasm]);
+                            let plug = Arc::new(Mutex::new(
+                                extism::Plugin::new(&manifest, Vec::new(), true)
+                                    .map_err(|e| format!("{e}"))?,
+                            ));
+                            Ok(QwakPlugin { inner: plug })
+                        }
+
+                        #res
+                    }
                 }
             }
         }

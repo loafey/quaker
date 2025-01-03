@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 qwak_shared = { workspace = true }
 extism      = { workspace = true }
+extism-pdk  = { workspace = true }
 
 [lib]
 path = "lib.rs"
