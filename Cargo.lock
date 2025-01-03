@@ -2196,6 +2196,7 @@ name = "default"
 version = "0.1.0"
 dependencies = [
  "extism-pdk",
+ "qwak_helper_types",
  "qwak_shared",
 ]
 
@@ -4234,6 +4235,7 @@ dependencies = [
  "integrity",
  "macros",
  "map_parser",
+ "qwak_helper_types",
  "renet_steam",
  "resources",
  "serde",
@@ -4570,7 +4572,16 @@ version = "0.1.0"
 dependencies = [
  "extism",
  "extism-pdk",
+ "qwak_helper_types",
  "qwak_shared",
+]
+
+[[package]]
+name = "qwak_helper_types"
+version = "0.1.0"
+dependencies = [
+ "extism-pdk",
+ "serde",
 ]
 
 [[package]]
@@ -4586,6 +4597,7 @@ dependencies = [
 name = "qwak_shared"
 version = "0.1.0"
 dependencies = [
+ "qwak_helper_types",
  "qwak_macro",
 ]
 
@@ -4879,6 +4891,7 @@ dependencies = [
  "input_derive",
  "macros",
  "qwak",
+ "qwak_helper_types",
  "serde",
  "serde_json",
 ]

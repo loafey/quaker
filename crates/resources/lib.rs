@@ -9,7 +9,7 @@ use bevy::{
 use data::{PickupData, WeaponData};
 use faststr::FastStr;
 use macros::error_return;
-use qwak::{Function, Msgpack, PTR, QwakPlugin, UserData};
+use qwak::{Function, PTR, QwakPlugin, UserData};
 use std::{collections::HashMap, fs, path::PathBuf};
 
 pub mod data;

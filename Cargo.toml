@@ -25,6 +25,7 @@ image                  = { workspace = true }
 bevy_hanabi            = { workspace = true }
 integrity              = { workspace = true }
 resources              = { workspace = true }
+qwak_helper_types      = { workspace = true }
 
 [workspace]
 members = [ "crates/*", "qwaks/*" ]
@@ -64,6 +65,7 @@ resources              = { path = "crates/resources" }
 qwak                   = { path = "crates/qwak" }
 qwak_shared            = { path = "crates/qwak_shared" }
 qwak_macro             = { path = "crates/qwak_macro" }
+qwak_helper_types      = { path = "crates/qwak_helper_types" }
 
 
 [profile.dev.package."*"]

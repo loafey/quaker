@@ -7,10 +7,11 @@ edition = "2024"
 path = "lib.rs"
 
 [dependencies]
-input_derive = { workspace = true }
-serde        = { workspace = true }
-serde_json   = { workspace = true }
-faststr      = { workspace = true }
-macros       = { workspace = true }
-bevy         = { workspace = true }
-qwak         = { workspace = true }
+input_derive      = { workspace = true }
+serde             = { workspace = true }
+serde_json        = { workspace = true }
+faststr           = { workspace = true }
+macros            = { workspace = true }
+bevy              = { workspace = true }
+qwak              = { workspace = true }
+qwak_helper_types = { workspace = true }

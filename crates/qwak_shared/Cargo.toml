@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-qwak_macro = { workspace = true }
+qwak_macro        = { workspace = true }
+qwak_helper_types = { workspace = true }
 
 [lib]
 path = "lib.rs"
