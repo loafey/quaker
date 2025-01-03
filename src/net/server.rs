@@ -273,7 +273,7 @@ pub fn handle_client_message(
 
             let (int, _) =
                 option_return!(player.interact(player_entity, rapier_context, cam_trans, &trans));
-            let (_, int) = error_return!(nw.interactables.get(int));
+            let (_, int) = option_return!(nw.interactables.get(int).ok());
 
             warn!("TODO: add broadcast of interaction");
             *NW_PTR.write().unwrap() =
