@@ -287,7 +287,6 @@ pub fn handle_client_message(
                 option_return!(player.interact(player_entity, rapier_context, cam_trans, &trans));
             let (_, int) = option_return!(nw.interactables.get(int).ok());
 
-            warn!("TODO: add broadcast of interaction");
             unsafe {
                 NW_PTR = Some(std::mem::transmute::<
                     (&NetWorld, &RenetServer),
