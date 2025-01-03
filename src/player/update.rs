@@ -1,8 +1,8 @@
 #![allow(clippy::missing_transmute_annotations)]
 
 use super::{
-    Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel, PlayerMpModel, WeaponState,
-    ARMOR_GLYPH, HEALTH_GLYPH,
+    ARMOR_GLYPH, HEALTH_GLYPH, Player, PlayerController, PlayerFpsMaterial, PlayerFpsModel,
+    PlayerMpModel, WeaponState,
 };
 use crate::{
     entities::ProjectileEntity,
@@ -23,10 +23,10 @@ use bevy_scene_hook::reload::{Hook, State as HookState};
 use faststr::FastStr;
 use macros::{error_continue, option_continue, option_return};
 use resources::{
+    Paused,
     data::{Attack, Projectiles, SoundEffect},
     entropy::{EGame, EMisc, Entropy},
     inputs::PlayerInput,
-    Paused,
 };
 use std::{fmt::Write, mem::transmute};
 
@@ -48,6 +48,7 @@ impl Player {
             Player::camera_movement,
             Player::shoot,
             Player::update_hud,
+            Player::update_interact,
         )
             .into_configs()
     }
@@ -247,6 +248,25 @@ impl Player {
         }
     }
 
+    pub fn update_interact(
+        keys: Res<PlayerInput>,
+        mut query: Query<
+            (
+                &mut KinematicCharacterController,
+                &mut Player,
+                &mut Transform,
+            ),
+            With<PlayerController>,
+        >,
+        mut client_events: EventWriter<ClientMessage>,
+    ) {
+        for _ in &mut query {
+            if keys.interact_just_pressed {
+                client_events.send(ClientMessage::Interact);
+            }
+        }
+    }
+
     pub fn update_input(
         keys: Res<PlayerInput>,
         time: Res<Time>,
@@ -364,9 +384,11 @@ impl Player {
         mut graphs: ResMut<Assets<AnimationGraph>>,
     ) {
         for mut player in &mut players {
-            let (ent, _, children) = option_continue!(q_player_fps_anims
-                .get(option_continue!(player.children.fps_model))
-                .ok());
+            let (ent, _, children) = option_continue!(
+                q_player_fps_anims
+                    .get(option_continue!(player.children.fps_model))
+                    .ok()
+            );
 
             if children.len() > 1 {
                 let mut to_remove = Vec::new();

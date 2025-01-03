@@ -101,6 +101,9 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
                 pl.current_weapon = Some((*slot, *row));
             }
         }
+        ClientMessage::Interact => {
+            error!("unhandled interact event")
+        }
     }
 }
 
@@ -163,6 +166,8 @@ pub enum ClientMessage {
     WeaponAnim {
         anim: FastStr,
     },
+
+    Interact,
 }
 impl ClientMessage {
     pub fn bytes(&self) -> Result<Vec<u8>, std::boxed::Box<bincode::ErrorKind>> {
