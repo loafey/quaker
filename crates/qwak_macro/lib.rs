@@ -114,7 +114,7 @@ fn get_plugin_calls(item: TS) -> TS {
                 .collect::<Punctuated<_, Comma>>();
             sig.inputs = params;
             sig.inputs
-                .insert(0, syn::parse(quote! {&mut self}.into()).unwrap());
+                .insert(0, syn::parse(quote! {&self}.into()).unwrap());
             (sig, copy)
         };
         let args = if args.len() == 1 {
