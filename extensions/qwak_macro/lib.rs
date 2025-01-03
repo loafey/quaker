@@ -20,7 +20,7 @@ fn get_export_functions(item: TS) -> TS {
         let macro_sig = {
             let mut sig = sig.clone();
             sig.ident = Ident::new(&format!("plugin_{}", sig.ident), Span::call_site());
-            let ReturnType::Type(rl, ty) = &mut sig.output else {
+            let ReturnType::Type(_, ty) = &mut sig.output else {
                 panic!("expected return type!")
             };
             let og = *ty.clone();
