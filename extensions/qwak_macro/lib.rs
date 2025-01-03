@@ -2,10 +2,9 @@ use proc_macro::TokenStream as TS;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{
-    AngleBracketedGenericArguments, FnArg, GenericArgument, Ident, ItemTrait, Pat, PatIdent,
-    PatType, PathArguments, PathSegment, ReturnType, Type, TypePath, parse_macro_input,
+    FnArg, Ident, ItemTrait, Pat, PatIdent, PatType, ReturnType, Type, TypePath, parse_macro_input,
     punctuated::Punctuated,
-    token::{Colon, Comma, Gt, Lt},
+    token::{Colon, Comma},
 };
 
 fn get_export_functions(item: TS) -> TS {
@@ -21,15 +20,14 @@ fn get_export_functions(item: TS) -> TS {
         let macro_sig = {
             let mut sig = sig.clone();
             sig.ident = Ident::new(&format!("plugin_{}", sig.ident), Span::call_site());
-            let ReturnType::Type(rl, mut ty) = sig.output else {
+            let ReturnType::Type(rl, ty) = &mut sig.output else {
                 panic!("expected return type!")
             };
-            let Type::Path(p) = &mut *ty else {
+            let og = *ty.clone();
+            let Type::Path(p) = &mut **ty else {
                 panic!("expected PluginResult type")
             };
-            let p = &mut p.path.segments[0];
-            p.ident = Ident::new("FnResult", Span::call_site());
-            sig.output = ReturnType::Type(rl, ty);
+            *p = syn::parse::<TypePath>(quote!(extism_pdk::FnResult<#og>).into()).unwrap();
 
             let params = sig
                 .inputs
@@ -58,12 +56,9 @@ fn get_export_functions(item: TS) -> TS {
         res = quote! {
             #res
 
-            #[plugin_fn]
+            #[extism_pdk::plugin_fn]
             pub #macro_sig {
-                match $name::#call(#args) {
-                    Ok(o) => Ok(o),
-                    Err(e) => Err(WithReturnCode(Error::msg(format!("{e}")), 1))
-                }
+                Ok($name::#call(#args))
             }
         };
     }
@@ -99,24 +94,7 @@ fn get_plugin_calls(item: TS) -> TS {
             let Type::Path(p) = &mut *ty else {
                 panic!("expected PluginResult type")
             };
-            let p = &mut p.path.segments[0];
-            p.ident = Ident::new("Result", Span::call_site());
-            *p = syn::parse::<PathSegment>(quote! (Result<i32, qwak_shared::QwakError>).into())
-                .unwrap();
-            // p.arguments = PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-            //     colon2_token: None,
-            //     lt_token: Lt::default(),
-            //     args: {
-            //         let mut pt = Punctuated::new();
-            //         pt.push(GenericArgument::Type(copy));
-            //         pt.push(GenericArgument::Type(Type::Path(TypePath {
-            //             qself: None,
-            //             path: todo!(),
-            //         })));
-            //         pt
-            //     },
-            //     gt_token: Gt::default(),
-            // });
+            *p = syn::parse(quote!(Result<#copy, extism::Error>).into()).unwrap();
             sig.output = ReturnType::Type(rl, ty);
 
             let mut params = sig
@@ -172,7 +150,10 @@ fn get_plugin_calls(item: TS) -> TS {
             #res
 
             pub #macro_sig {
-                let res =  __plugin__.lock()?.call(#call, #args)?;
+                let res = match __plugin__.lock() {
+                    Ok(mut o) => o.call(#call, #args)?,
+                    Err(e) => e.into_inner().call(#call, #args)?
+                };
                 Ok(res)
             }
         };

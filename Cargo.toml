@@ -27,7 +27,13 @@ integrity              = { workspace = true }
 resources              = { workspace = true }
 
 [workspace]
-members = [ "crates/*", "extensions", "extensions/qwak_macro", "extensions/qwak_shared" ]
+members = [ 
+    "crates/*", 
+    "extensions", 
+    "extensions/qwak_macro", 
+    "extensions/qwak_shared",
+    "extensions/default"
+]
 
 [workspace.dependencies]
 serde                  = { version = "1.0.217" }
@@ -40,7 +46,8 @@ proc-macro2            = { version = "1.0.92" }
 quote                  = { version = "1.0.38" }
 syn                    = { version = "2.0.94" }
 rand                   = { version = "0.8.5" }
-extism                 = { version = "1.9.1", default-features = false }
+extism                 = { version = "1.9.1", default-features = false, features = ["register-filesystem"] }
+extism-pdk             = { version = "1.3.0", default-features = false, features = ["msgpack", "extism-manifest"] }
 
 # Bevy dependencies
 bevy                   = { version = "0.15.0", features = ["bevy_gltf", "dynamic_linking"] }

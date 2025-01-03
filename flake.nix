@@ -33,6 +33,7 @@
           latest.clippy
           latest.rust-src
           latest.rustfmt
+          targets.wasm32-unknown-unknown.latest.rust-std
         ];
         min-pkgs = with pkgs; [
           pkg-config
