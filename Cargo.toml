@@ -30,9 +30,6 @@ qwak                   = { workspace = true }
 [workspace]
 members = [ 
     "crates/*", 
-    "extensions", 
-    "extensions/qwak_macro", 
-    "extensions/qwak_shared",
     "extensions/default"
 ]
 
@@ -68,9 +65,9 @@ input_derive           = { path = "crates/input_derive" }
 faststr                = { path = "crates/faststr" }
 integrity              = { path = "crates/integrity" }
 resources              = { path = "crates/resources" }
-qwak                   = { path = "extensions" }
-qwak_shared            = { path = "extensions/qwak_shared" }
-qwak_macro             = { path = "extensions/qwak_macro" }
+qwak                   = { path = "crates/qwak" }
+qwak_shared            = { path = "crates/qwak_shared" }
+qwak_macro             = { path = "crates/qwak_macro" }
 
 
 [profile.dev.package."*"]
