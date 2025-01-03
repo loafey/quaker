@@ -9,11 +9,30 @@ use bevy::{
 use data::{PickupData, WeaponData};
 use faststr::FastStr;
 use macros::error_return;
+use qwak::QwakPlugin;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 pub mod data;
 pub mod entropy;
 pub mod inputs;
+
+#[derive(Debug, Resource)]
+pub struct Qwaks {
+    pub default: QwakPlugin,
+    // pub other: HashMap<FastStr, QwakPlugin>,
+}
+impl Qwaks {
+    pub fn new() -> Self {
+        info!("Loading qwaks...");
+        let default = match QwakPlugin::new("assets/qwaks/default.wasm") {
+            Ok(o) => o,
+            Err(e) => panic!("failed loading default qwak: {e}"),
+        };
+
+        info!("Done loading qwaks...");
+        Self { default }
+    }
+}
 
 /// Represents the current game stage
 #[derive(Debug, Resource, PartialEq, Eq, States, Default, Hash, Clone, Copy)]

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::entities::message::Message;
-use crate::entities::{pickup::PickupEntity, ProjectileEntity};
+use crate::entities::{ProjectileEntity, pickup::PickupEntity};
 use crate::map_gen::{load_map, texture_systems::*};
 use crate::net::{self, NetState};
 use crate::player::Player;
@@ -44,7 +44,8 @@ impl Plugin for Resources {
             .insert_resource(PlayerInput::default())
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
-            .insert_resource(Projectiles::default());
+            .insert_resource(Projectiles::default())
+            .insert_resource(Qwaks::new());
     }
 }
 

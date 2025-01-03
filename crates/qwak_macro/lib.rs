@@ -143,6 +143,7 @@ fn get_plugin_calls(item: TS) -> TS {
                 mod calls {
                     use extism::{*, convert::*};
                     use std::sync::{Arc, Mutex};
+                    #[derive(Debug)]
                     pub struct QwakPlugin {
                         inner: std::sync::Arc<std::sync::Mutex<extism::Plugin>>
                     }
