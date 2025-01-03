@@ -8,7 +8,7 @@ use bevy::{
     render::{
         mesh::{Indices, VertexAttributeValues},
         render_asset::RenderAssetUsages,
-        render_resource::{encase::rts_array::Length, PrimitiveTopology},
+        render_resource::{PrimitiveTopology, encase::rts_array::Length},
     },
 };
 use bevy_rapier3d::geometry::Collider;
@@ -19,10 +19,12 @@ use map_parser::parser::Brush;
 use resources::{CurrentMap, MapDoneLoading, PickupMap, PlayerSpawnpoint, TextureMap};
 
 pub mod entities;
+mod interactable;
 mod plane;
 mod poly;
 pub mod texture_systems;
 mod vertex;
+pub use interactable::*;
 
 const EPSILON: f32 = 0.008;
 const ROTATION_FIX: f32 = -90.0;
@@ -55,7 +57,7 @@ pub fn load_map(
     info!("Loading map...");
 
     for (id, entity) in map.into_iter().enumerate() {
-        spawn_entity(
+        let interactable = spawn_entity(
             id as u64,
             client.is_some(),
             &asset_server,
@@ -134,11 +136,14 @@ pub fn load_map(
                     new_mesh.duplicate_vertices();
                     new_mesh.compute_flat_normals();
 
-                    commands.spawn((
+                    let mut com = commands.spawn((
                         Mesh3d(meshes.add(new_mesh)),
                         MeshMaterial3d(materials.add(mat)),
                         Transform::default(),
                     ));
+                    if let Some(interactable) = &interactable {
+                        com.insert((*interactable).clone());
+                    }
                 }
             }
 

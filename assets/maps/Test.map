@@ -1054,3 +1054,17 @@
 "classname" "directional_light"
 "origin" "40 72 56"
 }
+// entity 134
+{
+"classname" "scriptable"
+"script" "debug_log"
+// brush 0
+{
+( -64 64 32 ) ( -64 32 32 ) ( -64 32 0 ) maps/Button00 0 0 0 1 1
+( -64 32 32 ) ( -32 32 32 ) ( -32 32 0 ) maps/Button00 0 0 0 1 1
+( -32 32 0 ) ( -32 64 0 ) ( -64 64 0 ) maps/Button00 0 0 0 1 1
+( -64 64 32 ) ( -32 64 32 ) ( -32 32 32 ) maps/Button00 0 0 0 1 1
+( -32 64 0 ) ( -32 64 32 ) ( -64 64 32 ) maps/Button00 0 0 0 1 1
+( -32 32 32 ) ( -32 64 32 ) ( -32 64 0 ) maps/Button00 0 0 0 1 1
+}
+}

@@ -14,8 +14,10 @@ use bevy_rapier3d::{
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, Sensor},
 };
 use faststr::FastStr;
-use resources::{data::PickupData, PickupMap, PlayerSpawnpoint};
+use resources::{PickupMap, PlayerSpawnpoint, data::PickupData};
 use std::collections::HashMap;
+
+use super::Interactable;
 
 fn parse_vec(str: &str) -> Vec3 {
     let mut splat = str.split_whitespace();
@@ -48,12 +50,19 @@ pub fn spawn_entity(
     player_spawn: &mut ResMut<PlayerSpawnpoint>,
     pickup_map: &PickupMap,
     materials: &mut ResMut<Assets<StandardMaterial>>,
-) {
+) -> Option<Interactable> {
     match attributes
         .get(&FastStr::from("classname"))
         .as_ref()
         .map(|s| &s[..])
     {
+        Some("scriptable") => {
+            if let Some(script) = attributes.get(&FastStr::from("script")).as_ref() {
+                return Some(Interactable {
+                    script: (*script).clone(),
+                });
+            }
+        }
         Some("light") => {
             let light_level = attributes
                 .get(&FastStr::from("light"))
@@ -114,7 +123,8 @@ pub fn spawn_entity(
             spawn_pickup(id, true, pos, asset_server, data, commands, materials);
         }
         _ => error!("unhandled entity: {attributes:?}"),
-    }
+    };
+    None
 }
 
 pub fn spawn_pickup(
