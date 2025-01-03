@@ -102,7 +102,7 @@ pub fn update_world(client_id: u64, message: &ClientMessage, nw: &mut NetWorld) 
             }
         }
         ClientMessage::Interact => {
-            error!("unhandled interact event")
+            error!("unhandled interact event from player: {client_id}")
         }
     }
 }
