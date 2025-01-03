@@ -16,7 +16,7 @@ use bevy::{
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
-    log::{error, info},
+    log::{error, info, warn},
     prelude::NextState,
 };
 use bevy_renet::{
@@ -271,9 +271,10 @@ pub fn handle_client_message(
 
             let (int, _) =
                 option_return!(player.interact(player_entity, rapier_context, cam_trans, &trans));
-            println!("Interacted with entity: {int}");
-            let int = error_return!(nw.interactables.get(int));
-            println!("Got interactable: {int:?}")
+            let (_, int) = error_return!(nw.interactables.get(int));
+
+            warn!("TODO: add broadcast of interaction");
+            error_return!(nw.plugins.default.map_interact(int.script.to_string()));
         }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
