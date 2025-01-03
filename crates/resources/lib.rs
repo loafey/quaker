@@ -21,8 +21,8 @@ pub struct Qwaks {
     pub default: QwakPlugin,
     // pub other: HashMap<FastStr, QwakPlugin>,
 }
-impl Qwaks {
-    pub fn new() -> Self {
+impl Default for Qwaks {
+    fn default() -> Self {
         info!("Loading qwaks...");
         let default = match QwakPlugin::new("assets/qwaks/default.wasm") {
             Ok(o) => o,

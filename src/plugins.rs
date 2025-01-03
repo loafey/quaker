@@ -45,7 +45,7 @@ impl Plugin for Resources {
             .insert_resource(entropy_game())
             .insert_resource(entropy_misc())
             .insert_resource(Projectiles::default())
-            .insert_resource(Qwaks::new());
+            .insert_resource(Qwaks::default());
     }
 }
 
