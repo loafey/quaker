@@ -4218,6 +4218,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
+name = "ondth"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-scene-hook",
+ "bevy_hanabi",
+ "bevy_obj",
+ "bevy_rapier3d",
+ "bevy_renet",
+ "bevy_simple_text_input",
+ "bincode",
+ "faststr",
+ "image",
+ "integrity",
+ "macros",
+ "map_parser",
+ "renet_steam",
+ "resources",
+ "serde",
+ "steamworks",
+]
+
+[[package]]
 name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4530,29 +4553,6 @@ dependencies = [
  "cranelift-bitset",
  "log",
  "sptr",
-]
-
-[[package]]
-name = "quaker"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-scene-hook",
- "bevy_hanabi",
- "bevy_obj",
- "bevy_rapier3d",
- "bevy_renet",
- "bevy_simple_text_input",
- "bincode",
- "faststr",
- "image",
- "integrity",
- "macros",
- "map_parser",
- "renet_steam",
- "resources",
- "serde",
- "steamworks",
 ]
 
 [[package]]
