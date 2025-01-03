@@ -16,7 +16,7 @@ use bevy::{
         world::World,
     },
     hierarchy::DespawnRecursiveExt,
-    log::{error, info, warn},
+    log::{error, info},
     prelude::NextState,
 };
 use bevy_renet::{
