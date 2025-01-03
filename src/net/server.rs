@@ -31,7 +31,7 @@ use resources::{CurrentMap, data::Attack};
 use std::{net::UdpSocket, sync::RwLock, time::SystemTime};
 use steamworks::SteamId;
 
-fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
+pub fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
     for (_, player, _) in &nw.players {
         if player.id == nw.current_id.0 {
             player.display_message(&mut nw.commands, &nw.asset_server, text.clone());
@@ -254,7 +254,8 @@ pub fn server_events(
     }
 }
 
-pub static NW_PTR: RwLock<Option<&'static mut NetWorld>> = RwLock::new(None);
+pub static NW_PTR: RwLock<Option<(&'static mut NetWorld, &'static mut RenetServer)>> =
+    RwLock::new(None);
 #[allow(mutable_transmutes)]
 pub fn handle_client_message(
     server: &mut RenetServer,
@@ -276,8 +277,12 @@ pub fn handle_client_message(
             let (_, int) = option_return!(nw.interactables.get(int).ok());
 
             warn!("TODO: add broadcast of interaction");
-            *NW_PTR.write().unwrap() =
-                Some(unsafe { std::mem::transmute::<&NetWorld, &'static mut NetWorld>(&*nw) });
+            *NW_PTR.write().unwrap() = Some(unsafe {
+                std::mem::transmute::<
+                    (&NetWorld, &RenetServer),
+                    (&'static mut NetWorld, &'static mut RenetServer),
+                >((&*nw, &*server))
+            });
             error_return!(nw.plugins.default.map_interact(int.script.to_string()));
         }
         ClientMessage::Fire { attack } => {
