@@ -734,6 +734,45 @@ impl Player {
 }
 
 impl Player {
+    pub fn interact(
+        &mut self,
+        player_entity: Entity,
+        // commands: &mut Commands,
+        rapier_context: &RapierContext,
+        cam_trans: &Transform,
+        player_trans: &Transform,
+    ) -> Option<(Entity, Vec3)> {
+        let origin = player_trans.translation + cam_trans.translation;
+        let (_, rot, _) = player_trans.rotation.to_euler(EulerRot::XYZ);
+        let Vec3 { x, y, z } = cam_trans.local_z().xyz();
+
+        let sign = player_trans.rotation.xyz();
+        let temp_origin = Vec3::new(origin.x, sign.y, origin.z);
+        let sign = sign.dot(temp_origin).abs();
+        let sign = match sign < 0.5 {
+            true => 1.0,
+            false => -1.0,
+        };
+
+        let dir = -Vec3::new(
+            sign * x * rot.cos() + z * rot.sin(),
+            y,
+            -x * rot.sin() + sign * z * rot.cos(),
+        );
+
+        let filter = QueryFilter {
+            exclude_collider: Some(player_entity),
+            ..default()
+        };
+        let res = rapier_context.cast_ray(origin, dir, 5.0, false, filter);
+        if let Some((ent, distance)) = res {
+            let pos = origin + dir * distance;
+            Some((ent, pos))
+        } else {
+            None
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn attack(
         &mut self,

@@ -263,7 +263,14 @@ pub fn handle_client_message(
     let rapier_context = nw.rapier_context.single();
     match message {
         ClientMessage::Interact => {
-            error!("unhandled interact event from player: {client_id}")
+            let player = option_return!(nw.lobby.get(&client_id)).entity;
+            let (player_entity, mut player, trans) = error_return!(nw.players.get_mut(player));
+
+            let cam = option_return!(player.children.camera);
+            let (_, cam_trans) = error_return!(nw.cameras.get(cam));
+
+            let attack = player.interact(player_entity, rapier_context, cam_trans, &trans);
+            error!("unhandled interact event from player: {client_id} ({attack:?})")
         }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();
