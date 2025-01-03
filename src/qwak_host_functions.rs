@@ -1,6 +1,11 @@
+#![allow(static_mut_refs)]
+use faststr::FastStr;
 use qwak::{Function, PTR, UserData, ValType};
 
-use crate::net::server::{NW_PTR, transmit_message};
+use crate::{
+    get_nw,
+    net::server::{NW_PTR, transmit_message},
+};
 
 pub fn qwak_functions() -> impl IntoIterator<Item = Function> {
     [
@@ -29,7 +34,13 @@ pub fn qwak_functions() -> impl IntoIterator<Item = Function> {
 }
 
 fn inner_get_player_name(id: u64) -> String {
-    format!("{id}")
+    let (nw, _) = get_nw!();
+    let name = nw
+        .lobby
+        .get(&id)
+        .map(|pi| pi.name.clone())
+        .unwrap_or_else(|| FastStr::from("unknown player"));
+    name.to_string()
 }
 qwak::host_fn!(get_player_name(id: u64) -> String {
     Ok(inner_get_player_name(id))
@@ -44,8 +55,7 @@ qwak::host_fn!(debug_log(value: String) {
 });
 
 fn inner_broadcast_message(value: String) {
-    let mut nw = NW_PTR.write().unwrap();
-    let (nw, server) = nw.take().unwrap();
+    let (nw, server) = get_nw!();
     transmit_message(server, nw, value);
 }
 qwak::host_fn!(broadcast_message(value: String) {

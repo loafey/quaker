@@ -29,7 +29,7 @@ use macros::{error_continue, error_return, option_return};
 use qwak_helper_types::MapInteraction;
 use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use resources::{CurrentMap, data::Attack};
-use std::{net::UdpSocket, sync::RwLock, time::SystemTime};
+use std::{net::UdpSocket, time::SystemTime};
 use steamworks::SteamId;
 
 pub fn transmit_message(server: &mut RenetServer, nw: &mut NetWorld, text: String) {
@@ -255,8 +255,18 @@ pub fn server_events(
     }
 }
 
-pub static NW_PTR: RwLock<Option<(&'static mut NetWorld, &'static mut RenetServer)>> =
-    RwLock::new(None);
+// Yea this is cursed, I know, but somehow these references need to be passed to
+// host functions, and I don't feel like creating an EDSL, or passing them through
+// the WASM plugin. I promise that this should never segfault :)
+pub static mut NW_PTR: Option<(&mut NetWorld, &mut RenetServer)> = None;
+#[macro_export]
+macro_rules! get_nw {
+    () => {{
+        let nw = unsafe { NW_PTR.as_ref() };
+        let r: *const _ = nw.unwrap();
+        unsafe { std::ptr::read(r) }
+    }};
+}
 #[allow(mutable_transmutes)]
 pub fn handle_client_message(
     server: &mut RenetServer,
@@ -278,12 +288,12 @@ pub fn handle_client_message(
             let (_, int) = option_return!(nw.interactables.get(int).ok());
 
             warn!("TODO: add broadcast of interaction");
-            *NW_PTR.write().unwrap() = Some(unsafe {
-                std::mem::transmute::<
+            unsafe {
+                NW_PTR = Some(std::mem::transmute::<
                     (&NetWorld, &RenetServer),
                     (&'static mut NetWorld, &'static mut RenetServer),
-                >((&*nw, &*server))
-            });
+                >((&*nw, &*server)))
+            };
             error_return!(
                 nw.plugins
                     .default
