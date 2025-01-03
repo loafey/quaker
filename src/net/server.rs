@@ -26,6 +26,7 @@ use bevy_renet::{
 };
 use faststr::FastStr;
 use macros::{error_continue, error_return, option_return};
+use qwak_helper_types::MapInteraction;
 use renet_steam::{AccessPermission, SteamServerConfig, SteamServerTransport};
 use resources::{CurrentMap, data::Attack};
 use std::{net::UdpSocket, sync::RwLock, time::SystemTime};
@@ -283,7 +284,11 @@ pub fn handle_client_message(
                     (&'static mut NetWorld, &'static mut RenetServer),
                 >((&*nw, &*server))
             });
-            error_return!(nw.plugins.default.map_interact(int.script.to_string()));
+            error_return!(
+                nw.plugins
+                    .default
+                    .map_interact(MapInteraction(int.script.to_string(), client_id))
+            );
         }
         ClientMessage::Fire { attack } => {
             let mut hit_pos = Vec::new();

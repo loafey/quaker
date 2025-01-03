@@ -1,3 +1,4 @@
+use qwak_helper_types::MapInteraction;
 use qwak_shared::QwakPlugin;
 qwak_shared::plugin_gen!(Plugin);
 
@@ -5,6 +6,7 @@ qwak_shared::plugin_gen!(Plugin);
 unsafe extern "ExtismHost" {
     unsafe fn debug_log(val: String);
     unsafe fn broadcast_message(val: String);
+    unsafe fn get_player_name(id: u64) -> String;
 }
 
 struct Plugin;
@@ -19,9 +21,12 @@ impl QwakPlugin for Plugin {
         [0, 0, 1]
     }
 
-    fn map_interact(arg: String) {
+    fn map_interact(MapInteraction(arg, id): MapInteraction) {
         match &*arg {
-            "debug_log" => unsafe { broadcast_message("ondth plugin whoo!!".to_string()).unwrap() },
+            "debug_log" => unsafe {
+                let name = get_player_name(id).unwrap();
+                broadcast_message(format!("{name} is a crazy duck!")).unwrap()
+            },
             _ => panic!("unknown interaction: {arg}"),
         }
     }
