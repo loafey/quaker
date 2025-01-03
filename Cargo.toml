@@ -25,7 +25,6 @@ image                  = { workspace = true }
 bevy_hanabi            = { workspace = true }
 integrity              = { workspace = true }
 resources              = { workspace = true }
-qwak                   = { workspace = true }
 
 [workspace]
 members = [ "crates/*", "qwaks/*" ]
