@@ -1,11 +1,11 @@
 use crate::{
-    net::{self, steam::SteamClient, NetState},
     APP_ID,
+    net::{self, NetState, steam::SteamClient},
 };
 use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_simple_text_input::{TextInput, TextInputSettings, TextInputTextFont, TextInputValue};
 use macros::{error_continue, error_return};
-use resources::{CurrentMap, CurrentStage};
+use resources::{CurrentMap, CurrentStage, Qwaks};
 use std::{
     fs, io,
     path::{Path, PathBuf},
@@ -132,6 +132,7 @@ pub fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
+    qwaks: Res<Qwaks>,
 ) {
     commands.insert_resource(AmbientLight {
         brightness: 0.0,
@@ -223,23 +224,17 @@ pub fn setup(
             })
             .with_children(|c| {
                 c.spawn(Button)
-                    .insert((
-                        Text::new("Solo"),
-                        TextFont {
-                            font_size: 32.0,
-                            ..default()
-                        },
-                    ))
+                    .insert((Text::new("Solo"), TextFont {
+                        font_size: 32.0,
+                        ..default()
+                    }))
                     .insert(ButtonEvent::Solo);
 
                 c.spawn(Button)
-                    .insert((
-                        Text::new("Start MP"),
-                        TextFont {
-                            font_size: 32.0,
-                            ..default()
-                        },
-                    ))
+                    .insert((Text::new("Start MP"), TextFont {
+                        font_size: 32.0,
+                        ..default()
+                    }))
                     .insert(ButtonEvent::StartMp);
 
                 c.spawn(Node::default()).insert((
@@ -256,15 +251,34 @@ pub fn setup(
                 ));
 
                 c.spawn(Button)
-                    .insert((
-                        Text::new("Join IP"),
-                        TextFont {
-                            font_size: 32.0,
-                            ..default()
-                        },
-                    ))
+                    .insert((Text::new("Join IP"), TextFont {
+                        font_size: 32.0,
+                        ..default()
+                    }))
                     .insert(ButtonEvent::JoinMp);
             });
+
+            c.spawn(Node {
+                position_type: PositionType::Absolute,
+                right: Val::Px(0.0),
+                bottom: Val::Px(0.0),
+                // background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+                ..default()
+            })
+            .insert((
+                Text::new(format!(
+                    "Running \"{}\" ({})",
+                    qwaks.default.plugin_name().unwrap(),
+                    {
+                        let version = qwaks.default.plugin_version().unwrap();
+                        format!("{}.{}.{}", version[0], version[1], version[2])
+                    }
+                )),
+                TextFont {
+                    font_size: 16.0,
+                    ..default()
+                },
+            ));
 
             c.spawn(Node {
                 position_type: PositionType::Absolute,
@@ -277,13 +291,10 @@ pub fn setup(
                 ..default()
             })
             .with_children(|c| {
-                c.spawn((
-                    Text::new("Maps:".to_string()),
-                    TextFont {
-                        font_size: 32.0,
-                        ..default()
-                    },
-                ));
+                c.spawn((Text::new("Maps:".to_string()), TextFont {
+                    font_size: 32.0,
+                    ..default()
+                }));
 
                 for map in map_files {
                     c.spawn(
@@ -301,13 +312,10 @@ pub fn setup(
                     .insert(LevelButton(map.clone()));
                 }
 
-                c.spawn((
-                    Text::new("Friends:".to_string()),
-                    TextFont {
-                        font_size: 32.0,
-                        ..default()
-                    },
-                ));
+                c.spawn((Text::new("Friends:".to_string()), TextFont {
+                    font_size: 32.0,
+                    ..default()
+                }));
                 for friend in friends {
                     c.spawn(
                         Button, /*{
